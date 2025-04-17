@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RF Signal Conditioning & Communication Board – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    figure {
+      text-align: center;
+      margin: 2rem 0;
+    }
+    figure img {
+      max-width: 80%;
+      height: auto;
+    }
+    figcaption {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container markdown-body">
+    <h1>RF Signal Conditioning & Communication Board</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+    
+
+    <u><h2>Overview</h2></u>
+    <figure>
+        <img src="../images/communication_board_isml/isml2.PNG" alt="AVI Power Management"  />
+        <figcaption>Figure 1: Complete Communication Board</figcaption>
+    </figure>
+    <p>This project involved the development of a communication and RF signal conditioning board intended for wireless monitoring of coated microwave sensors. The board was designed to acquire RF signal strength from a custom microwave sensor, amplify and condition it using programmable analog circuitry, and transmit signal metrics wirelessly to a mobile application via Bluetooth. It integrates multiple functional subsystems including power management, digital potentiometer-based tunable gain stages, an RF power detector (LTC5597), and BLE communication using the ESP32-WROVER module.</p>
+
+    <u><h2>Motivation</h2></u>
+    <p>Monitoring RF-based chemical sensors requires compact, tunable readout systems that can adapt to varying environmental conditions while remaining low power and wirelessly accessible. Most RF sensor setups are constrained to benchtop test equipment or lack embedded integration.</p>
+    <p>Our goal was to:
+      <ul>
+        <li>Build an embedded system that amplifies and digitizes RF power output from a microwave sensor</li>
+        <li>Allow gain tuning through software (digital potentiometer)</li>
+        <li>Enable wireless communication with a mobile dashboard</li>
+        <li>Operate on battery power and fit into a palm-sized form factor</li>
+      </ul>
+    </p>
+
+    <u><h2>Role</h2></u>
+    <ul>
+      <li>Led schematic and PCB layout development in Altium</li>
+      <li>Selected and integrated key analog components (MCP4141, LM324, LTC5597)</li>
+      <li>Interfaced the ESP32-WROVER module with amplifier outputs and BLE services</li>
+      <li>Iterated on layout changes based on faculty review comments</li>
+      <li>Created and revised block diagrams and architectural flow</li>
+    </ul>
+
+    <u><h2>Key Features & Design Decisions</h2></u>
+    <h3>ESP32-WROVER-I – Wireless Communication</h3>
+    <p>I chose the ESP32-WROVER-I for its robust BLE 5.0 support, integrated antenna, and dual-core processing capabilities. Compared to modules like the HC-05 or HM-10, the ESP32 provides significantly more flexibility, including OTA updates, Wi-Fi fallback, and low-power modes. Its SPI bus was essential for driving the MCP4141 digital potentiometer. Additionally, it allowed seamless integration with a mobile app dashboard under development.</p>
+    <p><strong>Why not ESP8266?</strong> Lacked BLE and sufficient GPIOs.</p>
+    <p><strong>Why not external BLE SoC?</strong> Increased complexity and required inter-IC protocol development.</p>
+
+    <h3>MCP4141 Digital Potentiometer</h3>
+    <p>This chip gave us software-controlled analog tuning, allowing real-time gain adjustment without physical intervention. It supported SPI control with 256-step resolution and operated comfortably at 3.3V, compatible with the ESP32.</p>
+    <p>Placed close to amplifier output and VCO input for tight gain loop.</p>
+    <p>SPI routing was kept short and isolated from analog signal paths to prevent switching noise injection.</p>
+
+    <h3>LM324 Quad Op-Amp</h3>
+    <p>The LM324 was chosen for its availability, single-rail operation, and stable bandwidth for low-frequency analog buffering. While not ideal for high-speed RF work, it was used to buffer control voltages, create gain stages for DC signals, and drive the VCO input.</p>
+    <p>Used in non-inverting amplifier and voltage follower configurations.</p>
+    <p>Carefully decoupled and placed away from high-frequency digital lines.</p>
+
+    <h3>LTC5597 Power Detector</h3>
+    <p>Selected due to its broadband RF input range (up to 40GHz) and ease of conversion to DC output. This part was critical for measuring the RF strength from the sensor. Its layout followed Analog Devices’ guidance: short RF traces, a clean analog ground plane, and precise decoupling.</p>
+    <p>Positioned close to SMA input to minimize loss</p>
+    <p>Output filtered and buffered before feeding into the ESP32's ADC</p>
+
+    <h3>Power Regulation</h3>
+    <p>Used linear regulators to avoid switching noise. Provided isolated 3.3V and 5V domains for clean digital and analog supply. Routed with wide copper traces.</p>
+    <p>Why discrete regulators?</p>
+    <ul>
+        <li>Provided better thermal separation</li>
+        <li>Allowed independent rail filtering</li>
+        <li>Gave the option to isolate analog/digital domains in future iterations</li>
+    </ul>
+
+    <u><h2>PCB Layout Strategy</h2></u>
+    <ul>
+      <li>RF trace minimization: High-frequency traces between the SMA connector and LTC5597 were kept short and as straight as possible. Ground pours were placed around these lines for shielding.</li>
+      <li>SPI bus isolation: The digital potentiometer's SPI traces were shielded with guard ground traces to prevent digital crosstalk from affecting the analog frontend.</li>
+      <li>Power plane separation: Analog and digital grounds were split and stitched at a single point. This was especially important to keep ESP32 switching currents out of the sensitive RF measurement loop.</li>
+      <li>Thermal dissipation: Copper pours were extended beneath regulators to provide passive heat sinking. Vias were added to move heat to the opposite layer.</li>
+      <li>Connector orientation: All external ports (SMA, power input, debug headers) were placed on the board edge and aligned to simplify enclosure mounting and signal probing.</li>
+    </ul>
+    <p>Note the second iteration also introduced a frame-based layout structure to ease PCB manufacturing and panelization with fiducial markers, text clearance zones, and consistent mounting hole spacing.</p>
+
+    <figure>
+        <img src="../images/communication_board_isml/Capture8.PNG" alt="AVI Power Management"  />
+        <figcaption>Figure 2: Top Layer layout</figcaption>
+    </figure>
+
+    <figure>
+        <img src="../images/communication_board_isml/isml1.PNG" alt="AVI Power Management"  />
+        <figcaption>Figure 3: Layout with Polygon Pours. Top layer (red) is Power and Bottom (blue) is GND.</figcaption>
+    </figure>
+    
+    <u><h2>Challenges & Constraints</h2></u>
+    <ul>
+      <li><strong>Mixed-Signal Noise Management</strong></li>
+        <ul>
+            <li>The ESP32 introduced high-frequency noise into the system. Despite careful grounding, there were moments of voltage ripple affecting analog readings.</li>
+            <li>Solution: added bulk and ceramic capacitors near sensitive analog blocks, and extended analog trace spacing from switching regulators.</li>
+        </ul>
+      <li><strong>VCO Interfacing Complexity</strong></li>
+        <ul>
+            <li>Tuning a VCO via a potentiometer chain required buffering stages, but the impedance mismatch caused erratic behavior in early tests.</li>
+            <li>Later stages incorporated voltage followers and damping resistors.</li>
+        </ul>
+      <li>No access to shielded lab for RF testing during prototyping</li>
+      <li>Late-stage BOM and layout changes added routing pressure</li>
+    </ul>
+
+    <u><h2>Future Work & Improvements</h2></u>
+    <ul>
+      <li><strong>EMI Shielding</strong>: Add grounded copper enclosures over the LTC5597 and potentiometer chain to reduce ambient RF interference.</li>
+      <li><strong>Auto-Gain Control Loop</strong>: Use ADC feedback to adjust the MCP4141 resistance based on signal strength, stabilizing readings during environmental drift.</li>
+      <li><strong>Switching Regulator Redesign</strong>: ncorporate buck converters with well-filtered outputs to improve battery efficiency while maintaining analog cleanliness.</li>
+      <li><strong>OTA + Flash Logging</strong>: Add SPI Flash and integrate full over-the-air firmware updates with data buffering and fault-tolerant log recovery.</li>
+      <li><strong>Differential Signal Conditioning</strong>: Replace LM324 with a proper instrumentation amplifier front-end with higher CMRR for future analog sensor input options.</li>
+      <li><strong>Layout Modularity</strong>: Separate analog subsystem onto its own daughter board with edge connectors to allow RF experimentation without affecting digital logic.</li>
+      <li>Design and deploy a Flutter-based mobile dashboard for remote tuning</li>
+    </ul>
+
+   
+  </div>
+</body>
+</html>

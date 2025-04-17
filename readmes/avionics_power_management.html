@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EEG Neural Wearable – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    .markdown-body h1 {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container markdown-body">
+    <h1>Avionics Power Management</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+      
+    </div>
+    
+    
+
+    <u><h2>Overview</h2></u>
+    <figure>
+      <img src="../images/avi_power_management/3DModel.PNG" alt="AVI Power Management"  />
+      <figcaption>Figure 1: Complete Power Management Board</figcaption>
+    </figure>
+    <p>The Avionics Power Management Board was developed as a flight-ready power distribution system for UTAT’s Discovery Rocket. Designed in Altium Designer, the board consolidates battery protection, voltage regulation, and subsystem interfacing in a compact form factor optimized for high-reliability aerospace conditions. The goal was to deliver clean, safe, and well-monitored power to avionics systems operating in harsh, vibration-heavy environments during flight.</p>
+    <p>Although this was a team project, I was responsible for:</p>
+    <ul>
+      <li><strong>Designing the battery protection schematic</strong>, including reverse polarity protection, current limiting, and transient suppression.</li>
+      <li><strong>Laying out the complete PCB</strong> in Altium, including regulator placement, connector routing, and heat dissipation strategy.</li>
+      <li>Collaborating with firmware and payload teams to determine connector pinouts and voltage tolerances.</li>
+      
+    </ul>
+
+
+    <u><h2>PCB Design</h2></u>
+    <h4>Battery Protection Circuit</h4>
+    <figure>
+      <img src="../images/avi_power_management/BatteryProtectionSchematic.PNG" alt="AVI Power Management"  />
+      <figcaption>Figure 2: Battery Protection Schematic</figcaption>
+    </figure>
+    <p>I selected a P-channel MOSFET for reverse polarity protection due to its low Rdson and passive behavior under normal polarity. This design allows the MOSFET to self-block current when polarity is reversed, without any gate driver complexity. A series polyfuse was added to limit sustained overcurrent draw and avoid heating issues in sensitive regulator components.
+    </p>
+    <p>To suppress inductive spikes during hot-swapping or connector dislodgment, we integrated a TVS diode rated for our maximum voltage margin (~16V). The fuse, MOSFET, and TVS combination forms a reliable first line of defense against power faults.</p>
+
+    <h4>Voltage Regulation</h4>
+    
+    <p>The board supplies two primary voltage rails — 5V for digital sensors and 3.3V for MCU logic. A buck regulator was chosen over linear for the 5V rail due to thermal and efficiency constraints, especially under full-load conditions (~1.5A).</p>
+    <p>For analog sections, we used low-noise LDOs to step 5V down to 3.3V with high PSRR, ensuring clean reference signals for IMUs and ADCs. These LDOs were selected for their low dropout and thermal shutdown features.</p>
+
+    <h4>Connector Strategy</h4>
+    
+    <p>I used JST-GH connectors due to their strong latching, vibration resistance, and standard use across UTAT projects. This reduced the likelihood of mid-flight disconnection and simplified cable harnessing.</p>
+    <p>Each connector included redundant ground pins and clearly silkscreened labels to avoid field wiring errors. The connectors were oriented toward the board edges to simplify access and prevent crosstalk from tight cable loops</p>
+
+
+    <u><h2>PCB Layout Strategy</h2></u>
+
+    <figure>
+      <img src="../images/avi_power_management/powerManagementInTheWorks.PNG" alt="AVI Power Management"  />
+      <figcaption>Figure 3: Complete Board</figcaption>
+    </figure>
+    <figure>
+      <img src="../images/avi_power_management/SpecificBatterySchematic.PNG" alt="AVI Power Management"  />
+      <figcaption>Figure 4: Battery Circuit layout</figcaption>
+    </figure>
+    <p>Designed in <strong>Altium Designer</strong>, the PCB layout was approached with thermal, EMI, and accessibility concerns in mind:</p>
+    <ul>
+      <li><strong>High-current paths</strong> (battery in, regulator out) were routed with wide traces and reinforced with copper pours
+      </li>
+      <li><strong>Decoupling capacitors</strong> were placed as close as possible to regulator input and output pins, using X7R ceramics for stability</li>
+      <li><strong>Star-ground topology</strong> was used to separate sensitive analog from high-frequency switching circuits</li>
+      <li><strong>Component placement</strong> prioritized thermal dissipation from heat-producing ICs, while sensitive analog paths were shielded using strategic ground pours</li>
+
+    </ul>
+    
+
+    <h3>Challenges & Limitations</h3>
+    <ol>
+      <li><strong>Size Limitations</strong>: The board had to fit a defined payload slot, restricting height and width. This influenced part packaging, via placement, and trace routing.</li>
+      <li><strong>Power Density</strong>: Delivering up to 1.5A on multiple rails within thermal limits required effective heat sinking via ground planes and trace geometry.</li>
+      
+    </ol>
+
+   
+   <u><h2>Future Work</h2></u> 
+    <ul>
+      <li><strong>Power telemetry</strong>: Integrating an INA219 or similar to log current draw per rail during flight</li>
+      <li><strong>Fuse re-evaluation</strong>: Replace polyfuses with resettable eFuse ICs for better repeatability and precision</li>
+      <li><strong>Hot-swap control</strong>: Use dedicated hot-swap IC to prevent inrush currents when connecting batteries in the field</li>
+      <li><strong>Current foldback</strong>: Evaluate current-limiting regulators that include foldback protection to reduce thermal dissipation in sustained fault cases</li>
+    </ul>
+
+    
+
+
+  </div>
+</body>
+</html>

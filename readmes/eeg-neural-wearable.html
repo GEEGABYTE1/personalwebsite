@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EEG Neural Wearable – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    .markdown-body h1 {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container markdown-body">
+    <h1>EEG Neural Wearable</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+      <a href="https://github.com/GEEGABYTE1/eeProjects/tree/master/Projects/EEGHandMovementModel" target="_blank" rel="noopener noreferrer">Project Repo</a>.
+    </div>
+    
+    <figure>
+        <img src="../images/boardlayout.png" alt="EEG Neural Wearable System Diagram"  />
+        <figcaption>Figure 1: EEG Neural Wearable Board</figcaption>
+      </figure>
+
+    <u><h2>Overview</h2></u>
+    <figure>
+        <img src="../images/systemDiagram.png" alt="EEG Neural Wearable System Diagram"  />
+        <figcaption>Figure 2: System Diagram</figcaption>
+      </figure>
+    <p>The EEG Neural Wearable is a compact, multilayer embedded system designed to classify human hand movements based on EEG brain signals. The project fuses low-noise analog signal acquisition, microcontroller-based processing, Bluetooth communication, and embedded machine learning into a single wearable platform. My goal was to explore how embedded systems can support real-time brain-computer interface (BCI) applications in a form factor small enough to be worn during typical daily activity.</p>
+
+
+    <u><h2>PCB Design</h2></u>
+    <h4>EEG Acquisition – ADS1299IPAGR</h4>
+    <figure>
+        <img src="../images/EEGAcq.png" alt="EEG Neural Wearable System Diagram"  />
+        <figcaption>Figure 3: EEG Acquisition Schematic</figcaption>
+    </figure>
+    <p>The Texas Instruments ADS1299 was selected as the core front-end because it is specifically designed for low-noise biopotential measurements (e.g., EEG, EMG, ECG). Its 24-bit resolution and integrated PGA make it suitable for detecting microvolt-level variations, and the SPI interface ensures simple communication with most microcontrollers. I chose the IPAGR package variant to minimize board footprint while allowing up to 8 input channels.</p>
+    <p>I considered the ADS1298 and the INA333-based discrete amplification, but ultimately favored the ADS1299 due to its compact integration, known use in open-source EEG systems (e.g., OpenBCI), and reduced component count for low-noise analog routing.</p>
+
+    <h4>2. Processing Unit – STM32H743VIT6</h4>
+    <figure>
+        <img src="../images/ProcessingUnit.png" alt="EEG Neural Wearable System Diagram"  />
+        <figcaption>Figure 4: Processing Unit Schematic</figcaption>
+    </figure>
+    <p>I chose the STM32H7 line for its balance of performance and integration. With a 400 MHz Cortex-M7 core, it provides ample headroom for FFT-based signal processing and real-time inference using a lightweight CNN model. It supports SDIO, USB, and external flash while maintaining low idle power.</p>
+    <p>The STM32F4 and ESP32-S3 were considered but lacked the needed RAM and true floating-point performance. The H7’s extensive peripheral availability also made it ideal for integrating SPI (to ADS1299), UART (for debug), SD card (for data logging), and USB.</p>
+
+    <h4>3. Wireless Comms – MDBT50Q-1MV2 (nRF52840)</h4>
+    <figure>
+        <img src="../images/Communication.png" alt="EEG Neural Wearable System Diagram"  />
+        <figcaption>Figure 5: Communication Schematic</figcaption>
+    </figure>
+    <p>For BLE transmission, the MDBT50Q was selected as it offers a certified nRF52840 module with internal crystal and antenna. This drastically simplified RF design and bypassed the need for impedance matching. The module supports BLE 5.0 and offers more GPIOs than typical low-cost BLE SoCs.</p>
+    <p>An alternate design using the HM-10 BLE module was discarded due to its limited configurability and incompatibility with simultaneous SPI/UART comms.</p>
+
+    <h4>4. Power Management</h4>
+    <figure>
+        <img src="../images/Communication.png" alt="EEG Neural Wearable System Diagram"  />
+        <figcaption>Figure 6: Power Schematic</figcaption>
+    </figure>
+    <p>The power stage consists of:</p>
+    <ul>
+      <li>MCP73831 for Li-ion charging</li>
+      <li>AP2112K-3.3V for low-dropout regulation</li>
+      <li>Dual-source selection between USB and battery</li>
+    </ul>
+    <p>The AP2112K was chosen for its low quiescent current and ease of sourcing. It ensures a clean 3.3V rail across the digital and analog domains. To avoid noise from buck converters, linear regulation was preferred despite efficiency tradeoffs.</p>
+    <p>I ensured analog and digital grounds were split and carefully stitched near the power entry point. All power traces were widened and kept short for voltage stability.</p>
+
+    <u><h2>PCB Layout Strategy</h2></u>
+    <figure>
+        <img src="../images/boardlayout.png" alt="EEG Neural Wearable System Diagram"  />
+        <figcaption>Figure 7: PCB Layout</figcaption>
+    </figure>
+    <p>The PCB was laid out using KiCad and features:</p>
+    <ul>
+      <li>2-layer board for simplicity and cost</li>
+      <li>Modular blocks for EEG, power, comms, and MCU</li>
+      <li>Separated analog/digital ground planes</li>
+      <li>Decoupling capacitors placed as close as possible to IC supply pins</li>
+      <li>Test points for critical debug signals (e.g., SPI lines, RESET, DRDY)</li>
+    </ul>
+ 
+
+    <u><h2>ML Pipeline</h2></u>
+    <a href="https://github.com/GEEGABYTE1/eeProjects/tree/master/Projects/EEGHandMovementModel" target="_blank" rel="noopener noreferrer">ML Repo</a>.
+    <p>To classify hand movements (left, right, circular), I used real EEG data from 3 users. Each signal was 14 channels sampled at 128 Hz. The key steps were:</p>
+    <ul>
+      <li><strong>FFT (0–30Hz)</strong>: Extract frequency domain features</li>
+      <li><strong>Waveband Aggregation</strong>: Average power in delta, theta, alpha, and beta bands</li>
+      <li><strong>Feature Structuring</strong>: 14 (channels) × 4 (bands) × 2 (mean types) = 112 features</li>
+    </ul>
+    <p>This compact 112-length vector served as input to a CNN with:</p>
+    <ul>
+      <li>3 convolutional layers</li>
+      <li>Dropout = 0.3</li>
+      <li>Categorical crossentropy loss</li>
+      <li>Trained over 50 epochs, batch size = 32</li>
+    </ul>
+    <p>CNN achieved 81.2% accuracy, while XGBoost slightly outperformed at 83%. Future models could include recurrent components or SVM baselines for better temporal resolution.</p>
+
+    <figure>
+        <img src="../images/rnn.png" alt="EEG Neural Wearable System Diagram"  />
+        <figcaption>Figure 8: Performance of first CNN using MaxPooling</figcaption>
+    </figure>
+    <figure>
+        <img src="../images/rnn2.png" alt="EEG Neural Wearable System Diagram"  />
+        <figcaption>Figure 9: Performance of second CNN without MaxPooling and scaling variables appropriately. </figcaption>
+    </figure>
+
+
+    <h3>Challenges & Limitations</h3>
+    <ol>
+      <li><strong>Board Noise Management</strong>: Despite analog/digital separation, the 2-layer board is inherently noisier than a 4-layer solution. Power ripple and shared planes limited signal clarity during high-speed SPI bursts. Future revisions could include a solid GND plane and separate 3.3VA/3.3VD regulators.</li>
+      <li><strong>BLE Bandwidth</strong>: The BLE module occasionally bottlenecked high-throughput streaming. Workarounds included reducing transmission frequency and compressing payloads, but in a real application, UART-over-BLE or Nordic SDK optimization would be necessary.</li>
+      <li><strong>Board Size</strong>: Though wearable, the board could be made smaller with a 4-layer design and more compact components (e.g., switching from QFP to BGA packages, replacing JST headers with board-edge contacts).</li>
+      <li><strong>Model Generalization</strong>: EEG signals vary per user. The model, while effective for three test subjects, may need continual retraining or calibration. Future work could explore adaptive learning, model pruning, or federated learning pipelines.</li>
+    </ol>
+
+   
+   <u><h2>Future Work</h2></u> 
+    <ul>
+      <li>Porting model to CMSIS-NN for real-time embedded inference</li>
+      <li>Developing a mobile dashboard for data visualization</li>
+      <li>Adding onboard flash for signal buffering</li>
+      <li>Refining analog routing for higher CMRR and lower ripple</li>
+    </ul>
+
+    
+
+
+  </div>
+</body>
+</html>

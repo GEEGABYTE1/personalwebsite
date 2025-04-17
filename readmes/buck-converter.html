@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TPS561208 Buck Converter</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>TPS561208 Buck Converter Breakout – Jaival Patel</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+    <u><h2>Overview</h2></u>
+    <p>The design, layout, and testing of a simple DC-DC step-down converter breakout board using the <strong>TPS561208DDCR</strong> switching regulator. The design steps down a 7–14V input into a stable 5V output, capable of driving up to 1A loads with low ripple and high efficiency. The PCB was designed with a focus on layout cleanliness, loop minimization, and thermal behavior under burst load conditions.</p>
+    <figure>
+      <img src="../images/TPS561208/3d.png" alt="EEG Neural Wearable System Diagram"  />
+      <figcaption>Figure 1: TPS561208 Breakout Board</figcaption>
+    </figure>
+
+    <u><h2>Role</h2></u>
+    <ul>
+      <li>Selected the TPS561208DDCR based on quiescent current, switching frequency, and load regulation</li>
+      <li>Performed hand calculations for output voltage, loop stability, and compensation</li>
+      <li>Designed and iterated the PCB layout in KiCad with polygon fills and current loops in mind</li>
+      <li>Validated behavior with oscilloscope probing and resistive load testing</li>
+    </ul>
+
+    <u><h2>Key Features</h2></u>
+
+    <figure>
+      <img src="../images/TPS561208/schematic.png" alt="EEG Neural Wearable System Diagram"  />
+      <figcaption>Figure 2: Schematic</figcaption>
+    </figure>
+
+    <h3>Feedback Divider Calculation</h3>
+    <p>The feedback loop is governed by the standard buck feedback equation:</p>
+    <pre><code>VOUT = VREF * (1 + R1/R2) where VREF = 0.768V</code></pre>
+    <p>To generate a 5V output, I chose R2 = 10kΩ and calculated R1 ≈ 55.1kΩ, selecting the nearest E24 resistor. Using a higher R2 value reduces current draw through the divider and improves light-load efficiency, while remaining low enough to prevent noise injection at the FB node.</p>
+
+    <h3>Ceramic Input and Output Caps</h3>
+    <p>Input: 22µF X7R 25V rated MLCC handles bulk capacitance and switching dips. Output: 47µF X7R chosen for transient performance without excessive ESR. Ceramic capacitors were prioritized over tantalum for their lower ESL, reduced package size, and thermal performance.</p>
+
+    <h3>Inductor Selection</h3>
+    <p>For 1A output at 5V, a 4.7µH shielded inductor was selected with 20% margin over peak current and minimal DCR. This reduced ripple and core heating under burst mode operation. Placement was tightly coupled to the switch node for minimal loop inductance.</p>
+    <figure>
+      <img src="../images/TPS561208/inductor.png" alt="EEG Neural Wearable System Diagram"  />
+      <figcaption>Figure 3: Inductor Table</figcaption>
+    </figure>
+
+    <h3>PCB Layout Decisions</h3>
+    <figure>
+      <img src="../images/TPS561208/layout.png" alt="EEG Neural Wearable System Diagram"  />
+      <figcaption>Figure 4: PCB layout</figcaption>
+    </figure>
+    <ul>
+      <li><strong>Loop Area:</strong> The VIN-to-L-to-VOUT and GND return paths were kept short and compact to reduce EMI and voltage overshoot.</li>
+      <li><strong>Thermal Relief:</strong> Large polygon pours on VIN, GND, and VOUT for heat sinking and low impedance return paths.</li>
+      <li><strong>Via Stitching:</strong> Used to tie upper GND copper to bottom copper for current return and improved thermal conductivity.</li>
+      <li><strong>Routing Strategy:</strong> Avoided routing high-speed switch node traces under analog FB or EN lines to prevent noise coupling.</li>
+    </ul>
+
+    <u><h2>Architecture & Implementation</h2></u>
+    <p>This is a 2-layer board routed in KiCad with SMA header footprints on input and output for easy breadboard or testbench access. Key decisions included:</p>
+    <ul>
+      <li>Maintaining shortest high-current paths by clustering input/output caps near the IC</li>
+      <li>Route FB trace away from SW node using inner-layer or shielded polygon</li>
+      <li>All passive components placed per TI-recommended layout for TPS561208</li>
+      <li>Output ripple tested with X10 probe at <1% peak-to-peak under dynamic load</li>
+    </ul>
+
+    <u><h2>Challenges & Constraints</h2></u>
+    <ul>
+      <li><strong>Feedback Noise:</strong> FB trace layout initially picked up ripple from the switch node. Fixed by shielding with polygon pour and using ground guard.</li>
+      <li><strong>Polygon Pour Interactions:</strong> Improper stitching created floating copper near SW. Fixed by tighter DRC tuning and net merging rules.</li>
+      <li><strong>Layout Size Constraints:</strong> Achieving TI-recommended loop areas in limited breakout board real estate was non-trivial.</li>
+      <li><strong>Compensation:</strong> Using fixed compensation limited range of acceptable output caps and ESRs; required datasheet-guided tuning.</li>
+    </ul>
+
+    <u><h2>Outcome</h2></u>
+    <ul>
+      <li>Board successfully stepped 9V input to 5V at 1A output</li>
+      <li>Stable under full load with low ripple and soft thermal rise</li>
+      <li>Compact form factor and header accessibility made it reusable across projects</li>
+    </ul>
+
+    <u><h2>Future Work</h2></u>
+    <ul>
+      <li>Add ENABLE pin breakout and soft-start capacitor option for sequencing</li>
+      <li>Use 4-layer PCB for improved EMI containment and current return plane integrity</li>
+      <li>Integrate load switch on output for controlled subsystem power gating</li>
+      <li>Build modular variant for adjustable output using 0Ω jumpers and socketed resistors</li>
+    </ul>
+
+    <u><h2>Tools Used</h2></u>
+    <ul>
+      <li>KiCad – schematic and 2-layer layout</li>
+      <li>Oscilloscope, DMM – testing and validation</li>
+      <li>TI Power Design Guidelines + datasheet layout analysis</li>
+      <li>PCB DRC tuning and layout for power integrity</li>
+    </ul>
+
+
+  </div>
+</body>
+</html>

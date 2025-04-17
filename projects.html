@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects – Jaival Patel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Works</h1>
+      <a href="../index.html">Home</a>
+    <p>Things I've built</p>
+    <div class="grid" id="project-grid"></div>
+  </div>
+
+  <script>
+    const projects = [
+      {
+        title: "EEG Neural Wearable",
+        file: "readmes/eeg-neural-wearable.html",
+        image: "images/eegthumbnail.png",
+        caption: "Wearable PCB with onboard CNN for EEG classification"
+      },
+      {
+        title: "Avionics Power Management Board",
+        file: "readmes/avionics_power_management.html",
+        image: "images/avi_power_management/powerManagementInTheWorks.PNG",
+        caption: "Power Management Board for Avionics of the Discovery Liquid Rocket at UTAT Rocketry"
+      },
+      {
+        title: "Communication Board for RF Sensors",
+        file: "readmes/communication-board.html",
+        image: "images/communication_board_isml/thumbnail.PNG",
+        caption: "RF signal and Communication board for wireless monitoring of microwave sensors at ISML."
+      },
+      {
+        title: "DC-DC Buck Converter TPS561208DDCR",
+        file: "readmes/buck-converter.html",
+        image: "images/TPS561208/thumbnail.png",
+        caption: "Breakout board for TPS561208DDCR."
+      },
+      {
+        title: "AlexNetV2",
+        file: "readmes/alexnetv2.html",
+        image: "images/alexnet/thumbnail.png",
+        caption: "Improved AlexNet model by increasing computational performance by 3×."
+      },
+      {
+        title: "Spitha",
+        file: "readmes/spitha.html",
+        image: "images/spitha/thumbnail.png",
+        caption: "React wrapper component that renders components quicker"
+      },
+      {
+        title: "FireWallet",
+        file: "readmes/firewallet.html",
+        image: "images/firewallet/thumbnail.png",
+        caption: "Web3 Wallet with custom partioning algorithm to protect on-chain supply attacks."
+      },
+      
+      
+      // Add more projects here
+    ];
+
+    const gridEl = document.getElementById('project-grid');
+
+    projects.forEach(proj => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const img = document.createElement('img');
+      img.src = proj.image;
+      img.alt = proj.title;
+
+      const title = document.createElement('h3');
+      title.textContent = proj.title;
+
+      const desc = document.createElement('p');
+      desc.textContent = proj.caption;
+
+      card.appendChild(img);
+      card.appendChild(title);
+      card.appendChild(desc);
+      card.addEventListener('click', () => {
+        window.open(proj.file, '_blank');
+      });
+      gridEl.appendChild(card);
+    });
+  </script>
+</body>
+</html>

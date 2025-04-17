@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlexNetV2 – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      background-color: #fff;
+      color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.5rem;
+      overflow-x: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AlexNetV2 – Optimizing AlexNet’s First Layer in C</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+      <a href="https://drive.google.com/file/d/1rickrjY4sw9hcE6rIGBmygPwA7OHb_5y/view?usp=sharing">Technical Report</a>
+      <a href="https://github.com/GEEGABYTE1/eeProjects/blob/master/Projects/neuralNetFromScratchC/readme.md">Github Repository</a>
+    </div>
+
+    <u><h2>Overview</h2></u>
+    <p>This project focuses on optimizing the first convolutional layer of AlexNet — a pioneering deep convolutional neural network architecture — with low-level C programming and advanced systems techniques. The original layer, which performs a 96-filter 11×11 convolution on 227×227 RGB images, represents one of the most memory and compute-intensive operations in classical deep learning. The AlexNetV2 implementation achieves a <strong>3.0× speedup</strong> over the baseline C implementation by leveraging grouped convolutions, depthwise separability, cache blocking, and fused activation kernels.</p>
+
+    <p>As machine learning models expand in scale, the demand for performant low-level inference grows—especially on edge devices, CPU-bound systems, and resource-constrained environments. While many ML accelerators and libraries exist, understanding the theory and implementation behind optimization is essential for building systems-aware ML infrastructure. The first layer of AlexNet is a canonical example of a bottlenecked operation, where convolution is not only FLOP-heavy, but memory-bound due to large receptive fields and dense channel connectivity. The goal of this project was to investigate whether classical systems strategies could yield substantial improvements even without GPU or external libraries.</p>
+    <p>Technical Report can be found: <a href="https://drive.google.com/file/d/1rickrjY4sw9hcE6rIGBmygPwA7OHb_5y/view?usp=sharing">here</a></p>
+    <figure>
+      <img src="../images/alexnet/homepage.png" alt="EEG Neural Wearable System Diagram"  />
+      <figcaption>Figure 1: Technical Report Page 1</figcaption>
+    </figure>
+    <u><h2>Key Features</h2></u>
+
+    <h3>Grouped Convolutions</h3>
+    <p>Grouped convolutions reduce the number of connections between input channels and filters. Instead of each input channel being connected to every filter, the channels and filters are partitioned into G groups and processed independently. This drastically reduces computational overhead and improves cache locality. In the original C implementation:</p>
+    <pre><code>grouped_conv2d(input, grouped_output, grouped_weights, bias);</code></pre>
+    <p>The loop structure explicitly separates channels and filters by group, allowing each to be processed in isolation. This aligns with the way multi-threaded OpenMP loops are scheduled, increasing parallelism and avoiding cache contention across threads.</p>
+
+    <h3>Depthwise + Pointwise Convolutions</h3>
+    <p>This optimization is based on factorizing standard convolution into two stages: a spatial convolution per channel (depthwise), followed by a 1x1 convolution mixing across channels (pointwise). This reduces total operations from O(N²K²CF) to O(N²K²C + N²CF), yielding a theoretical speedup of over 12x for K=11, F=96. The C implementation explicitly defines:</p>
+    <pre><code>depthwise_conv2d(...);
+pointwise_conv2d(...);</code></pre>
+    <p>This design separates concerns and enables better register reuse and vectorization across the channel dimension.</p>
+
+    <h3>Cache Blocking with Tiling</h3>
+    <p>One of the most overlooked costs in convolution is memory traffic. By blocking the input image into tiles that fit within the L1 data cache (approx. 32KB), we can minimize evictions and capitalize on spatial locality. Theoretical tile size was computed using:</p>
+    <pre><code>B = sqrt(Z / (3 * sizeof(float))) ≈ 32</code></pre>
+    <p>This ensures all operands (input, filter, output) for a block can reside in cache. This leads to improved L1 hit rates and allows hardware prefetchers to follow a predictable access pattern.</p>
+
+    <h3>Fused ReLU-Convolution</h3>
+    <p>Instead of applying activation in a second pass, the output is directly passed through ReLU during the final accumulation stage. This reduces memory writes by 66%:</p>
+    <pre><code>output[...] = sum > 0 ? sum : 0.0f;</code></pre>
+    <p>This also reduces register spills and unnecessary DRAM traffic, keeping the working set within the CPU’s L1/L2 pipeline window.</p>
+
+    <u><h2>Optimization Theory</h2></u>
+    <p>Each optimization strategy draws from compiler theory, numerical methods, and memory hierarchy analysis:</p>
+    <ul>
+      <li><strong>Grouped Convolution:</strong> Reduces inter-channel connectivity to improve FLOP/byte ratio, allowing SIMD-friendly partitions</li>
+      <li><strong>Depthwise Separation:</strong> Encourages data reuse along channels, minimizing redundant MAC operations</li>
+      <li><strong>Cache Blocking:</strong> Aligns with CPU cache architecture (32KB L1D, 256KB L2) and improves effective bandwidth</li>
+      <li><strong>ReLU Fusion:</strong> Reduces DRAM store/load by fusing functional units in pipeline</li>
+    </ul>
+    <p>These ideas are implemented using OpenMP for multithreading, compiler pragmas for SIMD, and static memory allocation to avoid heap pressure.</p>
+
+    <u><h2>Architecture</h2></u>
+    <p>The implementation avoids dynamic memory allocation and builds all buffers statically for deterministic cache behavior. Each layer was benchmarked independently to isolate performance gains. The architecture respects the memory layout for C (row-major), which affects loop ordering and alignment. OpenMP parallel regions wrap outermost loops, and nested loops are annotated with <code>#pragma omp simd</code> where appropriate to allow vectorization by the compiler. A final performance test compares the baseline <code>conv2d_baseline</code> with the optimized structure in <code>main()</code>.</p>
+
+    <u><h2>Challenges & Constraints</h2></u>
+    <ul>
+      <li><strong>SIMD Alignment:</strong> Vectorization required padded channel counts or modulo masking; misaligned memory could reduce performance</li>
+      <li><strong>Numerical Stability:</strong> Floating-point summation in fused ReLU layers had to be numerically verified against baseline results</li>
+      <li><strong>OpenMP Oversubscription:</strong> Threads fighting for shared memory in grouped convs caused false sharing; this was fixed by isolating buffer partitions</li>
+      <li><strong>Prefetch Interference:</strong> Cache-blocked loops initially caused prefetchers to overshoot blocks, which was fixed via loop unrolling and access staggering</li>
+      <li><strong>Code Maintainability:</strong> Modular design was prioritized, even though monolithic kernels can outperform due to loop fusion</li>
+    </ul>
+
+    <u><h2>Performance Results</h2></u>
+    <table>
+      <thead>
+        <tr><th>Metric</th><th>Baseline</th><th>Optimized</th><th>Speedup</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Execution Time</td><td>1420 ms</td><td>473 ms</td><td>3.0×</td></tr>
+        <tr><td>FLOP Efficiency</td><td>0.8</td><td>2.3</td><td>2.9×</td></tr>
+        <tr><td>L1 Cache Miss Rate</td><td>38%</td><td>11%</td><td>3.5×</td></tr>
+        <tr><td>Memory Bandwidth</td><td>12 GB/s</td><td>4 GB/s</td><td>3.0×</td></tr>
+      </tbody>
+    </table>
+
+    <u><h2>Future Work</h2></u>
+    <ul>
+      <li>Extend optimization to all AlexNet layers including local response norm and max-pooling</li>
+      <li>Compare to Winograd-based GEMM kernels used in modern libraries</li>
+      <li>Port to AVX-512 or Apple NEON backends with hand-written intrinsics</li>
+      <li>Integrate dynamic kernel selection and loop unrolling at runtime via template specialization</li>
+    </ul>
+
+    <u><h2>Tools Used</h2></u>
+    <ul>
+      <li>C, OpenMP, SIMD intrinsics</li>
+      <li>Performance profiling: gprof, perf, valgrind, cachegrind</li>
+      <li>Theoretical analysis: complexity reduction, register pressure, prefetching behavior</li>
+    </ul>
+
+    
+  </div>
+</body>
+</html>

@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FireWallet – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      background-color: #fff;
+      color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>FireWallet</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+      <a href="https://github.com/FireWalletRepos/firewallet/tree/master">Github Repository</a>
+      <a href="https://fire-wallet-website.vercel.app/">Project Link</a>
+    </div>
+
+    <h2>Overview</h2>
+    <figure>
+      <img src="../images/firewallet/home.png" alt="EEG Neural Wearable System Diagram"  />
+      <figcaption>Figure 1: Home page</figcaption>
+    </figure>
+    <p>FireWallet is a next-generation crypto wallet system built on the Polygon blockchain that introduces a novel form of token obfuscation through programmable graph-based sub-wallets. Designed to provide a defense-in-depth security model, it fuses smart wallet partitioning algorithms, graph traversal heuristics, and a rich, real-time UI extension that streamlines crypto activity and wallet anonymity.</p>
+    <p>In conventional Web3 applications, wallet privacy and behavioral predictability remain critical vulnerabilities. Wallet addresses are trivially traceable and often reused, creating transparent behavioral graphs that attackers can analyze. FireWallet responds to this by modeling wallet relationships as a dynamic directed graph — abstracting transaction flow and enabling token partitioning across n layers of sub-wallets.</p>
+
+    <u><h2>Role</h2></u>
+    <ul>
+      <li>Designed the entire graph-based token partitioning algorithm using PageRank scoring + Eulerian path traversal</li>
+      <li>Developed the Express.js backend with PostgreSQL, Redis, and ElasticSearch for high-speed token routing</li>
+      <li>Built and styled the full front-end wallet experience with ChakraUI and Next.js</li>
+      <li>Integrated multiple blockchain APIs and led beta testing (120+ users) during Buildspace N&W S4</li>
+    </ul>
+
+    <u><h2>Key Features</h2></u>
+
+    <h3>Graph-Based Wallet Obfuscation (Neo4j + PageRank)</h3>
+    <p>Each wallet is a node, and token transfers form directional edges. FireWallet scores sub-wallets using a modified PageRank system, ensuring that frequently accessed nodes become less likely token targets, while rarely used nodes gain priority. This makes transfer patterns harder to model and trace. Eulerian path logic ensures full token partitioning with zero token loss across N wallets.</p>
+    <p><strong>Why this model?</strong> Graph-based obfuscation mimics real-world laundering behaviors (e.g., shell wallets) and makes machine-learning analysis more difficult for attackers.</p>
+
+    <figure>
+      <img src="../images/firewallet/graph.png" alt="EEG Neural Wearable System Diagram"  />
+      <figcaption>Figure 2: Graph Wallet visualization</figcaption>
+    </figure>
+
+    <h3>Partitioning Algorithm Thought Process</h3>
+    <p>I used a probabilistic Eulerian traversal approach where edge weights dynamically shift based on transaction volume and recency. A reverse-weighting mechanism deprioritizes frequently hit paths. The goal: ensure every wallet is visited once (Eulerian), while load-balancing the token amount across wallets to prevent obvious centralization or honeypot behavior.</p>
+    <figure>
+      <img src="../images/firewallet/eulerian.png" alt="EEG Neural Wearable System Diagram"  />
+      <figcaption>Figure 3: Eulerian Graph being made code snippet</figcaption>
+    </figure>
+    <h3>PostgreSQL + ElasticSearch Backend</h3>
+    <p>Postgres manages actual transfer queues and user sub-wallet mappings. ElasticSearch allows instant full-text wallet indexing and metadata lookups. I used Redis to cache Alchemy queries, reducing request time by 80%.</p>
+    <p><strong>Why this structure?:</strong> A traditional relational DB ensures transaction reliability. ElasticSearch adds speed. Redis enables ultra-fast lookups during graph resolution.</p>
+
+    <h3>Chrome Extension UI (Next.js + ChakraUI)</h3>
+    <p>The wallet interface provides token balances, ERC20/NFT stats, and real-time wallet graph snapshots. ChakraUI was used to quickly theme the project and maintain responsiveness. Next.js allowed pre-rendering of token price data for faster dashboard loads.</p>
+    <figure>
+      <img src="../images/firewallet/combinedfeatures.png" alt="EEG Neural Wearable System Diagram"  />
+      <figcaption>Figure 4: Combined Wallet Features</figcaption>
+    </figure>
+    <h3>API Integration</h3>
+    <ul>
+      <li><strong>Alchemy</strong> for blockchain RPC</li>
+      <li><strong>Etherscan</strong> for transaction metadata and confirmations</li>
+      <li><strong>CoinGecko</strong> for market data (ERC20s, NFTs)</li>
+    </ul>
+
+    <u><h2>Architecture and Code Design</h2></u>
+    <p>The backend was broken into microservices: Graph Engine (Neo4j), REST API (Express), and Cache Layer (Redis). Communication was abstracted with service-based controllers, allowing hot-swaps between CoinGecko and Alchemy data without affecting API consumers.</p>
+    <p>The frontend was modularly composed with hooks for auth, token lookups, price feeds, and user history — all communicating with the Graph Engine via lightweight REST endpoints. JWTs were used for user state persistence.</p>
+
+    <u><h2>Challenges & Constraints</h2></u>
+    <ul>
+      <li>Balancing graph depth vs. routing speed under API rate limits</li>
+      <li>Rate-limiting by Alchemy required batch inference + backoff scheduling</li>
+      <li>Graph partitioning ran into cyclical edge scenarios that required on-the-fly detection and redirection</li>
+      <li>Neo4j’s traversal time scaled non-linearly — I had to cap wallet graph fanout</li>
+      <li>Maintaining data consistency between cached graph view and live RPC events</li>
+    </ul>
+
+    <u><h2>Outcome</h2></u>
+    <ul>
+      <li>Achieved token routing to 1000+ wallets in under 0.01s</li>
+      <li>Deployed Chrome Extension with full ERC20 + NFT support</li>
+      <li>120+ beta users during Buildspace Week 1 launch</li>
+    </ul>
+
+    <u><h2>Future Work</h2></u>
+    <ul>
+      <li>Integrate zero-knowledge proofs (zk-SNARKs) to fully hide transaction trails</li>
+      <li>Enable MetaMask compatibility layer with injected script detection</li>
+      <li>Multi-chain support for Arbitrum, Optimism, Solana</li>
+      <li>Live AI partitioning assistant for routing optimization</li>
+      <li>Mobile app companion for on-the-go wallet management</li>
+    </ul>
+
+    <u><h2>Tools Used</h2></u>
+    <ul>
+      <li>Neo4j, PageRank, Eulerian Graphs, Redis, Express.js, PostgreSQL, ElasticSearch</li>
+      <li>Next.js, ChakraUI, Alchemy, Etherscan, CoinGecko</li>
+      <li>Chrome Extension APIs, TypeScript, JWT Auth</li>
+    </ul>
+
+  </div>
+</body>
+</html>
