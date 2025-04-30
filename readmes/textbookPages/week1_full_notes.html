@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 1 Full Notes - Basic DC Theory</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+    img.diagram {
+      max-width: 100%;
+      margin: 2rem 0;
+      border: 1px solid #ddd;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Week 1: Full Notes on Basic DC Theory</h1>
+    <div class="nav-links">
+      <a href="../../index.html">Home</a>
+      <a href="../electronicsTextbook.html"> Textbook </a>
+    </div>
+
+    <h2>1. Voltage and Current</h2>
+    <p>Voltage is the potential energy per unit charge, the driving force that moves electrons through a conductor. It is measured in volts (V), and one volt equals one joule per coulomb. Current, measured in amperes (A), is the flow of electric charge per unit time. One ampere is equivalent to one coulomb per second.</p>
+    <p>In metals, current is carried by electrons, which move from lower to higher potential, opposite the direction of conventional current. In electrolytes and semiconductors, current may be carried by positive ions or holes as well.</p>
+    <p>There are two types of current: direct current (DC), where the flow of charge is unidirectional, and alternating current (AC), where the direction of current periodically reverses. This week focuses exclusively on DC circuits, where analysis is simplified and time-invariant.</p>
+
+    <h2>2. Resistance and Ohm’s Law</h2>
+    <p>Ohm's Law is the backbone of DC circuit theory: <strong>V = IR</strong>. Resistance (R), measured in ohms (Ω), quantifies how much a material opposes the flow of current. Materials with low resistance are called conductors (e.g., copper), while those with high resistance are insulators (e.g., rubber).</p>
+    <p>Resistors follow the relationship <strong>R = ρL/A</strong>, where ρ is the material’s resistivity, L is the length of the conductor, and A is its cross-sectional area. This equation highlights how geometry and material both impact resistance. For example, doubling the length of a wire doubles its resistance, while doubling its area halves the resistance.</p>
+    <p>Temperature also influences resistance. In most metals, resistance increases with temperature, while in semiconductors, it can decrease. Components like thermistors exploit this behavior for sensing applications.</p>
+
+    <h2>3. Series and Parallel Resistors</h2>
+    <p>In a <strong>series configuration</strong>, resistors are connected end-to-end. The same current flows through each, and the total resistance is the sum: <strong>R_eq = R1 + R2 + ... + Rn</strong>.</p>
+    <p>In a <strong>parallel configuration</strong>, resistors are connected across the same voltage. The voltage is the same across each, and the total resistance is given by: <strong>1/R_eq = 1/R1 + 1/R2 + ... + 1/Rn</strong>.</p>
+    <p>These combinations are useful for creating specific resistance values, controlling current paths, and designing load-sharing networks. Real-life applications include LED series resistors, voltage-sensing dividers, and current-limiting branches.</p>
+
+    <h2>4. Voltage Divider</h2>
+    <p>Voltage dividers are practical circuits for stepping down voltages. Given two resistors R1 and R2 in series, the output voltage across R2 is: <strong>V_out = V_in × R2 / (R1 + R2)</strong>.</p>
+    <p>They are used in sensor circuits (e.g., scaling thermistor outputs), level shifters, and reference circuits. A key caveat is <strong>loading effect</strong>: when a low-resistance load is connected across V_out, it alters the effective resistance and shifts the voltage. To mitigate this, the load resistance should be ≥10× the output resistance, or a buffer (e.g., op-amp) can be used.</p>
+
+    <h2>5. Kirchhoff’s Laws</h2>
+    <p><strong>Kirchhoff's Voltage Law (KVL)</strong> states that the sum of the voltages around any closed loop is zero. This arises from conservation of energy: as a charge moves around a loop, the net energy gained and lost must be zero.</p>
+    <p><strong>Kirchhoff's Current Law (KCL)</strong> states that the sum of currents entering a node equals the sum leaving. This follows from conservation of charge: current cannot accumulate at a node in a steady-state DC circuit.</p>
+    <p>Together, these laws enable systematic analysis of even complex resistor networks. They are foundational to methods like mesh and nodal analysis.</p>
+
+    <h2>6. Nodal and Mesh Analysis</h2>
+    <p><strong>Nodal analysis</strong> involves writing KCL equations at key nodes and solving for node voltages. It is particularly effective when voltage sources are referenced to ground.</p>
+    <p><strong>Mesh analysis</strong> applies KVL to loops (meshes) and solves for mesh currents. It's best used when circuits have many loops and fewer nodes.</p>
+    <p>Both methods reduce large networks to systems of linear equations. In advanced applications, matrix methods or SPICE simulations are used to solve these systems algorithmically.</p>
+
+    <h2>7. Instrumentation Limitations</h2>
+    <p>Real instruments have non-ideal behaviors. Multimeters typically have input impedances of 10 MΩ when measuring voltage, which is usually high enough to avoid loading effects—but not always. When measuring current, they insert a shunt resistor, which slightly alters the circuit.</p>
+    <p>Oscilloscopes, used for observing transient or time-varying signals, introduce capacitance via probe cables. High-speed measurements require low-capacitance probes and proper grounding to avoid distortion.</p>
+    <p>Other sources of error include thermal drift, contact resistance, and poor calibration. In precise circuits, even lead resistance (milliohms) matters.</p>
+
+    <h2>8. Thévenin and Norton Theorems</h2>
+    <p>Thévenin's Theorem allows a complex network to be modeled as a voltage source (V_th) in series with a resistor (R_th). Norton’s Theorem is the dual, using a current source (I_n) in parallel with R_n. Both are related by: <strong>I_n = V_th / R_th</strong>.</p>
+    <p>To find the Thévenin equivalent:
+      <ol>
+        <li>Open the load</li>
+        <li>Find open-circuit voltage (V_oc = V_th)</li>
+        <li>Turn off sources (voltage → short, current → open)</li>
+        <li>Find resistance seen from the terminals (R_th)</li>
+      </ol>
+    </p>
+    <p>These theorems are vital for simplifying repeated load analysis, optimizing power transfer, and understanding equivalent impedance in analog front ends.</p>
+
+    
+
+    <h2>10. Reflection</h2>
+    <p>Learning DC theory in isolation from hands-on work misses the beauty of electronics. I breadboarded voltage dividers, solved mesh problems, and simulated equivalent circuits. This tactile feedback turned formulas into intuition. As I continue this deep-dive, these fundamentals will underpin every op-amp stage, ADC interface, and PCB layout I build.</p>
+
+  </div>
+</body>
+</html>
