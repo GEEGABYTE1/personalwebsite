@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLDC Motor Driver – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>BLDC Motor Driver Board</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+    <h2><u>Overview</u></h2>
+    <figure>
+      <img src="/images/BLDCMotorDriver/pcb3d.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 1: BLDC Motor Driver Complete</figcaption>
+    </figure>
+    <p>This project is a full-featured BLDC (Brushless DC) motor driver board designed around the Texas Instruments DRV8353RSRGZT smart gate driver. The system integrates all peripheral blocks needed for closed-loop motor control, including a UART debug interface, differential encoder inputs, Hall-effect position sensing, and a 3.3V regulation rail for logic. The project highlights my ability to design robust high-current switching hardware, manage system-level signal integrity, and integrate mixed-signal...
+
+    <h2><u>Objective</u></h2>
+    <p>To develop a standalone motor driver PCB capable of handling three-phase commutation for BLDC motors up to 48V, while supporting external control via PWM/SPI and providing accurate feedback using Hall and encoder sensors. The system was optimized for modularity, noise resilience, and future expandability for use in robotics, mechatronics, and mobility systems.</p>
+    
+
+    <h2><u>Role</u></h2>
+    <ul>
+      <li>Successfully controlled BLDC motor using STM32 PWM in 6xPWM mode</li>
+      <li>UART output allowed real-time debug of DRV faults, phase voltages, and motor current</li>
+      <li>Quadrature encoder A/B pulses decoded cleanly up to 50kHz</li>
+      <li>System demonstrated in closed-loop velocity mode under load with minimal noise artifacts</li>
+    </ul>
+
+    <h2><u>Key Features</u></h2>
+
+    <figure>
+      <img src="/images/BLDCMotorDriver/CompleteSchematic.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 2: Complete Schematic</figcaption>
+    </figure>
+      
+      <h4>DRV8353RSRGZT Smart Gate Driver</h4>
+      <figure>
+        <img src="/images/BLDCMotorDriver/MotorDriverSchematic.PNG" alt="BLDC Motor Driver"  />
+        <figcaption>Figure 2: DRV8353RSRGZT Motor Driver Schematic</figcaption>
+      </figure>
+      <p>The DRV8353 was selected as the core of the gate drive subsystem after an extensive review of competing three-phase gate drivers from Infineon, STMicroelectronics, and Monolithic Power Systems (MPS). The key reasons for choosing this part were:</p>
+      <ul>
+        <li><strong>Programmability via SPI:</strong> Compared to simpler DRV8305/8301 analog-driven variants, the DRV8353-RS offers SPI-based configurability. This was crucial for debugging, adaptive dead-time control, and fault response in development.</li>
+        <li><strong>Integrated Protection Features:</strong> It includes UVLO, OCP, SCP, and thermal shutdown, which significantly reduces external analog complexity.</li>
+        <li><strong>Flexible PWM Input Topology:</strong> The part supports 6x and 3x PWM mode selection, allowing the firmware to evolve from trapezoidal drive to FOC without hardware change.</li>
+        <li><strong>Low RDS(on) Bootstrap Configuration:</strong> The integrated bootstrap diodes reduce BOM size and simplify layout by removing discrete fast-recovery diodes.</li>
+      </ul>
+      <p>Other options considered included:</p>
+      <ul>
+        <li><strong>MP6536 (MPS):</strong> While highly integrated, it lacked SPI control and exposed fewer tuning parameters, making it less adaptable for advanced control modes.</li>
+        <li><strong>L6234 (ST):</strong> An older device requiring more external components and offering weaker thermal protection and current limit configurability.</li>
+        <li><strong>Discrete IR2110 Drivers:</strong> Rejected due to excessive complexity in protection and shoot-through timing implementation.</li>
+      </ul>
+
+      <h4>IRLZ44N N-Channel Power MOSFETs</h4>
+      <p>The IRLZ44NPBF FETs were chosen for initial prototyping due to the following:</p>
+      <ul>
+        <li><strong>Availability and Cost:</strong> Through-hole version readily available for hand-soldering and rework during test cycles.</li>
+        <li><strong>Logic-Level Gate Drive:</strong> Fully enhanced at 4.5V–5V, compatible with DRV8353’s gate driver outputs.</li>
+        <li><strong>High Pulse Current Rating:</strong> Capable of handling >30A pulsed currents, giving room for transient spikes during startup or commutation changes.</li>
+        <li><strong>Thermal Performance:</strong> D2PAK footprint provides low R<sub>θJA</sub> when heatsinked through copper pour and vias.</li>
+      </ul>
+      <p>Alternatives explored included CSD18540Q5B and PSMN2R6-40YS, but these SMD FETs would have required reflow assembly and had longer lead times during supply chain constraints.</p>
+
+      <h4>AMS1117-3.3 Linear Regulator</h4>
+      <figure>
+        <img src="/images/BLDCMotorDriver/PowerInput3v3RegSchematic.PNG" alt="BLDC Motor Driver"  />
+        <figcaption>Figure 3: AMS1117-3.3 Schematic</figcaption>
+      </figure>
+      <p>The AMS1117 was chosen over switch-mode regulators (like LM3671) for simplicity and EMI cleanliness. Key considerations:</p>
+      <ul>
+        <li><strong>Low Component Count:</strong> Requires only two capacitors and handles up to 1A of load current—more than sufficient for the logic subsystem.</li>
+        <li><strong>Noise Isolation:</strong> No switching noise injected into sensitive analog signals or Hall effect decoders.</li>
+        <li><strong>Thermal Behavior:</strong> While inefficient at high ΔV, total dissipation was within limits (< 0.75W) under worst-case conditions with 9V–12V input.</li>
+      </ul>
+
+      <h4>CP2102N USB-UART Bridge</h4>
+      <figure>
+        <img src="/images/BLDCMotorDriver/uartdebugschematic.PNG" alt="BLDC Motor Driver"  />
+        <figcaption>Figure 4: CPS2102N USB Bridge Schematic</figcaption>
+      </figure>
+      <p>This chip enables host PC debug access without needing a separate USB debugger. Advantages included:</p>
+      <ul>
+        <li><strong>Integrated Clock + EEPROM:</strong> No external crystal needed; device settings customizable via Silicon Labs software.</li>
+        <li><strong>Low Enumeration Time:</strong> Speeds up iteration cycles during firmware debugging.</li>
+        <li><strong>Proven Driver Support:</strong> Widely supported across OSes and dev boards.</li>
+      </ul>
+
+      <h4>SN65HVD75 RS-422 Receiver</h4>
+      <figure>
+        <img src="/images/BLDCMotorDriver/quadratureEncoderSchematic.PNG" alt="BLDC Motor Driver"  />
+        <figcaption>Figure 5: SN65HVD75 Schematic</figcaption>
+      </figure>
+      <p>Encoder lines were routed differentially to maximize noise immunity. The SN65HVD75 supports:</p>
+      <ul>
+        <li>Up to 10 Mbps bandwidth, plenty for high-speed encoders</li>
+        <li>Failsafe biasing on idle lines to prevent glitching</li>
+        <li>Stable output swing over temperature</li>
+      </ul>
+      <p>Chosen over basic line receivers like 74HC14 due to superior line termination and ESD protection.</p>
+
+      <h4>Hall Sensor Input Block</h4>
+      <figure>
+        <img src="/images/BLDCMotorDriver/hallEffectSchematic.PNG" alt="BLDC Motor Driver"  />
+        <figcaption>Figure 6: Hall Sensor Schematic</figcaption>
+      </figure>
+      <p>Passive RC filters and series diodes were used to protect against voltage overshoot from back-EMF coupling. Signal levels were tuned to STM32-compatible 3.3V logic, with fast edge rates preserved for accurate edge timing on digital inputs.</p>
+
+    <h2>PCB Layout Strategy</h2>
+    <figure>
+      <img src="/images/BLDCMotorDriver/pcbimage1.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 2: Complete PCB</figcaption>
+    </figure>
+    <h4>Placement Philosophy</h4>
+    <ul>
+      <li>High-current switching nodes (phase outputs, FETs) placed closest to the gate driver</li>
+      <li>Hall, encoder, and UART inputs grouped along a signal-side zone, routed orthogonally to prevent interference</li>
+      <li>Power and logic domains physically separated with strategic polygon stitching</li>
+    </ul>
+
+    <h4>Power and Signal Domain Separation</h4>
+    <p>The most fundamental layout decision was to physically and electrically separate the high-power switching stage (VM, phase outputs, FETs, DRV gate paths) from the sensitive low-voltage digital subsystem (UART, Hall, encoder, 3.3V logic). This reduced noise coupling between high di/dt transitions and slow digital edges, minimizing the potential for false triggering or EMI radiation.</p>
+  
+    <h4>Loop Area Minimization</h4>
+    <p>Minimizing the loop area of high-current paths is essential for both electromagnetic compatibility and efficiency. The switching loop formed between high-side FET, phase node, low-side FET, and GND return was routed as compactly as possible by placing FETs close to the DRV IC and directly connecting them using wide polygon pours. The return path was mirrored on the second layer with extensive stitching vias to complete the loop and minimize inductance.</p>
+  
+    <h4>Polygon Pour Hierarchy</h4>
+    <figure>
+      <img src="/images/BLDCMotorDriver/pcbCombinedPours.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 2: Complete PCB with Combined Pours</figcaption>
+    </figure>
+    <ul>
+      <li><strong>GND Pour:</strong> Defined first, stitched across layers via grid of 0.8mm vias. Tied all low-side source pins, Hall/encoder shields, UART, and logic reference points.</li>
+      <figure>
+        <img src="/images/BLDCMotorDriver/pcbGNDPour.PNG" alt="BLDC Motor Driver"  />
+        <figcaption>Figure 2: PCB GND Pour</figcaption>
+      </figure>
+      <li><strong>VOUT/PHASE Pours:</strong> Separated into distinct islands for each motor phase (U, V, W). Each routed from the midpoint of the FET pairs using wide traces and 2oz copper.</li>
+      <li><strong>VM Input Pour:</strong> Filtered input through TVS and MLCCs before polygon expansion. Care was taken to avoid placing noisy VM traces under analog or reference nets.</li>
+    </ul>
+  
+    <h4>Placement by Functional Zone</h4>
+    <ul>
+      <li>Top-left quadrant: UART + USB header + CP2102</li>
+      <li>Top-right: 3.3V linear regulator and LDO filter network</li>
+      <li>Center: DRV8353 + FET bank + bootstrap caps + gate resistors</li>
+      <li>Bottom-left: Hall sensor connectors and input filters</li>
+      <li>Bottom-right: Quadrature encoder A/B differential pair + SN65HVD75 + pull-up network</li>
+    </ul>
+    <p>This separation facilitated focused routing, minimized net crossover, and ensured each subsystem had clean ground and power return paths.</p>
+  
+    <h4>Gate Trace Routing</h4>
+    <p>Gate traces were kept as short as possible and directly routed from the DRV outputs to the MOSFET gates. Gate resistors were placed within 2mm of the gate pin to suppress ringing and overshoot. Layout included:</p>
+    <ul>
+      <li>Use of 45° turns to minimize impedance discontinuities</li>
+      <li>No vias in gate traces to maintain signal edge integrity</li>
+      <li>Local grounding of gate return pins to avoid shared inductive paths</li>
+    </ul>
+  
+    <h4>SW Node Shielding</h4>
+    <p>The SW node (phase switch point) is a major source of EMI. To prevent its radiation from coupling into feedback lines or MCU I/O, the SW node was:</p>
+    <ul>
+      <li>Kept compact using fat polygon-only fills</li>
+      <li>Surrounded by guard traces and stitching to drain transient fields to GND</li>
+      <li>Isolated on top layer with no digital routing allowed within a 5mm keep-out zone</li>
+    </ul>
+  
+    <h4>Differential Pair Integrity (Encoder Lines)</h4>
+    <p>The A/B encoder lines are routed as matched-impedance differential pairs from the SN65HVD75 input header to the MCU header. While this isn’t a true controlled-impedance board, traces were routed symmetrically, with equal lengths (within 20 mils), and referenced to continuous GND on the lower layer to suppress common-mode conversion.</p>
+  
+    <h4>Decoupling and Bypass Cap Layout</h4>
+    <p>Every power input to the DRV8353, CP2102, AMS1117, and encoder receiver includes both bulk and high-frequency MLCCs. Decoupling caps were placed as close as possible to the power pins (within 1.5mm), and return directly to the nearest GND via. Bypass cap paths were verified for low ESL with direct routing to copper pours.</p>
+  
+    <h4>Silkscreen and DFM Considerations</h4>
+    <p>Connectors are clearly labeled by function and polarity to assist integration. Designators do not overlap with via arrays or copper pour edges. Mechanical mounting holes were left with a soldermask ring and pullback clearance for potential standoff hardware.</p>
+  
+    <h4>PCB Stackup and Materials</h4>
+    <p>2-layer FR-4 1.6mm board with ENIG finish. Copper thickness: 1oz by default, with selected regions (FET outputs, power plane) enlarged to 2oz via custom fab specification for higher current handling. Next version will move to 4-layer with internal GND and VM planes to further isolate return paths and boost thermal spread.</p>
+  
+
+  <h2><u>Challenges</u></h2>
+  <p>Developing a high-performance motor driver board involves navigating a range of challenges — electrical, mechanical, layout, and systems integration. This section presents a deep analysis of the issues encountered throughout the design and build process and how they were methodically resolved or mitigated. The goal was not just to “get it working,” but to build a scalable, stable system grounded in sound engineering principles.</p>
+
+  <h4><u>Switching Noise Coupling into Signal Traces</u></h4>
+  <p><strong>Problem:</strong> Initial tests revealed erratic behavior on Hall sensor outputs and encoder lines during high-speed PWM switching. The suspicion was cross-coupling from high dv/dt phase transitions into signal traces.</p>
+  <p><strong>Root Cause:</strong> Poor spacing between high-side FET drain (SW nodes) and low-speed digital lines, along with a lack of shielding.</p>
+  <p><strong>Solution:</strong></p>
+  <ul>
+    <li>Moved all Hall and encoder signals to a tightly grouped “signal zone” on the opposite board edge</li>
+    <li>Placed GND pours around and underneath all signal traces</li>
+    <li>Added series RC filters on Hall inputs to suppress spikes without degrading edge detect accuracy</li>
+  </ul>
+
+  <h4><u>Ground Bounce and Shared Returns</u></h4>
+  <p><strong>Problem:</strong> Noise was seen on the 3.3V rail under load. The DRV’s gate current return was shared with the CP2102 UART ground plane, causing UART disconnections at startup.</p>
+  <p><strong>Root Cause:</strong> Mixed analog and switching ground domains tied too closely without segmentation.</p>
+  <p><strong>Solution:</strong></p>
+  <ul>
+    <li>Isolated logic and power grounds using star topology, connected at a single plane near DRV GND pin</li>
+    <li>Routed separate GND pour under UART/USB path</li>
+    <li>Replaced GND trace links with full copper zones stitched via thermal vias</li>
+  </ul>
+
+  <h4><u>Power Dissipation in FETs During Stall</u></h4>
+  <p><strong>Problem:</strong> Under test stall conditions (low PWM frequency), MOSFET temperatures rose rapidly.</p>
+  <p><strong>Root Cause:</strong> Gate drive strength was not optimized for switching speed, leading to increased overlap losses and conduction heating.</p>
+  <p><strong>Solution:</strong></p>
+  <ul>
+    <li>Used DRV8353’s SPI configurability to adjust gate drive current to high strength for rise/fall reduction</li>
+    <li>Added copper planes under drain pads and tied them via thermal stitching to ground</li>
+    <li>Reconfigured stall detection to cut PWM on extended zero-speed fault</li>
+  </ul>
+
+  <h4><u>Debug Interface Instability</u></h4>
+  <p><strong>Problem:</strong> UART messages were occasionally corrupted or dropped, especially during commutation events or rapid SPI updates.</p>
+  <p><strong>Root Cause:</strong> CP2102 shares power rail with noisy DRV logic current and analog front end; voltage dips created brownouts.</p>
+  <p><strong>Solution:</strong></p>
+  <ul>
+    <li>Decoupled CP2102 power with low-ESR capacitor close to VDD pin</li>
+    <li>Moved USB connector and CP2102 away from phase zone</li>
+    <li>Implemented resend logic in debug terminal and MCU UART driver</li>
+  </ul>
+
+  <h4><u>DRV Fault Response Tuning</u></h4>
+  <p><strong>Problem:</strong> DRV8353 entered fault mode intermittently under load without clear diagnostic reason.</p>
+  <p><strong>Root Cause:</strong> Overcurrent detection was set too aggressively and did not account for motor inrush at spin-up.</p>
+  <p><strong>Solution:</strong></p>
+  <ul>
+    <li>SPI register tuning based on expected I<sub>peak</sub> and inductive rise time</li>
+    <li>DRV now logs fault codes over UART on trip and holds until host clears</li>
+    <li>Documented current sense scale and trip margin based on layout parasitics and shunt tolerance</li>
+  </ul>
+
+  <h4><u>Silkscreen and Assembly Errors</u></h4>
+  <p><strong>Problem:</strong> During initial assembly, polarity errors were made due to ambiguous silkscreen on power and Hall sensor headers.</p>
+  <p><strong>Solution:</strong></p>
+  <ul>
+    <li>Revised silkscreen for all headers: added bold polarity marks and descriptive labels</li>
+    <li>Added mechanical layer markers for standoff locations to aid in mechanical integration</li>
+  </ul>
+
+  <h4><u>Design Review and Iteration Strategy</u></h4>
+  <p>Each board revision was reviewed against a checklist for thermal performance, functional isolation, testability, and integration. Key changes across versions:</p>
+  <ul>
+    <li>Version 1 → 2: Changed power plane routing and split logic GND from VM GND</li>
+    <li>Version 2 → 3: Added encoder pull-up logic, thermal vias, silkscreen corrections, and UART RC filter</li>
+  </ul>
+
+
+   
+
+    <h2><u>Tools</u></h2>
+    <ul>
+      <li><strong>PCB Design:</strong> Altium schematic/layout, polygon pours, DRC constraints</li>
+      <li><strong>System Integration:</strong> UART, SPI, PWM, analog sensing, ESD design</li>
+      <li><strong>Signal Integrity:</strong> Loop area management, impedance control, grounding</li>
+      <li><strong>Embedded Support:</strong> STM32 pinout planning, debug bus exposure</li>
+    </ul>
+
+    <h2><u>Future Work</u></h2>
+    <ul>
+      <li>Add onboard STM32 microcontroller + buck converter for full system-on-board control</li>
+      <li>Integrate INA240 or similar current sense amplifier to enable true torque loop control</li>
+      <li>Design EMI filter on VM input to mitigate switching noise reflection</li>
+      <li>Expand header compatibility for CAN, I2C, and other industrial interface standards</li>
+      <li>Explore moving to 4-layer board to dedicate planes for power and signal return</li>
+    </ul>
+
+    
+
+    
+  </div>
+</body>
+</html>
