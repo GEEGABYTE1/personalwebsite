@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Custom BMS – Project Portfolio</title>
+<link href="../styles.css" rel="stylesheet"/>
+<style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    figure {
+      text-align: center;
+    }
+    figcaption {
+      font-size: 0.9rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+<div class="container markdown-body">
+<h1>Custom Battery Management System (BMS)</h1>
+<div class="nav-links">
+<a href="../index.html">Home</a>
+<a href="../projects.html">Project Portfolio</a>
+</div>
+<h2><u>Overview</u></h2>
+<figure>
+    <img src="../images/bms/pcb3d.PNG" alt="BMS Board"  />
+    <figcaption>Figure 1: BMS Board</figcaption>
+</figure>
+<p>This custom Battery Management System (BMS) was designed to support embedded applications requiring secure, multi-rail power delivery, battery monitoring, and protection switching logic. The board integrates real-time telemetry, robust power integrity, and onboard diagnostics for use in hardware test environments, robotics, or wearable electronics.</p>
+
+<p>Off-the-shelf BMS modules rarely offer the degree of customizability needed for R&amp;D hardware setups. I aimed to build a tailored BMS that:</p>
+<ul>
+<li>Provides 3.3V and 5V regulated rails from a single-cell Li-Ion source</li>
+<li>Monitors voltage, current, and thermal faults at runtime</li>
+<li>Enables safe switching between USB and battery input</li>
+<li>Isolates analog and digital grounds to minimize noise</li>
+</ul>
+<h2><u>PCB Design</u></h2>
+
+<h4>Power Regulation</h4> 
+<figure>
+    <img src="../images/bms/Power Regulation Schematic.PNG" alt="Power Regulation Schematic"  />
+    <figcaption>Figure 2: Power Regulation Schematic</figcaption>
+</figure>
+<p>Chosen for its 95% efficiency, low quiescent current, and high switching frequency, reducing inductor/cap size. </p>
+<p> Additionally, the AMS1117-3.3 linear regulator was selected for its simplicity, low dropout (1.1V max), and widespread availability. It powers the MCU and low-voltage analog circuitry. Decoupling capacitors (10uF tantalum and 0.1uF ceramic) were placed at the output pin to suppress high-frequency noise.</p>
+<p><strong>Board Placement:</strong> Situated near the STM32 microcontroller, with minimal trace length to VDD pins. Grounded copper pour beneath improved thermal dissipation.</p>
+
+
+<h4>Power Path Switching</h4> 
+<figure>
+    <img src="../images/bms/Power Switching Schematic.PNG" alt="Power Switching Schematic"  />
+    <figcaption>Figure 3: Power Switching Schematic</figcaption>
+</figure>
+<p>A dual-MOSFET plus ideal diode arrangement ensures seamless transition between USB and battery without brownout. Gate drive logic is derived from voltage sense rails.</p>
+<p>I selected the IRF7406 N-channel MOSFET due to its low R<sub>DS(on)</sub> and robust SO-8 package. It supports drain-source voltages up to 30V and continuous drain currents over 5A, which suited our battery's 2S configuration. The gate was driven by a discrete gate driver circuit to ensure fast turn-on/off transitions, reducing switching losses. </p>
+<p><strong>Board Placement:</strong> Positioned close to the battery input to minimize trace inductance. A TVS diode was placed at the drain to suppress inrush current spikes and connector transients.</p>
+
+<h4>Battery Monitoring</h4> 
+<figure>
+    <img src="../images/bms/Battery Monitoring Schematic.PNG" alt="Battery Monitoring Schematic"  />
+    <figcaption>Figure 4: Battery Monitoring Schematic</figcaption>
+</figure>
+<p>Precision resistive dividers with op-amp buffering were used to feed battery voltage into an MCU ADC. A current sense resistor and INA219 allow for runtime energy tracking.</p>
+<p>The INA219 was chosen as the current and voltage monitoring IC due to its I²C interface and ability to sense currents via a low-side shunt resistor. Its internal 12-bit ADC enabled accurate readings without needing an external ADC on the MCU.</p>
+<p> Located directly adjacent to the shunt resistor and load path to avoid trace resistance errors. The SDA/SCL lines were routed with controlled impedance and series resistors to mitigate ringing.</p>
+
+<h4>Regulation Strategy</h4>
+<figure>
+    <img src="../images/bms/MCU Debug.PNG" alt="MCU Debug Schematic"  />
+    <figcaption>Figure 5: MCU Debug Schematic</figcaption>
+</figure>
+<p> Used buck regulation for 3.3V and LDO for analog sections to ensure high PSRR and low ripple near sensor interfaces. Inductor placement was isolated from analog sections to reduce EMI coupling.</p>
+<p>Standard 5-pin SWD (Serial Wire Debug) interface for STM32 MCU debugging was used. A 100nF capacitor was placed on the reset line to prevent brownout issues during power transients.</p>
+<p><strong>Board Placement:</strong> Accessible near board edge with through-hole header to simplify in-field flashing and debug access.</p>
+
+<h2><u>PCB Layout Strategy</u></h2>
+<p>
+    The PCB layout for this custom Battery Management System (BMS) was designed with an emphasis on minimizing ground noise, optimizing heat dissipation, and maintaining clear separation between high-voltage switching paths and low-noise analog sections.
+</p>
+<figure>
+    <img src="../images/bms/PCB2d.PNG" alt="PCB"  />
+    <figcaption>Figure 6: PCB</figcaption>
+</figure>
+<h4>Board Partitioning</h4>
+<p>The board was laid out with modular zoning to isolate high-frequency switching sections from low-noise analog domains. I used a pseudo-star ground topology and routed the analog ground back through a high-impedance path to the shared GND stitching point. This ensured differential voltage stability across sensor circuits.</p>
+
+<h4>Power Trace Widths</h4> 
+<p>I followed IPC-2221A guidelines to determine trace widths. For example, the 12V input path was routed with 60 mil traces (2 oz copper) to safely carry up to 2A. Each high-current net was mirrored with a solid ground return directly below, enhancing current loop compactness and reducing EMI.</p>
+
+<h4>Thermal Management</h4> 
+<p>All power ICs were paired with thermal vias below their thermal pads, connecting to large copper pours on both sides. I also used exposed copper under the TPS5430 for passive heatsinking. These pours doubled as local ground planes to spread heat and decouple switching noise.</p>
+
+<h4>Routing Decisions</h4>
+<p>Differential pairs (I<sup>2</sup>C, UART) were tightly coupled and length-matched to reduce timing skew. Long analog traces were shielded using ground tracks on both sides, with no layer transitions to avoid discontinuities. Signal vias were kept away from return current paths to avoid crosstalk.</p>
+<figure>
+    <img src="../images/bms/PowerSignalGNDPours.PNG" alt="PCB with respective Pours"  />
+    <figcaption>Figure 7: PCB with Component, Power, and GND Pours</figcaption>
+</figure>
+<p>Signal traces were routed orthogonally across layers to minimize crosstalk. Analog and digital signals were kept on separate planes with grounded guard traces around ADC-sensitive lines. Differential traces (e.g., I2C) were impedance-controlled and matched in length within 5 mils to ensure synchronous communication under high load.</p>
+<p>Extensive use of polygon pours connected to ground ensured low-impedance return paths and helped with EMI shielding. Decoupling capacitors were placed within 2mm of all IC supply pins and vias were stitched under ground planes to reduce parasitic inductance.</p>
+
+
+<h2><u>Challenges &amp; Constraints</u></h2>
+<ul>
+<li><strong>Footprint Constraints:</strong> All components had to fit on a 2-layer board while maintaining isolation zones. Strategic via placement and staggered silkscreen was used to save space.</li>
+<li><strong>Thermal Management:</strong> Passive cooling was prioritized; large ground pours and thermal vias were added beneath regulators.</li>
+<li><strong>ADC Noise:</strong> Initial testing showed 15–20 mV ripple on analog ADC reads. This was mitigated by adding ferrite beads and increasing Cfilter values.</li>
+</ul>
+<h2><u>Future Work</u></h2>
+<ul>
+<li>Add I2C EEPROM for fault log persistence</li>
+<li>Improve balancing circuit to support multi-cell Li-Ion configurations</li>
+<li>Expand telemetry protocol to UART/BLE</li>
+</ul>
+
+</div>
+
+
+
+</body></html>

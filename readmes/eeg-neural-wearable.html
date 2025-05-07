@@ -53,7 +53,7 @@
     <p>The Texas Instruments ADS1299 was selected as the core front-end because it is specifically designed for low-noise biopotential measurements (e.g., EEG, EMG, ECG). Its 24-bit resolution and integrated PGA make it suitable for detecting microvolt-level variations, and the SPI interface ensures simple communication with most microcontrollers. I chose the IPAGR package variant to minimize board footprint while allowing up to 8 input channels.</p>
     <p>I considered the ADS1298 and the INA333-based discrete amplification, but ultimately favored the ADS1299 due to its compact integration, known use in open-source EEG systems (e.g., OpenBCI), and reduced component count for low-noise analog routing.</p>
 
-    <h4>2. Processing Unit – STM32H743VIT6</h4>
+    <h4>Processing Unit – STM32H743VIT6</h4>
     <figure>
         <img src="../images/ProcessingUnit.png" alt="EEG Neural Wearable System Diagram"  />
         <figcaption>Figure 4: Processing Unit Schematic</figcaption>
@@ -61,7 +61,7 @@
     <p>I chose the STM32H7 line for its balance of performance and integration. With a 400 MHz Cortex-M7 core, it provides ample headroom for FFT-based signal processing and real-time inference using a lightweight CNN model. It supports SDIO, USB, and external flash while maintaining low idle power.</p>
     <p>The STM32F4 and ESP32-S3 were considered but lacked the needed RAM and true floating-point performance. The H7’s extensive peripheral availability also made it ideal for integrating SPI (to ADS1299), UART (for debug), SD card (for data logging), and USB.</p>
 
-    <h4>3. Wireless Comms – MDBT50Q-1MV2 (nRF52840)</h4>
+    <h4>Wireless Comms – MDBT50Q-1MV2 (nRF52840)</h4>
     <figure>
         <img src="../images/Communication.png" alt="EEG Neural Wearable System Diagram"  />
         <figcaption>Figure 5: Communication Schematic</figcaption>
@@ -69,7 +69,7 @@
     <p>For BLE transmission, the MDBT50Q was selected as it offers a certified nRF52840 module with internal crystal and antenna. This drastically simplified RF design and bypassed the need for impedance matching. The module supports BLE 5.0 and offers more GPIOs than typical low-cost BLE SoCs.</p>
     <p>An alternate design using the HM-10 BLE module was discarded due to its limited configurability and incompatibility with simultaneous SPI/UART comms.</p>
 
-    <h4>4. Power Management</h4>
+    <h4>Power Management</h4>
     <figure>
         <img src="../images/Communication.png" alt="EEG Neural Wearable System Diagram"  />
         <figcaption>Figure 6: Power Schematic</figcaption>
