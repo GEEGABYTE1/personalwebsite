@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modular Sensor Node with Mesh Networking – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container markdown-body">
+    <h1>Modular Sensor Node with Mesh Networking</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+    <h2>Overview</h2>
+    <figure>
+      <img src="../images/ModularSensorNode/images/pcb3d.PNG" alt="pcb"  />
+      <figcaption>Figure 2: Modular Sensor Node + Mesh Networking Complete PCB </figcaption>
+    </figure>
+    <p>This project involved designing a compact, energy-aware wireless sensor node capable of communicating across a mesh network. The goal was to support scalable, distributed sensing systems for applications like environmental monitoring, asset tracking, and swarm robotics. The node was built around the ESP32-WROOM-32E module and designed to accommodate modular sensors and robust RF communication with low power drain.</p>
+
+  
+    <p>Off-the-shelf sensor platforms often compromise on either power efficiency, modularity, or open-ended RF customization. This project addressed those gaps by building a board with swappable sensors, open firmware integration, and power-conscious design tuned for long runtime and dynamic mesh routing.</p>
+    <p><strong>Note:</strong> Significant number of vias are <strong>blind-vias not through</strong>. The rendering makes all vias look like through-vias. In the coming boards, there will be a visual difference implemented.</p>
+    
+<h2>PCB Design</h2>
+
+<p>
+  The design of the Modular Sensor Node was guided by the principle of hardware flexibility paired with robust network scalability. Each subsystem was selected and placed with a view toward enabling real-time, distributed sensing under energy constraints, while still allowing user-level customization and debugging.
+</p>
+
+<h3>ESP32-WROOM-32E Microcontroller</h3>
+<figure>
+  <img src="../images/ModularSensorNode/images/RFComms.PNG" alt="RF Comms"  />
+  <figcaption>Figure 2: RF Communication Schematic</figcaption>
+</figure>
+<p>
+  The ESP32-WROOM-32E was chosen after evaluating competing wireless SoCs such as Nordic's nRF52840 and the STM32WB series.
+  While the nRF52840 offers low-power BLE and Thread stack integration, the ESP32 was ultimately preferred due to its dual-core Xtensa architecture, superior development ecosystem (ESP-IDF, Arduino, PlatformIO), and native Wi-Fi mesh capability through the ESP-MDF framework.
+</p>
+<p>
+  The ESP32 also provides an integrated hardware crypto module, ADCs, and capacitive touch, all of which aligned with future sensor use cases like motion detection and secure data relaying.
+  Its power-saving features such as deep sleep, light sleep, and RTC domain operation were leveraged in the firmware to reduce idle drain below 10μA.
+</p>
+
+<h3>Sensor Header Design</h3>
+<figure>
+  <img src="../images/ModularSensorNode/images/GPIO Expander.PNG" alt="GPIO Expander"  />
+  <figcaption>Figure 2: GPIO Expander Schematic </figcaption>
+</figure>
+<figure>
+  <img src="../images/ModularSensorNode/images/EEPROM.PNG" alt="EEPROM"  />
+  <figcaption>Figure 2: EEPROM</figcaption>
+</figure>
+<p>
+  The decision to use a multi-function 8-pin header was made to maximize sensor compatibility while minimizing board real estate.
+  The header provides two analog-capable GPIOs, SDA/SCL for I2C, and VDD/GND rails that can be switched via load switch for per-sensor power cycling.
+  This approach allows external modules to self-configure on boot via pull-up ID resistors or EEPROM tags (future work).
+</p>
+
+<p>
+  Unlike fixed sensor nodes, this modular interface supports runtime expansion — users can plug in sensors like temperature (BME280), motion (PIR), gas detection (MQ-135), or inertial (MPU6050) modules without hardware changes.
+</p>
+
+<h3> Mesh Networking Stack</h3>
+<p>
+  The use of ESP-MDF mesh libraries allowed multi-hop node-to-node routing with automatic route recovery and TTL-based packet propagation.
+  This replaced the need for a central base station and increased network fault tolerance. Nodes can dynamically form a self-healing mesh based on signal strength and power availability.
+</p>
+
+<p>
+  The ESP32's native support for Wi-Fi and BLE coexistence makes it possible to add BLE-based provisioning and diagnostics without affecting mesh backbone operations.
+</p>
+
+<h3>Power Flexibility and Management</h3>
+<figure>
+  <img src="../images/ModularSensorNode/images/PowerManagement.PNG" alt="PowerManagement"  />
+  <figcaption>Figure 2: Power Management</figcaption>
+</figure>
+<figure>
+  <img src="../images/ModularSensorNode/images/LowPowerRTC.PNG" alt="Low Power RTC"  />
+  <figcaption>Figure 2: Low Power RTC Schematic</figcaption>
+</figure>
+<figure>
+  <img src="../images/ModularSensorNode/images/LowPowerSleepControl.PNG" alt="Low Power Sleep Control"  />
+  <figcaption>Figure 2: Low Power Sleep Control Schematic</figcaption>
+</figure>
+<p>
+  Supporting LiPo, solar, and USB-C inputs was a core goal of the design. Each source was routed through an OR-ing circuit with diode and FET control to prevent reverse leakage.
+  Load switches (TPS22918) were used to gate sensor power and UART domain power for controlled startup and sleep state profiling.
+</p>
+
+<p>
+  The board's sleep current was validated under 7μA in full deep sleep with all regulators latched off. Wake-up triggers can be configured from timer, GPIO, or ULP coprocessor logic.
+</p>
+
+
+<h2>PCB Layout Strategy and Design Decisions</h2>
+<figure>
+  <img src="../images/ModularSensorNode/images/pcb2d.PNG" alt="pcb"  />
+  <figcaption>Figure 2: PCB </figcaption>
+</figure>
+<p>
+  The PCB layout of the Modular Sensor Node was engineered to balance conflicting constraints: RF integrity, low power consumption, mechanical modularity, and debug accessibility.
+  The design was informed by both ESP32 layout app notes and real-world integration learnings from previous sensor-based projects.
+</p>
+<figure>
+  <img src="../images/ModularSensorNode/images/alllayers.PNG" alt="pcb"  />
+  <figcaption>Figure 2: PCB with all Polygons </figcaption>
+</figure>
+
+<h3>1. RF Section Isolation and Antenna Integrity</h3>
+<p>
+  The ESP32-WROOM-32E module contains a built-in PCB antenna that is highly sensitive to nearby copper, power planes, and signal traces.
+  As such, the top layer directly underneath and adjacent to the antenna zone was kept free of any routing, copper fill, or stitching vias.
+  Instead, a dedicated ground pour was placed on the bottom layer to act as a reflective ground plane while preventing the top copper from degrading antenna performance.
+</p>
+
+<p>
+  An explicit antenna keep-out region was maintained across all layers, ensuring a clear line-of-sight propagation path.
+  Mechanical standoffs and nearby connectors were pulled away from the antenna edge to avoid RF shadowing or detuning.
+  All RF-relevant routing (such as BLE UART and WiFi logging) was carefully routed away from this zone using 45° bends and ground shielding.
+</p>
+
+<h3>Power Plane Strategy</h3>
+<p>
+  The board receives power through a LiPo connector, USB-C port, or solar charging path.
+  These input sources converge on a load switch stage, which was placed near the board’s center to minimize trace fanout distances.
+  The power plane for VBAT was routed as a thick polygon on the top layer with a mirrored pour on the bottom layer for heat dissipation.
+</p>
+
+<p>
+  The 3.3V output from the AMS1117 LDO was routed to all logic and sensor subsystems via a centralized distribution plane.
+  Sensitive analog sensors shared a distinct power island separated from high-current charging paths using ferrite bead filters and ground shielding.
+</p>
+
+<h3>Sensor Header Placement and Routing</h3>
+<p>
+  A major mechanical and electrical decision was to place the sensor header along the board’s front edge.
+  This made it accessible for enclosures and field upgrades, while also reducing trace length for I2C and analog lines.
+  All sensor signals (SDA, SCL, AIN0, AIN1) were routed on the top layer with guard traces and accompanying ground returns.
+  I2C pull-ups were placed within 1 cm of the header to reduce line capacitance effects on communication.
+</p>
+
+<h3>Decoupling, Filtering, and EMI Mitigation</h3>
+<p>
+  Every regulator and SoC supply pin had both bulk (10uF) and high-frequency (0.1uF) capacitors placed within 2mm.
+  The ESP32 module's LDO output and VDD3P3_RTC pins were each provided with local bypassing as per Espressif guidelines.
+</p>
+
+<p>
+  All power domains used PI filters or ferrite beads to block switching noise between battery and 3.3V logic domains.
+  Separate ground pours were used for sensor analog zones and RF zones, connected at a single star point under the ESP32 module’s exposed pad.
+</p>
+
+<h3>Mechanical and Mounting Strategy</h3>
+<p>
+  Four M2 mounting holes were added for enclosure mounting, spaced to avoid antenna zones and test headers.
+  Board outline was dimensioned to 60x40 mm to fit into modular project bays, while maintaining spacing for side-exiting JST headers.
+</p>
+
+<h3>Debug and Test Accessibility</h3>
+<p>
+  UART debug pins (TX, RX), sensor I2C bus lines, and battery voltage monitor were all brought to labeled test pads.
+  These were laid out along the board’s left edge for oscilloscope probing during firmware testing.
+  A jumper-based power disconnect was added to allow full current profiling during sleep/wake transitions.
+</p>
+
+<p>
+  The board’s silkscreen layer includes explicit pin names, voltage domains, and module orientation markers to simplify integration in low-light or field conditions.
+</p>
+
+<h3>Conclusion</h3>
+<p>
+  The layout philosophy prioritized reliable RF transmission, thermal stability, sensor signal integrity, and real-world usability.
+  This required frequent tradeoffs between density and isolation, all of which were validated through simulation, datasheet layout rules, and on-bench measurements.
+  This approach ensures the sensor node can be confidently deployed in field mesh networks while remaining developer-friendly and power-aware.
+</p>
+
+<h2>Challenges & Solutions</h2>
+
+<h3>Antenna Coupling Issues</h3>
+<p>
+  Initial prototypes exhibited degraded RSSI and high packet loss in mesh mode. Investigations revealed parasitic capacitance from copper near the PCB antenna zone and via stubs radiating harmonics.
+  The fix involved removing all top-layer copper under the antenna, re-routing away from the keep-out, and switching to stitched guard ring vias on the bottom layer to reinforce shielding without coupling.
+</p>
+
+<h3>Brownout During Boot</h3>
+<p>
+  Power-up transients caused boot looping when powered from a weak LiPo. The root cause was the ESP32 drawing peak current for flash initialization before the regulator fully stabilized.
+  This was mitigated by adding a soft-start capacitor to the 3.3V LDO and including a pre-charge diode bypass to stabilize VDD in early cycles.
+</p>
+
+<h3>UART Logging Conflict</h3>
+<p>
+  Debug logging over UART would occasionally conflict with OTA programming. The issue arose from shared use of UART0 and residual connections during boot.
+  Solution involved moving logs to UART1 and isolating debug serial with a jumper to toggle between live feed and programming mode.
+</p>
+
+<h3>ADC Drift Due to Ground Bounce</h3>
+<p>
+  Noise on ADC inputs during sensor readings was traced to fluctuating sensor ground caused by long routing and lack of stitching.
+  The fix was to bring ADC returns to a quiet analog ground zone via Kelvin routing and isolate digital ground currents through separate return paths.
+</p>
+
+<h3>Mesh Hop Limitations</h3>
+<p>
+  In mesh stress testing, latency increased disproportionately beyond 4–5 nodes. This was improved by tuning the ESP-MDF routing TTL and payload buffer settings and selectively disabling Wi-Fi beaconing on edge nodes.
+</p>
+<h2>Tools & Skills Used</h2>
+    <ul>
+      <li>Altium</li>
+      <li>ESP-IDF + ESP-MDF – Firmware and mesh stack integration</li>
+      <li>Multimeter, oscilloscope – Debug and power profiling</li>
+
+    </ul>
+
+    <h2>Future Work</h2>
+    <ul>
+      <li>Integrate OTA firmware updates and mobile dashboard reporting</li>
+      <li>Add GPIO multiplexing and auto-configuration for smart sensor detection</li>
+      <li>Develop power trace logging for adaptive transmission strategies</li>
+    </ul>
+  </div>
+
+
+
+
