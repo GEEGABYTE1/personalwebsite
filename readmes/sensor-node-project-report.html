@@ -47,7 +47,7 @@
     <h2>Overview</h2>
     <figure>
       <img src="../images/ModularSensorNode/images/pcb3d.PNG" alt="pcb"  />
-      <figcaption>Figure 2: Modular Sensor Node + Mesh Networking Complete PCB </figcaption>
+      <figcaption>Figure 1: Modular Sensor Node + Mesh Networking Complete PCB </figcaption>
     </figure>
     <p>This project involved designing a compact, energy-aware wireless sensor node capable of communicating across a mesh network. The goal was to support scalable, distributed sensing systems for applications like environmental monitoring, asset tracking, and swarm robotics. The node was built around the ESP32-WROOM-32E module and designed to accommodate modular sensors and robust RF communication with low power drain.</p>
 
@@ -78,11 +78,11 @@
 <h3>Sensor Header Design</h3>
 <figure>
   <img src="../images/ModularSensorNode/images/GPIO Expander.PNG" alt="GPIO Expander"  />
-  <figcaption>Figure 2: GPIO Expander Schematic </figcaption>
+  <figcaption>Figure 3: GPIO Expander Schematic </figcaption>
 </figure>
 <figure>
   <img src="../images/ModularSensorNode/images/EEPROM.PNG" alt="EEPROM"  />
-  <figcaption>Figure 2: EEPROM</figcaption>
+  <figcaption>Figure 4: EEPROM</figcaption>
 </figure>
 <p>
   The decision to use a multi-function 8-pin header was made to maximize sensor compatibility while minimizing board real estate.
@@ -107,15 +107,15 @@
 <h3>Power Flexibility and Management</h3>
 <figure>
   <img src="../images/ModularSensorNode/images/PowerManagement.PNG" alt="PowerManagement"  />
-  <figcaption>Figure 2: Power Management</figcaption>
+  <figcaption>Figure 5: Power Management</figcaption>
 </figure>
 <figure>
   <img src="../images/ModularSensorNode/images/LowPowerRTC.PNG" alt="Low Power RTC"  />
-  <figcaption>Figure 2: Low Power RTC Schematic</figcaption>
+  <figcaption>Figure 6: Low Power RTC Schematic</figcaption>
 </figure>
 <figure>
   <img src="../images/ModularSensorNode/images/LowPowerSleepControl.PNG" alt="Low Power Sleep Control"  />
-  <figcaption>Figure 2: Low Power Sleep Control Schematic</figcaption>
+  <figcaption>Figure 7: Low Power Sleep Control Schematic</figcaption>
 </figure>
 <p>
   Supporting LiPo, solar, and USB-C inputs was a core goal of the design. Each source was routed through an OR-ing circuit with diode and FET control to prevent reverse leakage.
@@ -130,7 +130,7 @@
 <h2>PCB Layout Strategy and Design Decisions</h2>
 <figure>
   <img src="../images/ModularSensorNode/images/pcb2d.PNG" alt="pcb"  />
-  <figcaption>Figure 2: PCB </figcaption>
+  <figcaption>Figure 8: PCB </figcaption>
 </figure>
 <p>
   The PCB layout of the Modular Sensor Node was engineered to balance conflicting constraints: RF integrity, low power consumption, mechanical modularity, and debug accessibility.
@@ -138,7 +138,7 @@
 </p>
 <figure>
   <img src="../images/ModularSensorNode/images/alllayers.PNG" alt="pcb"  />
-  <figcaption>Figure 2: PCB with all Polygons </figcaption>
+  <figcaption>Figure 9: PCB with all Polygons </figcaption>
 </figure>
 
 <h3>1. RF Section Isolation and Antenna Integrity</h3>
