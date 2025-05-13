@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Electromechanical Testing Rig – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container markdown-body">
+    <h1>Smart Electromechanical Testing Rig</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+    <h2><u>Overview</u></h2>
+    <figure>
+      <img src="../images/electromechanicalTestRig/pcb3d.PNG" alt="pcb"  />
+      <figcaption>Figure 1: Electromechanical Testing Rig Complete Board </figcaption>
+    </figure>
+    
+    <p>
+      The Smart Electromechanical Testing Rig is a custom-designed embedded system used to monitor, log, and visualize mechanical and electrical parameters during actuation, load-bearing, or response testing. Designed around the ESP32 for its wireless capabilities and low-power operation, the board integrates current sensing, voltage monitoring, visual feedback, and onboard data logging to enable both automated and hands-on testing workflows.
+    </p>
+
+    
+    <p>
+      Traditional test rigs require bulky DAQ systems or rely on expensive industrial platforms. For academic and rapid prototyping settings, there’s a clear need for a low-cost, compact, and wireless-capable system that can interface with sensors, log data locally, and communicate with host systems or dashboards. This project bridges that gap, offering modular test instrumentation in a field-ready form factor.
+    </p>
+
+    
+<h2><u>Key Features & Design Decisions</u></h2>
+
+<p>
+  The Smart Electromechanical Testing Rig was developed with the vision of providing a modular, reliable, and extensible platform for embedded diagnostics, test automation, and field measurements.
+  Every component decision reflects a balance of technical merit, cost efficiency, low-power operation, and integration simplicity.
+</p>
+<figure>
+  <img src="../images/electromechanicalTestRig/powerManagement.PNG" alt="pcb"  />
+  <figcaption>Figure 2: Motor Driver Schematic </figcaption>
+</figure>
+<figure>
+  <img src="../images/electromechanicalTestRig/SensorFeedback.PNG" alt="pcb"  />
+  <figcaption>Figure 3: SensorFeedback Schematic</figcaption>
+</figure>
+
+<h3>ESP32-WROOM-32E</h3>
+<figure>
+  <img src="../images/electromechanicalTestRig/wifiComms.PNG" alt="pcb"  />
+  <figcaption>Figure 4: ESP32 Schematic </figcaption>
+</figure>
+<p>
+  The ESP32 was chosen as the central MCU due to its dual-core performance, integrated Wi-Fi + BLE support, and rich peripheral set including I2C, SPI, UART, ADC, and SD/MMC interfaces.
+  The WROOM-32E variant provides RF shielding, integrated flash, and stable operating temperature range for lab-to-field transition.
+  Compared to STM32 or nRF52 families, ESP32 offered better support for real-time BLE and Wi-Fi mesh frameworks while maintaining deep sleep current under 10μA.
+</p>
+
+<p>
+  The ESP-IDF ecosystem allows fine-grained control over power domains and memory mapping.
+  In this rig, one core handles sensor acquisition and SPI communication, while the other handles BLE streaming or SD logging.
+</p>
+
+<h3>NA219 Current Sensor</h3>
+<figure>
+  <img src="../images/electromechanicalTestRig/currentSensor.PNG" alt="pcb"  />
+  <figcaption>Figure 5: Current Sensor Schematic </figcaption>
+</figure>
+<p>
+  For current sensing, we selected the INA219 due to its I2C interface, integrated 12-bit ADC, and programmable gain amplifier.
+  Unlike analog Hall-effect sensors, INA219 provides true differential sensing with millivolt accuracy.
+  It also measures both voltage and current, allowing real-time power consumption profiling.
+  The decision to use this over INA226 was based on board space and simplicity: the INA226, while more accurate, required additional filtering and SPI bus integration.
+</p>
+
+<p>
+  To improve sensing fidelity, Kelvin routing was used with matched trace lengths from the shunt resistor.
+  All sense lines were shielded by ground pours and separated from the switching regulator path.
+</p>
+
+<h3>microSD Data Logging</h3>
+<figure>
+  <img src="../images/electromechanicalTestRig/sdcard.PNG" alt="pcb"  />
+  <figcaption>Figure 6: SD Card Schematic</figcaption>
+</figure>
+<p>
+  A key design feature was onboard data logging via SPI-connected microSD.
+  We opted for SPI mode instead of SDIO due to easier firmware support and pin compatibility with ESP32 development boards.
+  The microSD connector includes built-in card detection, ESD clamping, and reverse-insert protection.
+</p>
+
+<p>
+  To ensure reliable write performance, a decoupling capacitor bank (10uF + 0.1uF) was placed near the VCC pin.
+  Data is buffered in RAM and flushed periodically to reduce wear and voltage ripple during long logging sessions.
+</p>
+
+<h3>LED Status Array</h3>
+<p>
+  The board includes a 4-LED RGB indicator array tied to dedicated GPIOs.
+  Each LED represents one of: power status, recording state, error/fault, and BLE connectivity.
+  We avoided PWM flicker issues by driving them via open-drain outputs and using small resistors with controlled gate switching slopes.
+</p>
+
+<h3>Battery Voltage Monitoring</h3>
+<p>
+  The battery voltage is divided via precision resistors and fed into an ADC input pin of the ESP32.
+  A series diode and RC filter smooth out transient spikes and prevent ADC latch-up from reverse polarity events.
+  This voltage is then used to report low battery conditions and initiate automatic sleep.
+</p>
+
+<h3>Bluetooth Streaming</h3>
+<p>
+  BLE GATT profile was implemented to send sensor values, timestamps, and SD logging status to a paired smartphone or dashboard.
+  We used the ESP-IDF NimBLE stack for its low memory footprint and reliable event queue management.
+  The BLE profile is auto-initialized after system boot and deactivates during SD flush events to save power and avoid SPI contention.
+</p>
+
+<h2><u>PCB Layout Strategy</u></h2>
+<figure>
+  <img src="../images/electromechanicalTestRig/pcb2d.PNG" alt="pcb"  />
+  <figcaption>Figure 7: PCB layout</figcaption>
+</figure>
+
+<p>
+  Layout for the Testing Rig was performed using KiCad 7 on a 2-layer FR-4 board with dimensions 70mm x 45mm.
+  The layout reflects key principles of signal integrity, low-noise analog design, RF shielding, and mechanical serviceability.
+</p>
+
+<h3>Functional Zoning</h3>
+<p>
+  The board is divided into four zones: power regulation, sensing and ADCs, microcontroller + logic, and I/O headers.
+  This allowed simpler validation, easier debugging, and better analog/digital isolation.
+</p>
+
+<h3>Grounding & Pours</h3>
+<figure>
+  <img src="../images/electromechanicalTestRig/allPours.PNG" alt="pcb"  />
+  <figcaption>Figure 8: SD Card Schematic</figcaption>
+</figure>
+<p>
+  A full GND pour was implemented on bottom layer, stitched with 0.8mm vias near decoupling caps and component VSS pins.
+  Ground planes were sectioned: analog GND under INA219 and ADC inputs, digital GND under ESP32 and SPI lines.
+  This minimized return current overlap and ensured clean analog baselines.
+</p>
+
+<h3>Sensor Routing Strategy</h3>
+<p>
+  All INA219 shunt traces were routed as short differential pairs with spacing ≤ 10 mil.
+  Trace resistance was matched, and copper width was adjusted to keep temperature rise below 5°C under max expected current.
+  SPI traces to SD were routed with 45° bends and length-matched to within 0.5mm to preserve clock edge stability.
+</p>
+
+<h3>Test Points and Debug Pads</h3>
+<p>
+  A 6-pin UART header and 3 test points (3.3V, GND, VBat) were exposed on the board edge for oscilloscope probing.
+  Boot and reset lines from the ESP32 were routed to pushbutton footprints with optional pull-up jumpers.
+  I2C debugging could be done via test pad breakouts near the header area.
+</p>
+
+<h3>Power Management & Routing</h3>
+<p>
+  The main power input was routed through a reverse-polarity diode and into a buck converter IC (MP2315).
+  Output ripple was minimized with parallel MLCCs and a ground-return stitched directly under the inductor.
+  All high-current traces were at least 60 mils wide and mirrored across layers using pour-connected vias.
+</p>
+
+<h3>LED and Visual Feedback Zone</h3>
+<p>
+  LEDs were placed in the upper-left region with clear silkscreen symbols.
+  Resistors were kept close to MCU GPIOs and grounded via individual vias to prevent shared return noise.
+  This ensures accurate logic state feedback even during switching events.
+</p>
+
+<h2><u>Challenges & Debugging</u></h2>
+
+<h3>1. SD Card Boot Timing</h3>
+<p>
+  One of the earliest challenges was ensuring the ESP32 correctly initialized the SPI bus and mounted the SD card on boot.
+  In early prototypes, the card would occasionally fail to initialize due to improper pull-up resistors and RC filtering on the CS and CLK lines.
+  The SD card required 10k pull-ups on the MISO line and a 100nF capacitor on VCC to suppress inrush current from rail bounce at startup.
+  In later revisions, SPI CS was routed to a GPIO with strong internal pull-up and manually reset before FS mount.
+</p>
+
+<h3>2. Power Ripple and Sensor Drift</h3>
+<p>
+  When the board began SD write cycles, the INA219 reported sudden dips or spikes in current values.
+  This was traced to ripple on the shared 3.3V rail during card I/O transactions.
+  We fixed this by adding a dedicated LDO for the INA219 power supply, decoupling the sensor from high-frequency digital load switching.
+  Additional 10uF MLCCs at the INA219 and SD slot helped stabilize the rails.
+</p>
+
+<h3>3. LED Logic Flicker</h3>
+<p>
+  The status LED array initially flickered under simultaneous BLE and SPI operations.
+  GPIOs shared timers, and switching between PWM and digital writes led to brief misfires.
+  The fix was to assign fixed hardware PWM channels and buffer transitions via a queue-based state manager in firmware.
+  A mild low-pass RC filter was also added to the common cathode rail.
+</p>
+
+<h3>4. BLE Transmission Conflicts</h3>
+<p>
+  BLE packets were dropped during high-frequency logging, especially when SD transactions overlapped with BLE stack intervals.
+  We restructured the firmware to schedule BLE updates only between SD transactions, and prioritized tasks using FreeRTOS event flags.
+  Asynchronous ring buffers ensured no packet loss during SPI contention.
+</p>
+
+<h3>5. Physical Layout Constraints</h3>
+<p>
+  The rig was dimensionally constrained to fit inside an existing enclosure.
+  Early iterations suffered from connector crowding and GPIO overlaps.
+  A rotation of the ESP32 footprint and mirrored header rows reduced cable crossovers and allowed more compact wire routing.
+</p>
+<h2><u>Tools & Skills Used</u></h2>
+    <ul>
+      <li>Altium– Schematic & layout</li>
+      <li>ESP-IDF – Real-time data capture, SPI + I2C drivers, BLE stack</li>
+      <li>Logic analyzer – SPI validation & current sense calibration</li>
+     
+    </ul>
+
+    
+<h2><u>Future Work</u></h2>
+<ul>
+  <li><strong>IMU Integration:</strong> Add a 9-axis IMU (e.g. MPU9250) with interrupt-driven motion detection for mechanical stress mapping and resonance tracking.</li>
+  <li><strong>Touchscreen UI:</strong> Integrate a small SPI display + capacitive touchscreen to allow standalone configuration of test protocols, logging frequency, and thresholds.</li>
+  <li><strong>Battery Curve Estimation:</strong> Use INA219 data to log discharge profiles over time and fit predictive models of battery health (Coulomb counting, Peukert curve fitting).</li>
+  <li><strong>Isolation Amplifiers:</strong> Add isolation amplifiers on input lines for industrial-grade signal protection, enabling safe probing of high-voltage actuators or motors.</li>
+  <li><strong>Open-Sourced Dashboard:</strong> Build a React or Qt dashboard that can ingest BLE packets and visualize real-time plots, device health, and data exports.</li>
+</ul>
+
+  </div>
+</body>
+</html>
