@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spitha – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Motorsport Lap Time Sim</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+
+      <a href="      <a href="https://spitha-frontend.vercel.app/">Project Website</a>">Github Repo</a>
+
+    </div>
+
+    <u><h2>Overview</h2></u>
+
+    <figure>
+      <img src="../images/lapSim/sim.png" alt="pcb"  />
+      <figcaption>Figure 1: Overtake + Strategy Laps. Multi-car lap times with pit impact </figcaption>
+    </figure>
+
+      <p>To build a high-fidelity race simulation tool that models lap time evolution over a circuit,
+      accounting for tire degradation, fuel weight reduction, sector grip, pit strategy, and overtaking.
+      This project bridges core principles of vehicle dynamics, thermal modeling, and motorsport strategy optimization.</p>
+
+
+      <p>
+      Developed class-based architecture, simulation engine, compound switching logic, traffic modeling,
+      and visualization suite for performance analysis.
+      </p>
+
+      <p><strong>
+      Project repo found above.
+      </strong>
+      </p>
+
+
+    <u><h2>System Features</h2></u>
+    <ul>
+      <li>Track-Sector Simulation with curvature, grip, and radius</li>
+      <li>Tire Compound Physics with soft/medium/hard nonlinear decay</li>
+      <li>Fuel Burn Modeling affecting dynamic mass and speed</li>
+      <li>Traffic + Overtake Logic for dynamic race strategy</li>
+      <li>Pit Stop Engine: lap-based or grip-threshold triggers</li>
+      <li>Visualization of lap times, grip, sector heatmaps, and compound transitions</li>
+    </ul>
+
+    <u><h2>Technical Breakdown</h2></u>
+    <p>
+      The simulation is structured using OOP principles with <code>Car</code>, <code>Tire</code>, <code>TrackSegment</code>,
+      and <code>LapSimulator</code> classes. Each lap is computed by simulating each track segment:
+    </p>
+    <ul>
+      <li><strong>Straights:</strong> Time calculated using power-limited acceleration: <code>t = d / (a * grip)</code>, where acceleration is derived from <code>a = Power / (mass * g)</code></li>
+      <li><strong>Corners:</strong> Speed limited by lateral grip: <code>v = sqrt(r * g * grip)</code>, and time = length / v</li>
+      <li><strong>Tire degradation:</strong> Grip reduces each lap based on deviation from optimal temp using: <code>grip *= (1 - degradation_rate * (1 - exp(-((temp - T_opt)^2) / C)))</code></li>
+      <li><strong>Fuel mass:</strong> Linearly decreases with each lap, reducing car mass and improving acceleration</li>
+      <li><strong>Traffic penalties:</strong> Applied when gap to car ahead is &lt; 2s in a corner, adding 0.3–1.2s randomly</li>
+      <li><strong>Pit stops:</strong> Introduced as fixed time penalties (e.g., 20s) that reset tire compound</li>
+    </ul>
+    <p>
+      This creates an end-to-end simulation loop where lap time is affected by thermodynamic tire behavior, strategy,
+      and dynamic car properties — modeling realistic motorsport scenarios.
+    </p>
+
+
+
+    <figure>
+      <img src="../images/lapSim/plot.png" alt="pcb"  />
+      <figcaption>Figure 2: Lap Time vs. Lap Number </figcaption>
+    </figure>
+
+    <figure>
+      <img src="../images/lapSim/heatMap.png" alt="pcb"  />
+      <figcaption>Figure 3: Sector Heatmap Results</figcaption>
+    </figure>
+
+    <figure>
+      <img src="../images/lapSim/Tires.png" alt="pcb"  />
+      <figcaption>Figure 4: Compound Tire comparision </figcaption>
+    </figure>
+
+
+    <u><h2>Tools</h2></u>
+    <ul>
+      <li>Python</li>
+      <li>Pandas, NumPy for simulation data</li>
+      <li>Matplotlib, Seaborn for graphs and heatmaps</li>
+    </ul>
+
+  </div>
+</body>
+</html>
