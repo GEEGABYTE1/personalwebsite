@@ -121,6 +121,39 @@
       <figcaption>Figure 4: Compound Tire comparision </figcaption>
     </figure>
 
+    <u><h2>Effects of Aerodynamic Drag on Simulated Results</h2></u>
+    <p>Drag Force Calculation: <code> F_drag = 0.5 * ρ * Cd * A * v² </code></p>
+    
+    <p>
+      Each car was assigned a different drag coefficient (Cd), and average straight-line speed was used to compute drag force per lap.
+      This force influenced effective acceleration and directly impacted lap times, particularly on straights. 
+    </p>
+    <p>
+      <strong>Results:</strong>
+      Cars with higher drag coefficients showed increased lap times and greater energy losses per lap.
+      The simulator plots both <em>lap time</em> and <em>drag force</em> side-by-side to illustrate this aerodynamic penalty. It was seen that Car 2 with the same simulation setup was first on each lap.
+    </p>
+
+    <figure>
+      <img src="../images/lapSim/dragResult.png" alt="pcb"  />
+      <figcaption>Figure 5: Race Simulation with Drag</figcaption>
+    </figure>
+
+     
+    <figure>
+      <img src="../images/lapSim/plotwithDrag.png" alt="pcb"  />
+      <figcaption>Figure 6: Lap Time vs. Lap Number with Drag</figcaption>
+    </figure>
+
+    <figure>
+      <img src="../images/lapSim/dragHeatMaps.png" alt="pcb"  />
+      <figcaption>Figure 7: Sector Heatmap Results with Drag </figcaption>
+    </figure>
+
+    <figure>
+      <img src="../images/lapSim/dragTires.png" alt="pcb"  />
+      <figcaption>Figure 8: Compound Tire comparision with Drag</figcaption>
+    </figure>
 
     <u><h2>Tools</h2></u>
     <ul>
