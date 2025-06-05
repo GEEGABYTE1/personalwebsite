@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>High-Voltage Motor Driver with Safety Interlocks</title>
+  <link rel="stylesheet" href="../styles.css"/>
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    .markdown-body h1 {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container markdown-body">
+    <h1>High-Voltage Motor Driver with Safety Interlocks</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+    <h2><u>Overview</u></h2>
+    <p>
+      The High-Voltage Motor Driver with Safety Interlocks is a 4-layer, high-current PCB designed for driving BLDC motors in safety-critical environments. Featuring a DRV8353 gate driver, N-channel MOSFET half-bridge, diode-OR hardware shutdown logic, and STM32 control with CAN interface, this design is optimized for robustness, isolation, and system-wide interlock integration.
+    </p>
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/pcb3d.PNG" alt="pcb"  />
+      <figcaption>Figure 1: Complete PCB </figcaption>
+    </figure>
+
+    <h2><u>Key Features</u></h2>
+    <p>
+      This section details the major electrical and architectural decisions, component justifications, and circuit integration strategies employed in this project.
+    </p>
+
+    <h3>Gate Driver – DRV8353RSRGZT</h3>
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/GateDriverMosfetHalfBridgeSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 2: Gate Driver + Mosfet Schematic </figcaption>
+    </figure>
+    <p>
+      The DRV8353 was chosen for its high-performance 3-phase gate driving capabilities, integrated current shunt amplifiers, SPI configurability, and fault reporting. Among alternatives like the DRV8305 and discrete gate drivers (e.g., IR2110), the DRV8353 offered the most flexibility with its SPI diagnostics and protection features. I chose the RSRGZT package for space efficiency and thermal performance.
+    </p>
+
+    <h3>2. Power Stage – Half-Bridge MOSFETs</h3>
+    <p>
+      I used IRLZ44NPBF N-channel MOSFETs due to their low Rds(on), fast switching, and robust thermal handling at moderate cost. Their TO-220 footprint was ideal for symmetrical layout and heat sinking. Symmetrical placement minimized inductive parasitics, and gate resistors were used for slew rate control. View Figure 2 for more details.
+    </p>
+
+    <h3>3. ENABLE Interlock – Fault Logic</h3>
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/TemperatureSensingandInterlockSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 3: Temperature Sensing + Safety Interlocks Schematic </figcaption>
+    </figure>
+
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/CurrentVoltageSensingSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 4: Current + Voltage Sensing Schematic for additional safety </figcaption>
+    </figure>
+    <p>
+      A diode-OR logic circuit (TEMP_FAULT, DRV_nFAULT, MCU_SHUTDOWN) feeds into a 2N3904 NPN transistor, which pulls ENABLE low to shut off the DRV8353. This hardware-based override ensures immediate response during a thermal or driver failure. The 1N4148 diodes were selected for their speed and low forward drop.
+    </p>
+
+    <h3>Debug & Telemetry – CAN Interface</h3>
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/DebugTelemetryInterfaceSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 5: CAN Interface Schematic </figcaption>
+    </figure>
+    <p>
+      Instead of UART, I adopted CAN using the SN65HVD230 transceiver with RS grounded to enable high-speed mode. CAN is more robust in noisy environments, allows multi-node diagnostics, and better matches automotive and industrial standards. I mapped CANH/CANL to STM32's Tx/Rx through the transceiver's D and R pins.
+    </p>
+
+    <h3>STM32 Microcontroller</h3>
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/stm32Schematic.PNG" alt="pcb"  />
+      <figcaption>Figure 6: STM32 Schematic </figcaption>
+    </figure>
+    <p>
+      The STM32F103C8T6 was selected for its affordability, abundant documentation, support for CAN peripherals, and STM32Cube ecosystem. Its GPIO and interrupt capabilities were critical for real-time fault response. I leveraged its ADC to monitor analog parameters and its NVIC for handling nFAULT, TEMP_FAULT, and comms asynchronously.
+    </p>
+
+    <h3>Voltage Regulation</h3>
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/PowerInputandProtectionSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 7: Power Regulation Schematic</figcaption>
+    </figure>
+    <p>
+      The AMS1117-3.3 linear regulator was used to supply 3.3V to the STM32 and logic circuitry. Despite being a linear regulator, it offered sufficient performance due to low current draw and simplicity. Power dissipation was calculated under worst-case scenarios to ensure thermal margins were met.
+    </p>
+
+    <h3>Power Input – XT60 Connector</h3>
+    <p>
+      The AMASS XT60-M connector was selected for its high-current capability (up to 60A), polarized housing, and reliable mating. It was mounted with reinforced pads and routing to handle peak loads and prevent PCB delamination. View Figure 7 for more details.
+    </p>
+
+    <h3>Layer Stackup</h3>
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/pcb2d.PNG" alt="pcb"  />
+      <figcaption>Figure 8: 2d PCB </figcaption>
+    </figure>
+    <p>
+      I used a 4-layer stackup: Power + Component (Top), Signal, Power (Inner), GND (Bottom). This supported:
+      <ul>
+        <li>Improved EMI performance with bottom GND shield</li>
+        <li>Controlled impedance routing</li>
+        <li>Dedicated planes for motor phase and logic power</li>
+      </ul>
+    </p>
+
+    <h2><u>PCB Layout Strategy</u></h2>
+    <p>
+      The board layout was done in Altium Designer with a focus on thermal performance, signal isolation, and safety.
+    </p>
+
+    <h3>Symmetrical Half-Bridge Layout</h3>
+    <p>
+      The MOSFET half-bridges were laid out symmetrically with source-drain alignment and short gate traces to reduce inductive loops. GND return paths were kept tight, and shunt resistors were placed near the low-side source.
+    </p>
+
+    <h3>Separation of Power and Logic</h3>
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/allPours.PNG" alt="pcb"  />
+      <figcaption>Figure 9: All Signal + Power Pours</figcaption>
+    </figure>
+
+    <figure>
+      <img src="../images/highvoltagemotordriverwithinterlocks/GND Pour.PNG" alt="pcb"  />
+      <figcaption>Figure 10: GND Pour </figcaption>
+    </figure>
+    <p>
+      High-power and low-voltage circuits were isolated physically and electrically. Signal traces were routed away from switching nodes. The GND plane acted as a shield, with analog and digital grounds stitched near the regulator.
+    </p>
+
+    <h3>Fault Logic Placement</h3>
+    <p>
+      The 2N3904-based shutdown circuit was placed near the ENABLE line, with minimal trace length. All fault signal lines were pulled high with 10k resistors and bypassed with 100nF caps for noise immunity.
+    </p>
+
+    <h3>Decoupling Strategy</h3>
+    <p>
+      Local decoupling capacitors (10uF + 0.1uF) were placed near each IC power pin, especially the DRV8353 and STM32. Layout guidelines for power planes and return current paths were followed to minimize high-frequency noise.
+    </p>
+
+    <h3>CAN Trace Routing</h3>
+    
+    <p>
+      CANH and CANL were routed as a tightly coupled differential pair with matched length, 120-ohm termination, and proper isolation from power signals. The transceiver was placed near the edge for easy connector access.
+    </p>
+
+    <h2><u>Challenges & Constraints</u></h2>
+    <ul>
+      <li><strong>Mixed-Signal Isolation:</strong> Balancing digital and analog/motor noise domains required careful stitching, ground management, and shielding strategy.</li>
+      <li><strong>Thermal Performance:</strong> Managing MOSFET and gate driver heat without heat sinks was constrained by footprint and airflow assumptions.</li>
+      <li><strong>Real-Time Fault Response:</strong> Ensuring deterministic shutdown required both hardware fallback and fast microcontroller interrupt handling.</li>
+      <li><strong>Component Placement:</strong> With a compact board size, routing the ENABLE fault logic and CAN without overlaps was non-trivial.</li>
+    </ul>
+
+    <h2><u>Tools Used</u></h2>
+    <ul>
+      <li><strong>Altium Designer:</strong> Schematic capture and 4-layer PCB layout</li>
+      <li><strong>STM32CubeIDE:</strong> Firmware development and peripheral setup</li>
+      <li><strong>MATLAB:</strong> (Planned) Motor performance simulation and trip threshold analysis</li>
+      <li><strong>Multimeter & Logic Analyzer:</strong> Validation of ENABLE logic and CAN communication</li>
+    </ul>
+
+    <h2><u>Outcome & Future Work</u></h2>
+    <p>
+      The board was fabricated successfully, passed power-on tests, and verified DRV8353 configuration and fault reporting via SPI. CAN messages were received over a differential bus. Future work includes:
+      <ul>
+        <li>Integrating closed-loop control for torque and speed</li>
+        <li>Thermal camera validation under PWM load</li>
+        <li>Adding analog feedback for phase current and voltage sensing</li>
+      </ul>
+    </p>
+  </div>
+</body>
+</html>
