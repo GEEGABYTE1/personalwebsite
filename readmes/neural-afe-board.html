@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neural AFE Board</title>
+  <link rel="stylesheet" href="../styles.css"/>
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    .markdown-body h1 {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+    <div class="container markdown-body">
+        <h1>Neural AFE</h1>
+        <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+         <figure>
+            <img src="../images/NeuralAFE/pcb3d.PNG" alt="pcb"  />
+            <figcaption>Figure 1: PCB </figcaption>
+        </figure>
+
+        <h2><u>Overview</u></h2>
+        <p>
+            The Neural AFE Board is a precision analog front-end platform designed to acquire low-amplitude biopotential signals 
+            (e.g., EEG, EMG) in electrically noisy environments. The system integrates ultra-low noise amplification, 
+            60 Hz notch filtering, hardware-level protection, and STM32-based data acquisition. Designed on a 4-layer PCB, 
+            the board targets automotive-grade and neurotech applications for real-time signal analysis and edge AI integration.
+        </p>
+
+        <h2><u>Key Features</u></h2>
+
+        <h3>Instrumentation Amplifier: INA333</h3>
+         <figure>
+      <img src="../images/NeuralAFE/InstrumentationAmplifierSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 2: Instrumentation Amplifier Schematic </figcaption>
+    </figure>
+        <p>
+            The INA333 was selected for its low input bias current (200 pA typ), low offset voltage (25 µV typ), and 
+            ultra-low quiescent current (50 µA typ). The gain was set to approximately 1000 using the following formula:
+        </p>
+        <pre>
+G = 1 + (50kΩ / R<sub>G</sub>)
+        </pre>
+        <p>
+            Solving for R<sub>G</sub> = 49.9Ω, we achieve:
+            <br><strong>G ≈ 1 + (50,000 / 49.9) ≈ 1002</strong>
+        </p>
+        <p>
+            This configuration offers high gain with minimal external components, ideal for microvolt-level signal extraction 
+            with minimal noise contribution.
+        </p>
+
+        <h3>Input Protection and Filtering</h3>
+        <figure>
+      <img src="../images/NeuralAFE/filters.PNG" alt="pcb"  />
+      <figcaption>Figure 3: Filters Schematic </figcaption>
+    </figure>
+        <p>
+            A 10 kΩ resistor in series with a 10 nF capacitor forms a low-pass RC filter:
+        </p>
+        <pre>
+f<sub>c</sub> = 1 / (2πRC) = 1 / (2π * 10kΩ * 10nF) ≈ 1.59 kHz
+        </pre>
+        <p>
+            This suppresses high-frequency noise while offering negligible signal distortion in the 0–100 Hz EEG band.
+        </p>
+
+        <h3>Reference Voltage Divider and Buffering</h3>
+        
+        <p>
+            A mid-supply reference is created using two 10kΩ resistors and a 1 µF capacitor:
+        </p>
+        <pre>
+V<sub>REF</sub> = V<sub>CC</sub> / 2 = 3.3V / 2 = 1.65V
+        </pre>
+        <p>
+            This reference is buffered using a MCP600 op-amp in unity-gain configuration to reduce impedance and stabilize biasing.
+        </p>
+
+        <h3>High-Pass Filtering for DC Rejection</h3>
+        <p>
+            A series capacitor (1 µF) and a 330 kΩ resistor form a high-pass filter:
+        </p>
+        <pre>
+f<sub>c</sub> = 1 / (2πRC) ≈ 0.48 Hz
+        </pre>
+        <p>
+            This removes slow DC drift while preserving all meaningful neural activity in the frequency band of interest. See Figure 3 for more information.
+        </p>
+
+        <h3>Notch Filter for Power Line Rejection</h3>
+        <p>
+            A twin-T notch filter was designed using the following component values:
+            R1 = 13.3 kΩ, R2 = 26.5 kΩ, C1 = 47 nF, C2 = 100 nF
+        </p>
+        <p>
+            The notch frequency is determined by:
+        </p>
+        <pre>
+f<sub>notch</sub> = 1 / (2πRC) ≈ 60 Hz
+        </pre>
+        <p>
+            This configuration yields strong attenuation at 60 Hz, eliminating power-line interference in indoor environments. See Figure 3 for more information.
+        </p>
+
+        <h3>Microcontroller: STM32F103C8T6</h3>
+        <figure>
+      <img src="../images/NeuralAFE/MCUESP32Schematic.PNG" alt="pcb"  />
+      <figcaption>Figure 4: ESP32 Schematic </figcaption>
+    </figure>
+        <p>
+            Selected for its cost-effectiveness, built-in ADCs, and broad software support. UART and USB support allows
+            seamless integration with downstream logging or edge ML systems. Analog inputs are buffered to reduce noise coupling.
+        </p>
+
+        
+
+        <h2><u>PCB Layout Strategy</u></h2>
+        <figure>
+      <img src="../images/NeuralAFE/pcb2d.PNG" alt="pcb"  />
+      <figcaption>Figure 5: PCB 2d</figcaption>
+    </figure>
+        <p>
+            The board uses a 4-layer stackup: Top Layer (Components + Power), Layer 2 (Signal), Layer 3 (Power), Bottom Layer (GND).
+            Key layout decisions include:
+        </p>
+        <figure>
+      <img src="../images/NeuralAFE/allPours.PNG" alt="pcb"  />
+      <figcaption>Figure 6: All Pours </figcaption>
+    </figure>
+
+    <figure>
+      <img src="../images/NeuralAFE/gndPour.PNG" alt="pcb"  />
+      <figcaption>Figure 7: GND Pour </figcaption>
+    </figure>
+        <ul>
+            <li><strong>Component Grouping:</strong> Analog front-end kept isolated from STM32 and USB sections.</li>
+            <li><strong>Ground Stitching:</strong> Star-ground topology maintained between analog and digital domains.</li>
+            
+            <li><strong>Via Strategy:</strong> Short thermal vias placed under op-amps and voltage divider to stabilize heat.</li>
+            <li><strong>Signal Integrity:</strong> Filter caps placed as close as possible to power and signal pins; differential pairs routed for USB lines.</li>
+            <li><strong>Routing Discipline:</strong> No traces cross the notch filter layout to avoid loop interference.</li>
+        </ul>
+
+        <h2><u>Challenges & Constraints</u></h2>
+        <ul>
+            <li>Achieving high gain (1000×) without saturating due to input offsets or bias leakage.</li>
+            <li>Maintaining analog signal fidelity while sharing power/ground with digital logic (STM32).</li>
+            <li>USB-C routing required tight impedance control and precise matching to USB 2.0 spec.</li>
+            <li>Thermal isolation was necessary for stable reference voltage generation under varying load.</li>
+            <li>Board space was limited to a handheld form factor, requiring high-density routing and compact component selection.</li>
+        </ul>
+
+        <h2><u>Tools Used</u></h2>
+        <ul>
+            <li><strong>Altium Designer</strong>: Schematic + multi-layer PCB design</li>
+            <li><strong>LTspice</strong>: Twin-T and high-pass filter simulation</li>
+            <li><strong>STM32CubeIDE</strong>: Embedded firmware development and serial data transmission</li>
+
+        </ul>
+
+        
+    </div>
+</body>
+</html>
