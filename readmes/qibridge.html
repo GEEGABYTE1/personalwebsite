@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QiBridge – Wireless Power & Data Bridge</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="container markdown-body">
+        <h1>QiBridge – Wireless Power & Data Bridge</h1>
+        <div class="nav-links">
+            <a href="../index.html">Home</a> |
+            <a href="../projects.html">Project Portfolio</a>
+        </div>
+
+        
+<h2><u>Overview</u></h2>
+<p>QiBridge is a compact, wireless power and data interface board designed to support the next generation of implantable and wearable neural interface systems. Built around a Qi-standard wireless power receiver and a low-noise, isolated power regulation stage, the board enables contactless energy delivery to embedded systems without physical connectors — ideal for hermetically sealed neurotech devices.</p>
+<p>The design integrates a LiPo battery charging circuit, 3.3 V LDO regulator, and custom output headers to bridge Qi-derived power to low-power MCUs like STM32. This architecture is especially well-suited for brain-computer interfaces (BCIs), where minimizing infection risk, improving device longevity, and eliminating mechanical failure points are critical.</p>
+<p>QiBridge enables developers and researchers to prototype wireless-powered BCI nodes with simplified bench-to-body transition by replacing traditional USB or pogo pin interfaces with a sealed, wireless coupling.</p>
+
+<figure>
+      <img src="../images/QiBridge/pcb3d.PNG" alt="pcb"  />
+      <figcaption>Figure 1: PCB </figcaption>
+    </figure>
+<h2><u>Key Features</u></h2>
+        <h3>Wireless Power Receiver</h3>
+        <figure>
+      <img src="../images/QiBridge/WirelessPowerReceiverSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 2: Wireless Power Receiver Schematic </figcaption>
+    </figure>
+        <p> A Qi-standard power receiver IC was selected to enable compatibility with widely available wireless charging pads. This design eliminates the need for physical power connectors and enables applications in sealed or rotating systems. The chosen receiver provided internal rectification, thermal monitoring, and dynamic power negotiation features.</p>
+        <h3>LiPo Battery Charger (MCP73831)</h3>
+        <figure>
+      <img src="../images/QiBridge/LiPo Battery Charger Schematic.PNG" alt="pcb"  />
+      <figcaption>Figure 3: LiPo Battery Charger Schematic </figcaption>
+    </figure>
+        <p> This IC offers a safe and simple way to manage single-cell LiPo charging, with thermal feedback and a regulated 4.2V float voltage. It was selected over buck-based fast chargers due to its small footprint, low cost, and minimal BOM.</p>
+        <h3>3.3V LDO Regulator (AP2112K) </h3>
+        <figure>
+      <img src="../images/QiBridge/3v3LDOSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 4: 3V3 LDO schematic </figcaption>
+    </figure>
+        <p>This LDO was selected to generate a clean digital rail for external logic. It features low dropout (typ. 250 mV), excellent PSRR, and is stable with ceramic capacitors. Compared to switching regulators, it significantly reduces noise injection—critical for sensor-driven applications or microcontroller I/O.</p>
+
+
+        <h2><u>PCB Layout Strategy</u></h2>
+        <figure>
+      <img src="../images/QiBridge/pcb2d.PNG" alt="pcb"  />
+      <figcaption>Figure 5: PCB 2D</figcaption>
+    </figure>
+        <p>The PCB layout was done in Altium with an emphasis on EMI control and thermal planning. Wide power traces (≥ 50 mils) were used to connect the receiver to the charger and battery terminal. The MCP73831 was placed close to both the receiver output and battery pad to minimize trace inductance.</p>
+        <figure>
+      <img src="../images/QiBridge/allPours.PNG" alt="pcb"  />
+      <figcaption>Figure 6: All Pours </figcaption>
+    </figure>
+
+    <figure>
+      <img src="../images/QiBridge/gndPour.PNG" alt="pcb"  />
+      <figcaption>Figure 7: GND Pour </figcaption>
+    </figure>
+        <p>The LDO output was routed using a star topology to avoid voltage drops between downstream consumers. Bulk ceramic decoupling (10 μF + 0.1 μF) was added close to the output rail and LDO input. To control thermal buildup, a copper fill under the LDO was stitched with thermal vias to bottom ground to increase surface dissipation.</p>
+        <p>The RX coil area was isolated using a partial ground pour ring, minimizing feedback into the LDO or charging loop. Test points were placed on the regulated output and LiPo terminal for debugging and measurement.</p>
+
+        <h2><u>Challenges</u></h2>
+        <p><strong>Thermal Dissipation:</strong> Despite low average current draw, the MCP73831 experienced peak junction temperatures exceeding 60°C during charge. This required layout changes to expose the thermal pad via stitching and reduce trace resistance.</p>
+        <p><strong>EMI Management:</strong> Noise from the inductive receiver introduced ripple on the input rail. Filtering capacitors and layout shielding helped isolate this effect. During testing, ripple was reduced from 180 mV to 60 mV under load.</p>
+        <p><strong>Space Constraints:</strong> The board was limited to under 35 mm × 35 mm. Parts with wide packages or tall profiles (like inductors and LEDs) were minimized to ensure compatibility with embedded enclosures.</p>
+
+        <h2><u>Tools & Skills Used</u></h2>
+        <ul>
+            <li>Altium Designer – schematic capture and 2-layer layout</li>
+            <li>LTspice – regulator and charger thermal simulations</li>
+            <li>Multimeter, USB PD emulator, thermal IR camera – validation</li>
+        </ul>
+    </div>
+</body>
+</html>
