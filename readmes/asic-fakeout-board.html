@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASIC Fakeout Board - Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+    }
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container markdown-body">
+    <h1>ASIC Fakeout Board</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+    <figure>
+      <img src="../images/ASICFakeout/pcb3d.PNG" alt="pcb"  />
+      <figcaption>Figure 1: PCB 3D </figcaption>
+    </figure>
+
+    <h2><u>Overview</u></h2>
+    <p>
+        The ASIC Fakeout Board is a custom-designed emulation platform created to replicate the I/O behavior and power sequencing
+        of an unreleased application-specific integrated circuit (ASIC). This board allows firmware developers and hardware
+        engineers to begin system integration, test signal pathways, and validate voltage domains before the actual silicon is
+        available. It ensures early-stage compatibility verification and accelerates product development cycles.
+    </p>
+
+    <h2><u>Key Features</u></h2>
+    <p>
+        The ASIC Fakeout Board was developed to simulate and validate communication, isolation, and power conditions for a mock ASIC module during system-level bring-up and debugging. Each block was designed to mirror key ASIC interface behaviors using discrete components while providing safe test access, fault insertion capabilities, and flexible debugging pathways—critical for hardware-in-the-loop simulation pipelines in high-reliability systems.
+    </p>
+
+    <h3>CAN Telemetry Interface</h3>
+     <figure>
+      <img src="../images/ASICFakeout/CANTelemetrySchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 2: CAN Telemetry Schematic </figcaption>
+    </figure>
+
+    <p>
+        The SN65HVD230 was chosen as the CAN transceiver due to its ability to interface with 3.3V microcontrollers and its robustness in automotive environments. High-speed mode was enforced by grounding RS to support communication rates over 1 Mbps. This enables the board to emulate telemetry streams from an ASIC without sacrificing signal integrity across long bench cables.
+    </p>
+
+    <h3>Isolation Strategy</h3>
+     <figure>
+      <img src="../images/ASICFakeout/IsoltionSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 3: Isolation Schematic </figcaption>
+    </figure>
+
+    <p>
+        ISO7741 was selected to provide quad-channel galvanic isolation between the logic control and telemetry domains. This protects lab equipment from unintentional faults and simulates the isolation typically enforced in ASICs interfacing with external buses. The ISO7741 layout was optimized by placing bypass capacitors within 1.5 mm of the supply pins and isolating input/output traces to prevent capacitive coupling across domains.
+    </p>
+
+    <h3>Fault Injection & Test Hooks</h3>
+     <figure>
+      <img src="../images/ASICFakeout/FaultInjectionTesthooksSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 4: Fault Injection and Test Hooks Schematic </figcaption>
+    </figure>
+
+    <p>
+        DIP switches (RDS-16S-1045-D) and header pins were added for controlled fault injection. Engineers can simulate open-circuits, shorts, or static inputs by toggling these interfaces. This is essential for debugging fail-safes and validating system watchdog behavior. Test hooks were placed on key CAN lines, control signals, and reset lines to allow scope probing during toggled conditions.
+    </p>
+
+    <h3>Mock ASIC Core & Signal Conditioning</h3>
+     <figure>
+      <img src="../images/ASICFakeout/MockASICInterfaceCoreSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 5: Mock ASIC Interface Core Schematic </figcaption>
+    </figure>
+
+      <p>
+          The mock ASIC core was designed to emulate a range of realistic I/O conditions an ASIC might encounter in deployment. The key goals were to reproduce signal degradations, buffer behavior, and allow test access while maintaining electrical isolation and waveform integrity.
+      </p>
+
+      <h4>NODE_B Derivation: Emulated Buffered Logic for Measurement Tap</h4>
+       <figure>
+      <img src="../images/ASICFakeout/SignalConditionSchematic1.PNG" alt="pcb"  />
+      <figcaption>Figure 6: Signal Conditioning and Isolation Part 1 Schematic </figcaption>
+    </figure>
+     <figure>
+      <img src="../images/ASICFakeout/SignalConditionSchematic2.PNG" alt="pcb"  />
+      <figcaption>Figure 7: Signal Conditioning and Isolation Part 2 Schematic  </figcaption>
+    </figure>
+
+
+      <p>
+          The <code>NODE_B</code> signal was created as an internal test tap that buffers and exposes the result of a conditioned logic operation without affecting downstream logic. The signal originates from a 3-input <strong>diode-OR logic circuit</strong> combining:
+      </p>
+      <ul>
+          <li>Active fault injection (from test logic)</li>
+          <li>Baseline digital toggles (from STM32 GPIOs)</li>
+          <li>Optional manual override switches</li>
+      </ul>
+      <p>
+          I used <strong>1N4148 signal diodes</strong> to implement the OR function passively. The combined output is pulled low with a 10kΩ resistor and driven through a unity-gain <code>TLV9001</code> op-amp buffer to generate <code>NODE_B</code>. This prevents signal loading, preserves edge rates, and allows clean oscilloscope probing of composite logic without interference.
+      </p>
+
+      <p><strong>Rationale:</strong></p>
+      <ul>
+          <li><strong>Debug Access:</strong> Provides visibility without impacting active logic.</li>
+          <li><strong>Signal Emulation Fidelity:</strong> Reflects real-world waveform aggregation and behavior.</li>
+          <li><strong>Scalability:</strong> Easily rerouted or muxed for future ASIC revisions.</li>
+      </ul>
+
+      <h4>D_IN1[x]: Multi-Source Injection for I/O Stress Testing</h4>
+      <p>
+          The <code>D_IN1</code> line was implemented with multiple independently controlled injection paths to simulate various digital input profiles that ASICs encounter in system-level conditions:
+      </p>
+      <ul>
+          <li><strong>D_IN1[0]</strong>: Standard 3.3V push-pull CMOS driver for clean logic toggling</li>
+          <li><strong>D_IN1[1]</strong>: Open-drain logic with weak pull-up resistors to simulate I²C-like degraded signals</li>
+          <li><strong>D_IN1[2]</strong>: Filtered logic path using a signal attenuator and <code>1kΩ + 10nF</code> low-pass RC filter</li>
+      </ul>
+
+      <p>
+          Each source was controlled using a <strong>2-bit DIP switch</strong> (RDS-16S-1045-D) which enabled or disabled a given path. The selected input was routed to the shared <code>D_IN1</code> endpoint using 0Ω jumpers with matched trace lengths to ensure minimal skew.
+      </p>
+
+      <p><strong>RC Filter Calculation:</strong></p>
+      <pre><code>τ = R × C = (1 kΩ)(10 nF) = 10 µs</code></pre>
+      <p>
+          This time constant was tuned to degrade the logic transition speed just enough to cross into the "slow logic" region, forcing firmware and hardware to handle marginal signal timing. The RC path was designed to remain above digital detection thresholds while violating edge-time specs typical of SPI/UART inputs, serving as a real-world stress test.
+      </p>
+
+    <h3>Power Management & Regulation</h3>
+     <figure>
+      <img src="../images/ASICFakeout/PowerManagementAndRegulationSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 8: Power Management and Regulation Schematic </figcaption>
+    </figure>
+
+    <p>
+        Input power flexibility was essential, so I designed for 5V and 12V input sources via Molex or barrel jacks. The AP2112K-3.3 LDO provided clean power to logic components. Its dropout of ~250 mV allowed for operation even under brownout test conditions. Ceramic decoupling (10 µF and 100 nF) was applied at the input/output rails, and a ferrite bead was inserted upstream to reduce switching transients.
+    </p>
+
+    <h3>Signal Protection</h3>
+    <p>
+        PESD3V3L1BA ESD diodes were added on every externally exposed signal line to clamp voltages during plug/unplug cycles. Series resistors (100–330 Ω) were placed on high-speed lines to damp reflections, and pull-downs ensured defined logic levels during tri-state conditions, improving overall system predictability.
+    </p>
+
+    <h2><u>PCB Layout Strategy</u></h2>
+     <figure>
+      <img src="../images/ASICFakeout/pcb2d.PNG" alt="pcb"  />
+      <figcaption>Figure 9: PCB 2D </figcaption>
+    </figure>
+
+    <p>
+        The ASIC Fakeout Board was laid out on a 6-layer PCB to optimize signal routing, EMI shielding, and modularity across subsystems:
+    </p>
+    <ul>
+        <li><strong>Top Layer:</strong> Power + Signal</li>
+        <li><strong>Layer 2:</strong> Signal</li>
+        <li><strong>Layer 3:</strong> Power</li>
+        <li><strong>Layer 4:</strong> Signal</li>
+        <li><strong>Layer 5:</strong> Signal</li>
+        <li><strong>Bottom Layer:</strong>GND</li>
+    </ul>
+     <figure>
+      <img src="../images/ASICFakeout/gndPour.PNG" alt="pcb"  />
+      <figcaption>Figure 10: GND Pour </figcaption>
+    </figure>
+
+
+    <h3>Partitioning & Signal Zoning</h3>
+    <p>
+        The board was partitioned into digital control, power conditioning, telemetry I/O, and mock ASIC core blocks. This reduced cross-domain crosstalk and made debugging straightforward. Ground returns from each domain converged at a central star point to emulate real ASIC grounding schemes.
+    </p>
+
+    <h3>Signal Integrity & Trace Strategy</h3>
+    <p>
+        CAN lines were routed as differential pairs with 120 Ω termination across the connector edge. For signals like D_IN1 or NODE_B, impedance-controlled traces with matching delay were routed across isolated layers. All vias used were through-hole for mechanical strength, but blind vias were used sparingly for inner-layer signal tap-off to preserve routing density.
+    </p>
+
+    <h3>Testability Features</h3>
+    <p>
+        All signal paths feature breakouts to 0.1” headers with labeled silkscreen annotations. Headers are located near the board edge for probe access. DIP switch footprints use double-row vertical layout for reduced board space while maintaining label readability. Debug points for CAN, GPIO, fault output, and NODE_B are clustered to one region for efficient multichannel scope wiring.
+    </p>
+
+    <h2><u>Challenges & Future Work</u></h2>
+    <p>
+        Several challenges were encountered:
+    </p>
+    <ul>
+        <li><strong>Behavioral uncertainty:</strong> The ASIC specification was under active development, so placeholder signals like NODE_B required adjustable logic thresholds via resistor banks.</li>
+        <li><strong>Pin definition changes:</strong> Firmware teams required re-mapping of D_IN1 to multiple banks, which was solved using logic selectors and jumpers. Each bank emulates a distinct interrupt behavior.</li>
+        <li><strong>Thermal constraints:</strong> Although the board primarily runs at logic-level power, fault injection loads required trace width adjustments to support brief current surges without delamination.</li>
+        <li><strong>Future upgrades:</strong> The next revision will feature a USB-C interface, CPLD-based reprogrammable logic for I/O timing control, and telemetry reporting via onboard microSD (reusing the stack from prior boards).</li>
+    </ul>
+
+    <h2><u>Tools & Skills Used</u></h2>
+    <ul>
+        <li><strong>Altium Designer</strong> – Full schematic capture, component footprint design, and layout optimization</li>
+        <li><strong>LTspice</strong> – Simulation of protection circuit behavior and LDO startup profiles</li>
+        <li><strong>Oscilloscope + CAN analyzer</strong> – Telemetry verification and glitch simulation</li>
+        <li><strong>STM32CubeIDE</strong> – Mock firmware testing for GPIO toggling and reset behavior</li>
+    </ul>
+</div>
+</body>
+</html>
