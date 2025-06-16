@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroCapsule – Jaival Patel</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      background-color: #fff;
+      color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.5rem;
+      overflow-x: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>NeuroCapsule - BLE Logging Capsule</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+      <a href="https://github.com/GEEGABYTE1/eeProjects/blob/main/Projects/BLELoggingModel/BLELogging.ipynb">Model Repo</a>
+    </div>
+    <figure>
+      <img src="../images/NeuroCapsule/pcb3d.PNG" alt="pcb"  />
+      <figcaption>Figure 1: PCB </figcaption>
+    </figure>
+
+  <h2>Overview</h2>
+  <p>
+    The BLE Logging Capsule is a compact, battery-powered embedded system designed for wireless neural data acquisition in brain-computer interface (BCI) applications. It features an analog front-end (AFE) optimized for EEG signal conditioning, onboard data processing with a 1D CNN deployed via TensorFlow Lite, and real-time BLE telemetry via the ESP32-WROOM-32E module. Power is supplied via USB-C, and all sensing operations are optimized for low latency and low noise, making the design suitable for wearable neurotechnology and prototyping for closed-loop BCIs.
+  </p>
+
+  <h2>Key Features</h2>
+  <p>
+    This section provides a detailed breakdown of component selection and design rationale for the board:
+  </p>
+
+  <h3>ADS1118 ADC</h3>
+  <figure>
+      <img src="../images/NeuroCapsule/ADS1118ADCSchematc.PNG" alt="pcb"  />
+      <figcaption>Figure 2: ADS Schematic </figcaption>
+    </figure>
+  <p>
+    The 16-bit ADS1118 ADC was chosen for its low-noise performance, integrated temperature sensor (optional for future thermal drift compensation), and SPI communication compatibility with the ESP32. It supports differential input modes, making it suitable for biopotential sensing. A key decision was its 860 SPS rate—sufficient for EEG while maintaining manageable power and bandwidth usage.
+  </p>
+
+  <h3>ESP32-WROOM-32E</h3>
+  <figure>
+      <img src="../images/NeuroCapsule/ESP32WroomSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 3: ESP32 Schematic </figcaption>
+    </figure>
+  <p>
+    The ESP32-WROOM-32E was selected as the central controller for its dual-core processing, integrated BLE stack, and ability to run TensorFlow Lite Micro. It enabled both inference and wireless communication without requiring an additional co-processor. The module’s native USB stack simplifies data transmission and firmware updates, supporting rapid development and debugging.
+  </p>
+
+  <h3>INA333 Instrumentation Amplifier</h3>
+  <figure>
+      <img src="../images/NeuroCapsule/INA333InstrumentationAmpSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 4: Instrumentation Amplifier Schematic </figcaption>
+    </figure>
+  <p>
+    The INA333 provides low-noise, low-offset gain for the input EEG signals. It is configured with a 49.9Ω gain resistor to achieve approximately 1000× gain—ideal for amplifying sub-µV brain signals. Its rail-to-rail output and common-mode rejection were vital for ensuring signal integrity before digitization.
+  </p>
+
+  <h3>Twin-T Notch Filter</h3>
+  <figure>
+      <img src="../images/NeuroCapsule/TwinTNotchFilterSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 5: Twin T Notch Schematic </figcaption>
+    </figure>
+  <p>
+    A Twin-T notch filter centered at 60 Hz was implemented to suppress line noise. Component values (13.3kΩ, 26.5kΩ, 47nF, 100nF) were selected to tune the rejection frequency accurately. The decision to use passive RC elements over active filtering was driven by the need to minimize phase distortion and maintain a small footprint.
+  </p>
+
+  <h3>Low-Pass Anti-Aliasing Filter</h3>
+  <figure>
+      <img src="../images/NeuroCapsule/LowPassAntiAliasingFilterSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 6: Low Pass Anti-Aliasing Filter Schematic </figcaption>
+    </figure>
+  <p>
+    To prevent high-frequency noise from aliasing into the sampled EEG band, a second-order low-pass RC filter (cutoff ≈ 100 Hz) was placed before the ADC. This design was critical for preserving signal fidelity and reducing spectral leakage during onboard inference.
+  </p>
+
+  <h3>USB-C Power and Charging</h3>
+  <figure>
+      <img src="../images/NeuroCapsule/ucbscpowerSchematic.PNG" alt="pcb"  />
+      <figcaption>Figure 7: USB-C Schematic </figcaption>
+    </figure>
+  <p>
+    The board is powered by a USB-C interface, which was chosen for its reversible connector, growing industry standardization, and ability to deliver clean 5V power. A dedicated 3.3V LDO regulates this input to power analog and digital blocks separately, minimizing noise coupling.
+  </p>
+
+  <h2>PCB Layout Strategy</h2>
+  <figure>
+      <img src="../images/NeuroCapsule/pcb2d.PNG" alt="pcb"  />
+      <figcaption>Figure 8: PCB 2D </figcaption>
+    </figure>
+  <p>
+    The board was laid out on a 6-layer stackup:
+    <ul>
+      <li>Layer 1: Power + Signal</li>
+      <li>Layer 2: Signal</li>
+      <li>Layer 3: Power</li>
+      <li>Layer 4: Signal</li>
+      <li>Layer 5: Signal + Power</li>
+      <li>Layer 6: GND</li>
+    </ul>
+  </p>
+  <figure>
+      <img src="../images/NeuroCapsule/allPours.PNG" alt="pcb"  />
+      <figcaption>Figure 9: All Power + Signal Pours </figcaption>
+    </figure>
+
+
+
+  <h3>AFE and Analog Layout</h3>
+  <p>
+    The instrumentation amplifier and filtering stages were placed on the left edge of the board to reduce interference from the ESP32. Analog routing was kept short and shielded by adjacent ground pours on Layer 2 and Layer 6. The Twin-T notch and LPF circuits were routed with matched impedance where possible, and vias were carefully minimized in high-impedance signal paths.
+  </p>
+
+  <h3>ESP32 and Digital Domain</h3>
+  <p>
+    The ESP32 was placed centrally to minimize routing congestion. SPI lines between ESP32 and ADS1118 were length-matched to reduce skew. The BLE antenna clearance zone was preserved using a keep-out on Layer 1 and no copper underneath, complying with ESP32 datasheet guidelines.
+  </p>
+
+  <h3>Power Regulation</h3>
+  <p>
+    The 3.3V LDO was positioned close to the USB-C input connector. Power planes for analog and digital domains were split, with a ferrite bead isolating analog power to reduce digital switching noise. Decoupling capacitors were placed within 2mm of all power pins on ICs, and wide traces (20–50 mil) were used for power distribution.
+  </p>
+
+  <h3>Grounding Strategy</h3>
+  <p>
+    The bottom layer was used as a solid ground plane. All sensitive analog circuitry returned current through a dedicated analog ground connected at a single point to the digital ground to avoid ground loops. Shielding vias surrounded the analog front-end to reduce EMI susceptibility.
+  </p>
+
+  <figure>
+      <img src="../images/NeuroCapsule/gndPour.PNG" alt="pcb"  />
+      <figcaption>Figure 10: GND Pour </figcaption>
+    </figure>
+
+  <h3>USB-C Routing</h3>
+  <p>
+    The USB-C traces were routed using 90Ω differential impedance where required. The CC and D+ / D– lines were length-matched and filtered using ESD protection diodes. Placement followed the USB Type-C spec, with the connector centered near the bottom-right edge of the board for strain relief.
+  </p>
+
+  <h2>Challenges & Future Work</h2>
+  <ul>
+    <li>Maintaining low-noise layout within the small form factor proved challenging due to proximity of BLE antenna and analog lines.</li>
+    <li>Thermal dissipation from the ESP32 during continuous BLE operation affected analog performance; copper pours were extended to act as passive heat sinks.</li>
+    <li>Future work includes adding microSD logging, expanding analog channels, and finalizing TensorFlow Lite spike classifier deployment on embedded core.</li>
+  </ul>
+
+
+    <h2>Neural Signal Detection Model</h2>
+
+    <h3>Dataset Generation</h3>
+    <p>
+      To train the onboard model for spike detection, a synthetic EEG dataset was constructed to simulate real-world biopotential dynamics, including low-frequency oscillations, neural spikes, and ambient noise.
+    </p>
+    <ul>
+      <li><strong>Base waveform</strong>: Low-pass filtered Gaussian noise mimicking typical resting EEG background (1–40 Hz).</li>
+      <li><strong>Spike injection</strong>: High-amplitude, short-duration events (modeled using exponential decays and Gaussian derivatives) were injected randomly at known time points.</li>
+      <li><strong>Artifacts</strong>: Added 60 Hz sinusoidal components to emulate powerline interference, along with baseline drift and low-frequency muscular activity.</li>
+      <li><strong>Labeling</strong>: Each time window (256 samples per window) was labeled as 'spike' (1) or 'no spike' (0) depending on ground truth location of the injected event.</li>
+    </ul>
+    <figure>
+      <img src="../images/NeuroCapsule/RandomEEGSpikes.png" alt="pcb"  />
+      <figcaption>Figure 11: Generated EEG Dataset Plot </figcaption>
+    </figure>
+
+    <h3>Model Architecture</h3>
+    <p>
+      The model is a <strong>1D Convolutional Neural Network (CNN)</strong> with lightweight structure for embedded deployment using TensorFlow Lite Micro. It was designed to balance detection accuracy with inference latency and memory constraints.
+    </p>
+    <p><strong>Model Summary:</strong></p>
+    <ul>
+      <li>Input: 256-sample EEG window (normalized)</li>
+      <li>Conv1D (16 filters, kernel size 5, ReLU)</li>
+      <li>MaxPooling1D (pool size 2)</li>
+      <li>Conv1D (32 filters, kernel size 3, ReLU)</li>
+      <li>GlobalAveragePooling1D</li>
+      <li>Dense (16, ReLU)</li>
+      <li>Dense (1, Sigmoid) → spike probability output</li>
+    </ul>
+
+    <p><strong>Two Main Reasons of CNN over other Models</strong></p>
+    <ul>
+      <li>Convolutional layers are highly effective in recognizing spatial-temporal features such as sharp voltage transients (spikes) embedded in noise.</li>
+      <li>They are parameter-efficient and allow for aggressive quantization.</li>
+      <li>Pooling enables dimensionality reduction while preserving features.</li>
+    </ul>
+
+    <p><strong>Optimization:</strong></p>
+    <ul>
+      <li>Post-training quantization to 8-bit integers was used for TFLite deployment.</li>
+      <li>The model was pruned to remove unused neurons and reduce footprint.</li>
+      <li>Inference latency on ESP32 (240 MHz, no FPU) was measured to be &lt;15 ms, meeting real-time requirements.</li>
+    </ul>
+
+    <h3>Performance</h3>
+    <figure>
+      <img src="../images/NeuroCapsule/modelResults.png" alt="pcb"  />
+      <figcaption>Figure 12: Confusion Matrix Performance Results </figcaption>
+    </figure>
+    <table>
+      <tr><th>Metric</th><th>Value</th></tr>
+      <tr><td>Accuracy (Test)</td><td>93.7%</td></tr>
+      <tr><td>Precision</td><td>91.2%</td></tr>
+      <tr><td>Recall</td><td>95.1%</td></tr>
+      <tr><td>F1 Score</td><td>93.1%</td></tr>
+      <tr><td>Inference Latency</td><td>~13.6 ms</td></tr>
+      <tr><td>Model Size (TFLite)</td><td>12 KB</td></tr>
+    </table>
+
+    <p>
+      These results demonstrate strong generalization for spike detection while remaining within the processing budget of low-power microcontrollers. Further improvements may involve using temporal attention layers or LSTM modules if future hardware allows.
+    </p>
+
+  <h2>Tools & Skills Used</h2>
+  <ul>
+    <li><strong>Altium Designer</strong> – Multi-layer PCB design with differential routing and power plane separation</li>
+    <li><strong>Python / MATLAB</strong> – Preprocessing of EEG waveforms for filter design</li>
+    <li><strong>TensorFlow Lite Micro</strong> – Neural network deployment for onboard classification (next steps)</li>
+    <li><strong>Oscilloscope + Logic Analyzer</strong> – Signal verification and BLE latency measurement</li>
+  </ul>
+</div>
+</body>
+</html>
