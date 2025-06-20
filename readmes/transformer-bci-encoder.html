@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title></title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      background-color: #fff;
+      color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.5rem;
+      overflow-x: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Transformer-Based Neural Signal Compression</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+      <a href="https://drive.google.com/file/d/19BBpEKwNMY2gQG58iEllfGWsf1WAHDjw/view?usp=sharing">Paper Link</a>
+      <a href="https://github.com/GEEGABYTE1/eeProjects/blob/main/Projects/BLELoggingModel/BLELogging.ipynb">Model Repo</a>
+    </div>
+<body>
+
+
+    <h2>Overview</h2>
+    <figure>
+      <img src="../images/transformerbciencoder/pic.png" alt="pcb"  />
+      <figcaption>Figure 1: Page 2 of Paper. Link above. </figcaption>
+    </figure>
+    <p>
+        TransformerBCIEncoder is a lightweight, attention-based neural signal compression and classification model designed
+        for real-time deployment in embedded Brain-Computer Interface (BCI) systems. It aims to compress multichannel EEG signals
+        while preserving intention-decoding accuracy, enabling fast inference on resource-constrained hardware such as STM32 microcontrollers.
+    </p>
+
+    <p>
+        BCI systems often suffer from high data bandwidth and power requirements due to continuous streaming of multichannel EEG signals.
+        Our objective was to reduce the dimensionality of neural signals before transmission while maintaining classification performance.
+        The model needed to be efficient enough to run on embedded systems for closed-loop control in neurotechnology applications.
+    </p>
+
+    <h2>Features</h2>
+    <h3>Data Simulation & Preprocessing</h3>
+    <p>
+        We used a custom signal generation pipeline based on Fourier and sine wave synthesis to mimic class-dependent neural activation patterns.
+        Each EEG trial included synthetic noise, spike artifacts, and baseline drifts to emulate real-world recordings.
+        The raw data was normalized, filtered, and segmented into 1-second epochs with 128 time steps and 16 channels.
+    </p>
+
+    <h3>Architecture Selection</h3>
+    <p>
+        We chose a Transformer encoder-based architecture due to its ability to model long-range temporal dependencies and multichannel attention.
+        Compared to CNNs or RNNs, transformers better preserve spatial-temporal context and are more parallelizable during inference.
+    </p>
+
+    <h3>Model Architecture</h3>
+    <ul>
+        <li>Input: (batch, time, channels) shaped tensor</li>
+        <li>Positional Encoding added to each timestep</li>
+        <li>Multi-head Self-Attention with 4 heads</li>
+        <li>Intermediate Feedforward layers with ReLU and dropout</li>
+        <li>Final dense classification head for intention decoding</li>
+    </ul>
+
+    <h3>Compression Strategy</h3>
+    <p>
+        The attention layers inherently compress signal features by attending to relevant patterns and discarding redundant information.
+        We further reduced output dimensionality using a 1D convolutional projection layer with kernel size 1 before classification.
+    </p>
+
+    <h3>Embedded Considerations</h3>
+    <p>
+        The final model was quantized using TensorFlow Lite and benchmarked on STM32-based boards. Memory usage was kept under 80 KB,
+        with inference latency below 20 ms, making it suitable for on-chip closed-loop applications such as neuroprosthetic control.
+    </p>
+
+    <h2>Performance</h2>
+    <ul>
+        <li>Classification Accuracy: 98.7% on synthetic EEG dataset</li>
+        <li>Model Size: ~64 KB (quantized)</li>
+        <li>Inference Time: &lt;20 ms on Cortex-M7</li>
+        <li>Compression Ratio: ~5× feature reduction from raw input</li>
+    </ul>
+
+    <h2>Challenges & Constraints</h2>
+    <ul>
+        <li>Simulating realistic noise and artifacts to mimic real EEG signals</li>
+        <li>Balancing model depth and attention width for microcontroller memory limits</li>
+        <li>Achieving low inference latency without sacrificing classification performance</li>
+        <li>Ensuring attention patterns remained interpretable for future neuroscience analysis</li>
+    </ul>
+
+    <h2>Future Work</h2>
+    <ul>
+        <li>Integrate real EEG data from CDAQ-EEG hardware</li>
+        <li>Expand decoder for multi-class BCI tasks (motor imagery, spelling, etc.)</li>
+        <li>Implement causal attention for streaming applications</li>
+        <li>Design adaptive learning schemes for non-stationary brain signals</li>
+    </ul>
+
+    <h2>Tools & Skills Used</h2>
+    <ul>
+        <li><strong>Python (PyTorch & NumPy)</strong> – Model implementation and training</li>
+        <li><strong>TensorFlow Lite</strong> – Quantization and embedded deployment</li>
+        <li><strong>STM32CubeIDE</strong> – MCU benchmarking and integration</li>
+        <li><strong>Matplotlib</strong> – Visualization of attention maps and signal patterns</li>
+    </ul>
+</div>
+</body>
+</html>
