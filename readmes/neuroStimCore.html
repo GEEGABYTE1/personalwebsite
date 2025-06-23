@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroStimCore</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>NeuroStimCore - Preicision Biphasic Neural Stimulator</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+
+
+    
+  <p>
+    This project introduces a wearable, medical-grade embedded system designed for high-fidelity biopotential monitoring with onboard logging, fault detection, and telemetry capabilities. Built around the STM32F103C8T6, the sensor node integrates a precision analog front-end, programmable digital processing, and a robust power architecture that supports standalone operation in clinical and neurotechnology environments. The system includes an instrumentation amplifier (INA333), analog multiplexers, Twin-T notch filtering, low-pass anti-aliasing, real-time clock with logging, and a compact, battery-powered form factor with isolated power rails.
+  </p>
+  <figure>
+      <img src="/images/NeuroStimBoard/thumbnail.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 1: PCB 3D</figcaption>
+    </figure>
+
+  <h2>Key Features</h2>
+
+  <h3>Instrumentation Amplifier – INA333</h3>
+  <figure>
+      <img src="/images/NeuroStimBoard/INA333 Schematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 1: PCB 3D</figcaption>
+    </figure>
+
+  <p>
+    I chose the <strong>INA333</strong> because of its low input offset voltage (25μV typ), ultra-low input bias current (200pA), and rail-to-rail output swing. This makes it ideal for EEG and other biopotential sensing applications, where signal amplitudes are often in the range of tens of microvolts. The gain of the amplifier is set using:
+  </p>
+  <pre>Gain = 1 + (50,000 / R<sub>G</sub>)</pre>
+  <p>
+    I used a 49.9Ω resistor, targeting a gain of approximately 1001×. This brought sub-100μV signals into the millivolt range suitable for 16-bit ADC sampling. Other options like the INA128 were considered but ruled out due to higher power consumption and input offset.
+  </p>
+
+  <h3>DAC Buffer Architecture – AD5689R + OPA280</h3>
+    <figure>
+      <img src="/images/NeuroStimBoard/DACBufferSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 2: DAC Buffer Schematic</figcaption>
+    </figure>
+    <p>
+    Instead of relying on analog switches for multiplexing auxiliary inputs, this system integrates a dual-channel, high-resolution <strong>AD5689R DAC</strong> paired with two <strong>OPA280 precision op-amps</strong> configured as unity-gain buffers. This design was implemented to support analog biasing, calibration signal injection, or programmable stimulation reference levels within the front-end signal path.
+    </p>
+
+    <p>
+    The <strong>AD5689R</strong> was selected for its:
+    <ul>
+        <li>16-bit resolution and ±2 LSB INL accuracy, providing sub-millivolt tuning precision</li>
+        <li>SPI communication interface for low-noise digital control via the STM32</li>
+        <li>On-chip 2.5V reference and dual outputs for compact power-constrained designs</li>
+        <li>0V–2.5V output range, ideal for unipolar control signals in analog front-ends</li>
+    </ul>
+    </p>
+
+    <p>
+    Because the DAC’s output has limited drive capability and exhibits non-negligible output impedance, I used <strong>OPA280 op-amps</strong> configured in a unity-gain buffer configuration. These op-amps were chosen for their:
+    <ul>
+        <li>Low input offset voltage (50 μV typ) and low bias current (±0.5 nA), preventing distortion of reference signals</li>
+        <li>Rail-to-rail input and output, maximizing dynamic range at low supply voltages</li>
+        <li>Fast slew rate and high open-loop gain for clean transient response and accurate tracking</li>
+    </ul>
+    </p>
+
+    <p>
+    Each DAC output feeds directly into the non-inverting input of an OPA280, and the output of the op-amp drives downstream analog control paths, such as programmable voltage references for stimulation modules or active bias injection in amplifier circuits. This setup ensures that any digitally commanded voltage is faithfully reproduced at the output, independent of downstream load conditions or analog front-end impedance.
+    </p>
+
+    <p>
+    Compared to switch-based architectures, this DAC-buffer approach enables precise, programmable analog control across two independent channels, eliminates transient switching artifacts, and lays the groundwork for future closed-loop neurostimulation protocols with dynamic setpoints.
+    </p>
+  <h3>60 Hz Twin-T Notch Filter</h3>
+  <figure>
+      <img src="/images/NeuroStimBoard/TwinTNotchSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 3: Twitch T Notch Filter Schematic</figcaption>
+    </figure>
+  <p>
+    Mains noise was eliminated using a passive <strong>Twin-T Notch Filter</strong>. The filter is centered at 60 Hz using:
+  </p>
+  <pre>f<sub>notch</sub> = 1 / (2πRC)</pre>
+  <p>
+    Using R1 = 13.3kΩ, R2 = 26.5kΩ, C1 = 100nF, and C2 = 47nF, I achieve a deep notch at 60 Hz. This was preferred over active or digital filtering due to its zero latency, no computation overhead, and phase-preserving characteristics—critical in preserving waveform fidelity for decoding.
+  </p>
+
+  <h3>Anti-Aliasing Low-Pass Filter</h3>
+  <figure>
+      <img src="/images/NeuroCapsule/LowPassAntiAliasingFilterSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 4: Low Pass Anti-Aliasing Filter Schematic</figcaption>
+    </figure>
+  <p>
+    To suppress noise above the Nyquist frequency, a low-pass RC filter was placed downstream of the notch:
+  </p>
+  <pre>f<sub>c</sub> = 1 / (2πRC)</pre>
+  <p>
+    With R = 12kΩ and C = 0.1μF, the cutoff frequency was ~132 Hz. This helped reduce the aliasing of high-frequency power and RF noise while maintaining bandwidth for physiological signals (0.5–100 Hz range).
+  </p>
+
+  <h3>Analog-to-Digital Converter – ADS1118</h3>
+  <figure>
+      <img src="/images/NeuroStimBoard/ADS1118Schematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 5: ADS1118 Schematic</figcaption>
+    </figure>
+  <p>
+    The <strong>ADS1118</strong> was selected for its 16-bit resolution, SPI interface, and programmable gain amplifier. It provided high-resolution digitization with selectable full-scale input ranges, including ±2.048V—ideal for the INA333’s output. The integrated temperature sensor was also used to monitor ambient board temperature.
+  </p>
+
+  <h3>STM32F103C8T6 Microcontroller</h3>
+  <figure>
+      <img src="/images/NeuroStimBoard/STM32Schematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 6: STM32 Schematic</figcaption>
+    </figure>
+  <p>
+    This MCU offers an ideal trade-off between power, performance, and cost. Its 72 MHz clock and low power modes allowed efficient sampling and logging, while its SPI and UART peripherals enabled flexible interfacing with sensors, ADC, microSD, and telemetry. Alternatives like the nRF52840 were considered but added complexity in BLE firmware which will be tackled in future iterations.
+  </p>
+
+  <h3>Power System Architecture</h3>
+  <figure>
+      <img src="/images/NeuroStimBoard/PowerSupplyEntireSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 7: Power System Complete Schematic</figcaption>
+    </figure>
+  <ul>
+    <li><b>USB-C Input:</b> A protected USB-C port provides the primary 5V power rail. ESD diodes protect the downstream electronics.</li>
+    <li><b>Li-Ion Charging:</b> A <strong>TP4056</strong> module allows safe charging of 3.7V Li-Ion batteries with built-in thermal protection and status LED indicators.</li>
+    <li><b>3.3V Regulation:</b> The <strong>AMS1117-3.3</strong> LDO provides regulated 3.3V for MCU and analog circuits. Its dropout and PSRR performance was suitable for biopotential systems.</li>
+    <li><b>+12V Boost:</b> A <strong>TPS6104</strong> boost regulator provides a 12V rail from the 5V line for future use with stimulators or sensor biasing circuits.</li>
+    <li><b>-12V Inversion:</b> The <strong>LM2662M</strong> charge pump inverter generates a -12V rail, enabling bipolar stimulation or reference voltage generation for op-amps in future closed-loop circuits.</li>
+  </ul>
+
+  <h3>microSD + RTC Logging</h3>
+  <figure>
+      <img src="/images/NeuroStimBoard/SDLogging.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 8: SD Logging Schematic</figcaption>
+    </figure>
+  <p>
+    A <strong>DS3231</strong> real-time clock and microSD card were integrated to allow reliable timestamped signal logging for hours or days without requiring a BLE or PC interface. This architecture allowed wearable use in field trials and lab studies without constant tethering.
+  </p>
+
+  <h3>Thermal Fault Protection</h3>
+  <p>
+    A voltage divider and NTC thermistor formed a comparator circuit to monitor temperature. The comparator (e.g., LM393) tripped a digital pin high if the sensed voltage crossed a threshold—indicating overheating. This triggered a hardware shutdown or warning, preventing patient or system damage.
+  </p>
+
+  <h2>PCB Layout Strategy</h2>
+  <figure>
+      <img src="/images/NeuroStimBoard/pcb2d.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 9: PCB 2D</figcaption>
+    </figure>
+  <p>
+  
+    <p>
+    The Medical-Grade Sensor Node was implemented on a six-layer PCB, optimized for clean analog signal paths, robust digital communication, and modular power delivery. The stack-up is as follows:
+    </p>
+    <ul>
+    <li><b>Top Layer:</b> Mixed Power + Signal</li>
+    <li><b>Layer 2:</b> Analog Signal</li>
+    <li><b>Layer 3:</b> Dedicated Power Plane (split by domain)</li>
+    <li><b>Layer 4:</b> Digital Signal</li>
+    <li><b>Layer 5:</b> Analog Signal + DAC Routing</li>
+    <li><b>Bottom Layer:</b> Continuous Ground Plane</li>
+    </ul>
+
+    
+
+    <h3>Analog vs. Digital Domain Separation</h3>
+    <p>
+    Analog and digital zones were carefully partitioned both physically and electrically. The ADC, instrumentation amplifier (INA333), DAC (AD5689R), and analog buffers (OPA280) were placed in the top-left corner of the board, isolated from high-frequency digital lines. Each analog component was referenced to a local analog ground island connected to the main ground plane via a single-point bridge near the ADC.
+    </p>
+
+    <p>
+    The STM32, microSD slot, and RTC were placed in the opposite quadrant to localize switching noise. Key digital lines (SPI, UART, I<sup>2</sup>C) were routed on Layer 4 and shielded by adjacent power and ground planes to reduce crosstalk into sensitive analog domains.
+    </p>
+
+    <h3>DAC Buffer Routing Considerations</h3>
+    <p>
+    The dual-channel DAC (AD5689R) and its OPA280 buffers required specialized routing on Layer 5. To minimize capacitive coupling and DC offset drift:
+    <ul>
+        <li>Each DAC output trace was kept under 500 mils and routed directly into the non-inverting input of the OPA280</li>
+        <li>Output traces from the op-amps were routed over continuous analog ground to suppress EMI pickup</li>
+        <li>Guard rings were deployed around both DAC and op-amp outputs to isolate them from fast-switching signals</li>
+        <li>Bypass capacitors (0.1 µF + 4.7 µF) were placed within 1 mm of both DAC and op-amp supply pins</li>
+    </ul>
+    </p>
+
+    <h3>Instrumentation Amplifier Signal Integrity</h3>
+    <p>
+    The INA333's differential inputs were routed as tightly coupled traces with matched lengths (less than 10 mil difference) and minimal vias. Each trace passed through a 10 kΩ + 10 nF low-pass filter near the connector, followed by ESD protection diodes before reaching the amplifier. The output of the amplifier was routed into both the Twin-T notch filter and then the anti-aliasing filter, using Layer 2 (analog signal) to avoid interference.
+    </p>
+
+    <h3>Power Distribution and Isolation Strategy</h3>
+    <p>
+    Each power domain (+3.3V logic, +12V boost, -12V inverter, USB input) was separated using ferrite beads with high impedance at 1 MHz. The TPS6104 boost converter and LM2662 charge-pump were placed near the edge of the board to reduce thermal coupling into sensitive analog areas.
+    </p>
+
+    <p>
+    Via stitching was used across ground and power pours to reduce loop inductance, especially around power input connectors, the DAC subsystem, and the ADS1118 ADC. All regulators had dedicated ground returns routed directly to the bottom GND plane as seen in Figure 11.
+    </p>
+
+    <h3>Signal Routing and Clock Domains</h3>
+    <p>
+    SPI lines for the ADS1118 and AD5689R were grouped and routed as impedance-controlled pairs on Layer 4. Pull-up and termination resistors were placed close to the MCU. The system clock from the STM32 was kept away from analog zones to avoid radiated noise coupling into the EEG front-end.
+    </p>
+
+    <h3>Thermal and Mechanical Layout Considerations</h3>
+    <p>
+    All voltage regulators and analog buffers were given generous copper pour heatsinking on the top and power layers. Thermal relief vias were added underneath the AMS1117 and TPS6104 packages to distribute heat across layers. Mounting holes were isolated with clearance rings and tied to system GND for ESD protection.
+    </p>
+
+    <h3>Connector Placement and Access</h3>
+    <p>
+    The USB-C, SD card, and battery connectors were placed along the same edge to facilitate enclosure design and cable routing. The EEG input connector was shielded by copper ground fences and placed on the opposite edge to minimize mechanical noise coupling into signal traces.
+    </p>
+
+    <figure>
+      <img src="/images/NeuroStimBoard/allPours.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 10: All Signal + Power Routing</figcaption>
+    </figure>
+  <p>
+
+    <p>
+    All analog traces remained below 6 inches in length, had minimal stub loading, and were verified for parasitic coupling using Altium’s signal integrity analyzer.
+    </p>
+
+    <figure>
+      <img src="/images/NeuroStimBoard/gndLayer.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 11: GND Layer</figcaption>
+    </figure>
+  <p>
+
+    <h3>Testability and Debug Infrastructure</h3>
+    <p>
+    Test points were added for DAC outputs, analog bias lines, comparator fault flags, and each power rail. The DAC outputs, in particular, were routed to accessible headers for oscilloscope probing, allowing real-time validation of signal integrity and tracking behavior of the buffered analog control signals.
+    </p>
+
+
+
+  <h2>Challenges & Future Work</h2>
+  <ul>
+    <li>Minimizing thermal hotspots near LDOs in small enclosure</li>
+    <li>Managing analog-digital crosstalk on tightly packed board</li>
+    <li>Fine-tuning threshold voltage for thermal trip logic under dynamic load</li>
+    <li><b>Next Steps:</b> BLE streaming, embedded neural decoding inference, miniaturized wearable form factor</li>
+  </ul>
+
+  <h2>Tools & Skills Used</h2>
+  <ul>
+    <li><b>Altium Designer</b> – Schematic capture and multilayer PCB layout</li>
+    <li><b>STM32CubeIDE</b> – Embedded firmware (ADC control, SPI, RTC, logging)</li>
+    <li><b>MATLAB</b> – Filter design and transfer function analysis</li>
+    <li><b>Bench Debugging</b> – Oscilloscope, logic analyzer, thermal camera</li>
+    <li><b>Power Budgeting</b> – Sleep-mode profiling, runtime simulations</li>
+  </ul>
+
+  
+</div>
+</body>
+</html>
