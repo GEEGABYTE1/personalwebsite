@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HIL-Testing Rig</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+  <h1>HIL-Testing Rig</h1>
+  <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+  <p>
+    The HIL (Hardware-in-the-Loop) Testing Rig is a custom-designed emulation board aimed at accelerating embedded system validation and debugging for safety-critical applications. The rig enables real-time injection of analog/digital faults, emulation of sensor input/output via DAC and ADC components, high-throughput logging via SPI Flash, and telemetry through USB and CAN interfaces. It is built around the STM32F103C8T6 microcontroller and designed with a modular 6-layer stackup to isolate analog, power, and digital zones. The system supports rapid iteration cycles for embedded firmware by simulating real-world scenarios through precisely controlled test signals.
+  </p>
+  <figure>
+      <img src="/images/HILTestingRig/pcb3d.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 1: PCB 3D</figcaption>
+    </figure>
+
+  <h2><u>Key Features</u></h2>
+  <p>
+    The HIL Testing Rig was designed from first principles to simulate sensor, actuator, and fault conditions that embedded systems experience in real-time deployments. The following subsystems were added with careful consideration for functional fidelity, hardware test coverage, and compatibility with industry debugging tools.
+  </p>
+
+  <h3>DAC + ADC Emulation I/O</h3>
+  <figure>
+      <img src="/images/HILTestingRig/DACADCEmulationIOSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 2: DAC + ADC Emulation Schematic</figcaption>
+    </figure>
+  <p>
+    I included dual 12-bit DACs (MCP4922) and 16-bit ADCs (ADS1118) to simulate real-world analog input and output lines. The DACs drive test voltages into target MCU pins while the ADCs measure back-sensed voltages and responses. These components were selected for:
+    <ul>
+      <li>SPI communication for noise-isolated digital control</li>
+      <li>Voltage reference tunability for diverse signal conditions</li>
+      <li>Proven compatibility with STM32 systems</li>
+    </ul>
+    The DACs were buffered using dual-OPA280 op-amps to ensure consistent drive capability under varying load impedances. This guarantees accurate test voltage sourcing without droop or overshoot.
+  </p>
+
+  <h3>Fault Injection Subsystem</h3>
+  <figure>
+      <img src="/images/HILTestingRig/FaultInjectionSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 3: Fault Injection Schematic</figcaption>
+    </figure>
+  <p>
+    Fault injection logic was implemented using DIP switch arrays and analog switches (TS3A5018) to selectively short lines, introduce open conditions, or force stuck-at values. This design supports testing against edge-case scenarios such as:
+    <ul>
+      <li>Short to VDD/GND</li>
+      <li>Signal oscillation or brownout simulation</li>
+      <li>Forced transitions to validate firmware debounce and recovery</li>
+    </ul>
+    These were wired in-line with the signal routing layer and mirrored with test headers for external instrumentation.
+  </p>
+
+  <h3>Power Management</h3>
+  <figure>
+      <img src="/images/HILTestingRig/PowerManagementSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 4: Power Management Schematic</figcaption>
+    </figure>
+  <p>
+    The board accepts a 12V external input through a Molex Micro-Fit connector. A buck converter (TPS54202) steps this down to 5V and 3.3V rails. Decoupling capacitors and ferrite beads isolate the analog and digital planes. This ensured:
+    <ul>
+      <li>Low ripple supplies for analog front-end devices</li>
+      <li>Stable core voltage for STM32 operations</li>
+      <li>Expandable rails for future high-current simulation peripherals</li>
+    </ul>
+    Additional polyfuses protect each voltage domain against overcurrent events.
+  </p>
+
+  <h3>SPI Flash Logging</h3>
+  <figure>
+      <img src="/images/HILTestingRig/SPIFlashLoggingSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 5: SPI Flash Logging Schematic</figcaption>
+    </figure>
+  <p>
+    An external 8MB SPI Flash (W25Q64JV) was included for logging waveform, event timing, or system responses during test runs. Chosen for its high throughput and endurance, this allows for offline inspection of:
+    <ul>
+      <li>ADC response to fault injection</li>
+      <li>Voltage rail behavior during load shifts</li>
+      <li>Digital toggle patterns and control signal performance</li>
+    </ul>
+    Firmware logs data at configurable sampling rates and tags with event timestamps from a 32.768kHz-driven RTC.
+  </p>
+
+  <h3>STM32F103C8T6 Microcontroller</h3>
+  <figure>
+      <img src="/images/HILTestingRig/STM32Schematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 6: STM32 Schematic</figcaption>
+    </figure>
+  <p>
+    The core controller was chosen for its mature development ecosystem and peripheral availability:
+    <ul>
+      <li>SPI buses for DAC/ADC/Flash</li>
+      <li>USART + CAN interface</li>
+      <li>DMA and timer channels for low-latency tasks</li>
+    </ul>
+    Its Flash size and RAM were sufficient to buffer logs, interpret test scenarios, and drive peripherals in deterministic loops.
+  </p>
+
+  <h3>Test Headers</h3>
+  <figure>
+      <img src="/images/HILTestingRig/TestingHeaderSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 7: Testing Headers</figcaption>
+    </figure>
+  <p>
+    All internal signals—fault injection lines, DAC output, ADC input, and SPI interfaces—were routed to labeled 0.1" headers. This enabled quick:
+    <ul>
+      <li>Oscilloscope probing for validation</li>
+      <li>Re-routing during board bring-up</li>
+      <li>Patch wire debugging during firmware development</li>
+    </ul>
+    Headers were isolated with series resistors and ESD diodes to avoid line interference.
+  </p>
+
+  <h3>USB + CAN Telemetry System</h3>
+  <figure>
+      <img src="/images/HILTestingRig/USBCCANTelemetrySchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 8: Telemetry Schematic</figcaption>
+    </figure>
+  <p>
+    To interface with host PCs or test control platforms, the board included:
+    <ul>
+      <li>USB-C connector with onboard ESD protection</li>
+      <li>SN65HVD230 CAN transceiver for real-time telemetry injection</li>
+    </ul>
+    USB was used for log retrieval and test initiation, while CAN enabled streaming status and triggering commands within larger HIL simulation clusters.
+  </p>
+
+  <h2><u>PCB Layout Strategy & Challenges</u></h2>
+<p>
+  The HIL Testing Rig was laid out on a 6-layer PCB stackup to accommodate its dense analog-digital subsystems while maintaining signal integrity and power stability. The stackup was as follows:
+</p>
+<figure>
+      <img src="/images/HILTestingRig/pcb2d.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 9: PCB 2D</figcaption>
+    </figure>
+<ul>
+  <li><b>Top Layer:</b> Power + Signal (mixed analog and SPI)</li>
+  <li><b>Layer 2:</b> Ground (solid reference plane)</li>
+  <li><b>Layer 3:</b> Power (filtered rails: 3.3V, 5V)</li>
+  <li><b>Layer 4:</b> Digital Signals (MCU to flash, DAC/ADC)</li>
+  <li><b>Layer 5:</b> Shield + control signal stubs</li>
+  <li><b>Bottom Layer:</b> Ground with test-point silkscreen access</li>
+</ul>
+
+<p>
+  Power was partitioned into separate islands for the analog front end (DAC/ADC/buffers), the MCU core logic, and the fault simulation logic. This minimized coupling between noisy switching traces and sensitive voltage sources. Decoupling was handled by placing high-frequency 0.1μF capacitors near every VDD pin and 10μF bulk capacitors per rail per zone.
+</p>
+
+<p>
+  CAN signals were routed on Layer 2 with matched impedance, using short stubs and differential trace pairs. Fault injection switches were centrally located, allowing short, symmetric routes to each simulated net. The DAC/ADC traces were routed over continuous ground and passed through low-pass filtering stages before test access.
+</p>
+
+<p>
+  Large copper pours were used to aid thermal dissipation, especially near the TPS54202 and polyfuse areas. SPI signal integrity was protected by series resistors and grounded shielding layers above and below Layer 4 traces.
+</p>
+<figure>
+      <img src="/images/HILTestingRig/allSignal.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 10: All Power + Signal Layers. Board outline polygon pour is 3.3 Volts Regulated.</figcaption>
+    </figure>
+
+<figure>
+      <img src="/images/HILTestingRig/gndlayer.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 11: GND Layer</figcaption>
+    </figure>
+
+<h2><u>Design Challenges</u></h2>
+<ul>
+  <li><b>Mixed-signal routing:</b> Care was needed to prevent digital toggling from polluting DAC paths. I used copper ground shielding fences and perpendicular trace orientation between SPI and analog routes.</li>
+  <li><b>Fault timing determinism:</b> DIP switches were prone to bounce, requiring edge-stabilization logic and Schmitt triggers to provide clean transitions for repeatable tests.</li>
+  <li><b>Thermal performance:</b> The +12V power section initially exhibited excessive regulator heating; thermal reliefs and thicker traces were added to mitigate this.</li>
+  <li><b>Analog output accuracy:</b> DAC output impedance under load necessitated op-amp buffering (OPA280) to maintain linearity under dynamic conditions.</li>
+</ul>
+
+<h2><u>Future Work</u></h2>
+<ul>
+  <li>Move from DIP/manual fault control to microcontroller-controlled analog switches for automated fault sequencing.</li>
+  <li>Upgrade to higher-resolution DACs and ADCs (e.g., 16-bit+) for biomedical and aerospace-grade sensor simulations.</li>
+  <li>Add real-time waveform streaming and programmable profiles via onboard storage and UART/USB/CAN control APIs.</li>
+  <li>Integrate touchscreen or GUI-based host dashboard for easier scenario control and telemetry visualization.</li>
+</ul>
+
+</div>
+</body>
+</html>
