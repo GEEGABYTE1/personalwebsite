@@ -74,7 +74,7 @@
       <li>Voltage reference tunability for diverse signal conditions</li>
       <li>Proven compatibility with STM32 systems</li>
     </ul>
-    The DACs were buffered using dual-OPA280 op-amps to ensure consistent drive capability under varying load impedances. This guarantees accurate test voltage sourcing without droop or overshoot.
+    <p>The DACs were buffered using dual-OPA280 op-amps to ensure consistent drive capability under varying load impedances. This guarantees accurate test voltage sourcing without droop or overshoot.</p>
   </p>
 
   <h3>Fault Injection Subsystem</h3>
@@ -98,7 +98,7 @@
       <figcaption>Figure 4: Power Management Schematic</figcaption>
     </figure>
   <p>
-    The board accepts a 12V external input through a Molex Micro-Fit connector. A buck converter (TPS54202) steps this down to 5V and 3.3V rails. Decoupling capacitors and ferrite beads isolate the analog and digital planes. This ensured:
+    The board accepts a 12V external input through a Molex Micro-Fit connector. A LDO (TLV7553) steps this down to 5V and 3.3V rails. Decoupling capacitors and ferrite beads isolate the analog and digital planes. This ensured:
     <ul>
       <li>Low ripple supplies for analog front-end devices</li>
       <li>Stable core voltage for STM32 operations</li>
@@ -119,7 +119,7 @@
       <li>Voltage rail behavior during load shifts</li>
       <li>Digital toggle patterns and control signal performance</li>
     </ul>
-    Firmware logs data at configurable sampling rates and tags with event timestamps from a 32.768kHz-driven RTC.
+    <p>Firmware logs data at configurable sampling rates and tags with event timestamps from a 32.768kHz-driven RTC.</p>
   </p>
 
   <h3>STM32F103C8T6 Microcontroller</h3>
@@ -163,8 +163,36 @@
       <li>USB-C connector with onboard ESD protection</li>
       <li>SN65HVD230 CAN transceiver for real-time telemetry injection</li>
     </ul>
-    USB was used for log retrieval and test initiation, while CAN enabled streaming status and triggering commands within larger HIL simulation clusters.
+    <p>USB was used for log retrieval and test initiation, while CAN enabled streaming status and triggering commands within larger HIL simulation clusters.</p>
   </p>
+
+  <h2><u>System Boot & Initialization</u></h2>
+  <ul>
+    <li>1. <b>Clock Configuration:</b> Set system clock to 72 MHz using PLL from internal 8 MHz RC.</li>
+    <li>2. <b>GPIO Initialization:</b> Configure:</li>
+    <li> - Analog switch control pins (PB0-PB4) as outputs</li>
+    <li> - Mode switches (PB10-PB12) as inputs with pull-downs</li>
+    <li> - LEDs (PC13 - PC15) as outputs</li>
+    <li>3. <b>SPI Initialization:</b> SPI1 initialized for full-duplex mode at 8 MHz</li>
+    <li>4. <b>I2C Initialization:</b> I2C1 initialized at 400 KHz (Fast Mode)</li>
+    <li>5. <b>UART Initialization:</b> UART1 configured at 115200 baud</li>
+    <li>6. <b>ADC & DAC Emulation Setup:</b> Dummy values preloaded into DAC buffer</li>
+    <li>7. <b>Flash Check:</b> Verify W25Q128JV is responsive and ready for logging</li>
+  </ul>
+  
+  <h2><u>Fault Injection Logic</u></h2>
+  <h3>Control Pins</h3>
+  <ul>
+    <li>PB0: Dropout Enable (TS3A5018 CH1)</li>
+    <li>PB1: 3V3 Spike Inject (CH2)</li>
+    <li>PB2: GND Inject (CH3)</li>
+    <li>PB3: DC Offset Toggle (CH4)</li>
+    <li>PB4: Noise Mode Enable (DAC_B replay)</li>
+  <h3>Logic</h3>
+  <li>GPIOs controlled via custom-writte-function in firmware</li>
+  <li>In Replay Mode, faults are injected at fixed intervals (or toggled by switch PB12)</li>
+  <li>In Capture Mode, faults can be manually activated for DUT stress testing</li>
+  </ul>
 
   <h2><u>PCB Layout Strategy & Challenges</u></h2>
 <p>
