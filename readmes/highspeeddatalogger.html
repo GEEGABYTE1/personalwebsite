@@ -1,0 +1,357 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>High Speed Data Logger </title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>High Speed Data Logger - 6 Channel Parallel ADC Sampling</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+
+
+    
+  <h2><u>Overview</u></h2>
+
+    <figure>
+      <img src="/images/highspeeddatalogger/PCB3D.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 1: PCB 3D</figcaption>
+    </figure>
+<p>
+  The High-Speed Data Logger is a purpose-built embedded system engineered to acquire, process, and log high-throughput analog sensor signals for advanced diagnostic and telemetry applications. Designed around the STM32F407VET6 microcontroller and six channels of simultaneous sampling using the ADS8556 ADCs, the system achieves real-time, multi-channel acquisition at up to 750 kSPS per channel, optimized for use cases ranging from robotics and vehicle diagnostics to neurotechnology signal capture.
+</p>
+
+<p>
+  To handle the resulting data throughput, the board uses SDIO-based microSD logging, supported by DMA buffers to eliminate CPU blocking. The design prioritizes low-latency data capture while maintaining analog integrity through careful PCB partitioning, power isolation, and signal conditioning. In addition to analog inputs, the board features a CAN interface for system telemetry, and a modular interface for optional sensor expansion.
+</p>
+
+<p>
+  The logger features a 6-layer mixed-signal PCB stackup, engineered for high-speed digital traces and low-noise analog performance. With onboard power management and ESD protection, it supports both field and lab testing environments, enabling engineers to stream, store, or post-process high-resolution waveform data with sub-millisecond fidelity.
+</p>
+
+<p>
+  This project showcases high-performance embedded architecture and system-level optimization, suitable for applications in automotive debugging, industrial instrumentation, and brain-computer interface research where data rate, precision, and logging robustness are mission-critical.
+</p>
+
+
+  <h2><u>Key Features & Design Decisions</u></h2>
+<p>
+  The High-Speed Data Logger project was developed to address a critical bottleneck in embedded data acquisition: the ability to sample, digitize, and log multiple analog channels in parallel at high resolution and speed. This is especially relevant for neurotechnology, motor control diagnostics, and sensor-rich applications where sub-millisecond signal events must be captured with fidelity. Each design decision—from part selection to architecture partitioning—was made with performance, noise resilience, and I/O concurrency in mind.
+</p>
+
+<h3>Parallel ADC Architecture (ADS8556)</h3>
+ <figure>
+      <img src="/images/highspeeddatalogger/AnalogFrontEndSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 2: Analog Frontend Schematic</figcaption>
+    </figure>
+<p>
+  The core analog front-end consists of up to four Texas Instruments <b>ADS8556</b> ADCs, each offering 6 channels of simultaneous sampling at 16 bits and up to 650 kSPS per channel. These devices were selected specifically for their:
+</p>
+<ul>
+  <li><b>Parallel bus interface</b>, enabling ultra-fast reads compared to serial SPI ADCs</li>
+  <li><b>Simultaneous sampling architecture</b>, which avoids inter-channel skew critical in applications like EEG or motor phase current logging</li>
+  <li><b>Software-selectable gain ranges</b> (+/-10V, +/-5V, etc.), making it ideal for mixed-voltage analog environments</li>
+</ul>
+<p>
+  Each ADS8556 was given a dedicated parallel bus mapped to STM32 GPIO ports, ensuring non-multiplexed communication and allowing true concurrent channel sampling and buffering.
+</p>
+
+<h3>Microcontroller Selection – STM32F407VET6</h3>
+<figure>
+      <img src="/images/highspeeddatalogger/STM32Schematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 3: STM32 Schematic</figcaption>
+    </figure>
+<p>
+  The STM32F407 was chosen over other Cortex-M3 and M4 series for several reasons:
+</p>
+<ul>
+  <li><b>168 MHz core clock</b> with DMA support on GPIO and SDIO</li>
+  <li><b>Rich memory footprint</b> (512 KB Flash, 192 KB RAM) for buffering large ADC frames before writes</li>
+  <li><b>SDIO interface</b> for high-speed microSD writes up to 25 MB/s</li>
+  <li><b>Multiple GPIO ports</b> and external interrupt lines to interface with parallel ADCs and handle READY signals</li>
+</ul>
+<p>
+  Its STM32Cube ecosystem and RTOS integration also supported rapid development and deterministic task scheduling during data logging.
+</p>
+
+<h3>SDIO-Based microSD Logging</h3>
+<figure>
+      <img src="/images/highspeeddatalogger/SDCardLoggingSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 4: SDCard Schematic</figcaption>
+    </figure>
+<p>
+  Logging performance was a top priority. The microcontroller's dedicated SDIO peripheral allowed high-speed writes to microSD cards using native 4-bit mode. This was crucial to sustaining >1 MSPS aggregate throughput across multiple ADCs. DMA was used to buffer and stream ADC frames in bursts, reducing CPU overhead and increasing bus efficiency.
+</p>
+
+<h3>CAN Telemetry and Debug Interface</h3>
+<figure>
+      <img src="/images/highspeeddatalogger/CANTelemetry.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 5: CAN Telemetry Schematic</figcaption>
+    </figure>
+<p>
+  A <b>SN65HVD230 CAN transceiver</b> was integrated for telemetry and remote command injection during logging sessions. Unlike UART, which is susceptible to noise and limited in speed, CAN offers:
+</p>
+<ul>
+  <li>Robust differential signaling for noisy environments</li>
+  <li>Hardware filtering and packet arbitration</li>
+  <li>High-speed mode (1 Mbps) when RS pin is tied to GND</li>
+</ul>
+<p>
+  This made the system compatible with robotics and automotive setups requiring synchronous status updates during acquisition.
+</p>
+
+<h3>Status LEDs and Visual Debug</h3>
+<p>
+  The system includes multiple status LEDs to indicate:
+</p>
+<ul>
+  <li>MicroSD detection and logging activity</li>
+  <li>ADC synchronization errors</li>
+  <li>Power sequencing status</li>
+</ul>
+<p>
+  This allowed real-time visual inspection during lab testing without external instrumentation.
+</p>
+
+<h3>Power Architecture and Regulation</h3>
+<figure>
+      <img src="/images/highspeeddatalogger/PowerManagementSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 6: Power Management Schematic</figcaption>
+    </figure>
+<p>
+  The board was designed to support either USB-C. Key regulators include:
+</p>
+<ul>
+  <li><b>AMS1117-3.3V</b> – powers STM32 and digital logic, chosen for availability and thermal performance</li>
+  <li><b>Dedicated analog regulator</b> (low-noise LDO) to feed the ADS8556 VREF and analog front-end, reducing digital cross-talk</li>
+</ul>
+<p>
+  Ground planes were split between analog and digital domains to isolate switching noise, and ferrite beads were used at domain transitions to suppress high-frequency ripple.
+</p>
+
+<h3>Header Configuration and Signal Routing</h3>
+<p>
+  Each analog channel from the ADS8556 was routed through a header or jumper, allowing selective channel enabling, fault injection, or signal rerouting for debugging. These headers doubled as convenient scope probing points for confirming signal shape and timing at each acquisition stage.
+</p>
+
+<h3>EMC and Noise-Reduction Techniques</h3>
+<p>
+  Analog input lines were protected with RC low-pass filters (e.g., 10kΩ + 100pF) at each input pin to reduce aliasing and ESD. Digital traces were kept short and routed over uninterrupted ground planes to minimize loop area and coupling. Careful layout separation ensured the microSD and CAN domains did not radiate into ADC lines.
+</p>
+
+<h3>Design Scalability</h3>
+<p>
+  Although initially tested with two ADCs, the board supports up to four parallel ADS8556 devices. This flexibility was designed in from the start, with:
+</p>
+<ul>
+  <li>Extra GPIO expansion via STM32 alternate pin-mapping</li>
+  <li>Dedicated headers for extra ADC VIN lines</li>
+  <li>Selectable VREF circuitry for varying voltage domains</li>
+</ul>
+<p>
+  This design foresight makes the system extensible to future use cases like multi-sensor fusion, high-speed tactile input recording, or dense motor current analysis.
+</p>
+
+
+  <h2><u>PCB Layout Strategy</u></h2>
+  <figure>
+      <img src="/images/highspeeddatalogger/pcb2d.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 7: PCB2D</figcaption>
+    </figure>
+  
+<p>
+  The High-Speed Data Logger was architected with layout precision as a top priority to accommodate high-throughput analog data capture without compromising signal integrity, thermal stability, or electromagnetic compliance. The board utilizes a dense 6-layer stackup with a well-partitioned routing strategy to isolate noisy digital interfaces from sensitive analog input traces, while ensuring optimal power delivery to high-speed devices.
+</p>
+
+<h3>Layer Stackup Rationale</h3>
+<p>
+  The board features the following 6-layer structure:
+  <ul>
+    <li><b>Top Layer:</b> Power + Signal (Component Placement)</li>
+    <li><b>Layer 2:</b> 3.3V Dedicated Power Plane</li>
+    <li><b>Layer 3:</b> Analog Front-End Signal</li>
+    <li><b>Layer 4:</b> Digital Signal Routing</li>
+    <li><b>Layer 5:</b> Internal Signal + Control Power</li>
+    <li><b>Bottom Layer:</b> Solid GND Plane</li>
+  </ul>
+  This arrangement allowed us to route sensitive analog lines between clean power and ground planes for controlled impedance and crosstalk shielding. All return paths were kept directly underneath their associated signal traces for loop minimization.
+</p>
+
+<h3>Analog Front-End Layout</h3>
+<p>
+  The ADS8556 ADCs—key to our high-speed acquisition—were placed with direct proximity to their corresponding analog input headers and decoupling capacitors. Input traces were routed as tightly-coupled differential pairs with controlled impedance, avoiding any layer transitions that could introduce reflections or parasitics. Key considerations included:
+  <ul>
+    <li>Guard rings around high-impedance analog nodes to prevent leakage</li>
+    <li>Dedicated analog GND pour zones electrically connected to the main GND only at a single star point</li>
+    <li>Matched trace lengths for simultaneous sampling across channels</li>
+  </ul>
+</p>
+
+<h3>Digital Domain Partitioning</h3>
+<p>
+  All high-speed SPI lines, microSD SDIO lines, and STM32 GPIO traces were isolated to digital-only zones. These were routed predominantly on Layers 4 and 5, with impedance-controlled traces and series resistors where signal integrity analysis indicated potential for overshoot. The STM32F407VET6 microcontroller was centered between the analog front-end and logging subsystems to minimize signal delays and fan-out routing.
+</p>
+
+<h3>High-Speed Logging Interface</h3>
+<p>
+  The SDIO-based microSD interface was prioritized for signal integrity by:
+  <ul>
+    <li>Using impedance-matched traces (45–50Ω single-ended) for CLK, CMD, and D0–D3</li>
+    <li>Adding a local ground reference pour under the SDIO interface to prevent reflection and cross-coupling</li>
+    <li>Routing short, direct traces to avoid stubs and uncontrolled impedance</li>
+  </ul>
+  Test points were added at the base of each SDIO trace for signal probing during early bring-up.
+</p>
+
+<h3>Power Delivery Network (PDN)</h3>
+<figure>
+      <img src="/images/highspeeddatalogger/3V3Pour.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 8: 3V3 Pour</figcaption>
+    </figure>
+
+  <figure>
+      <img src="/images/highspeeddatalogger/5VPour.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 9: 5V Pour</figcaption>
+    </figure>
+  
+<p>
+  The 3.3V plane was sandwiched between ground and signal layers to minimize power loop inductance. Each active device (ADC, MCU, microSD) received local ceramic decoupling (100nF + 1µF) positioned within 1 mm of VDD pins. Bulk electrolytics supported low-frequency transients, especially for the SD card current surges during burst writes.
+</p>
+
+
+<h3>CAN Telemetry Zone</h3>
+<p>
+  The SN65HVD230 CAN transceiver was placed near the board edge, with differential traces for CAN_H and CAN_L routed as a tightly coupled pair with 120Ω termination. These lines were kept away from the analog front-end and routed over a consistent ground reference plane to preserve the differential impedance and reduce susceptibility to common-mode noise.
+</p>
+
+<h3>Clock & Control Signals</h3>
+<p>
+  Crystal oscillators for the STM32 and any auxiliary timing circuitry were placed as close as possible to their associated ICs, with symmetric guard traces and ground pour to shield from adjacent signal lines. Oscillator load caps were matched to minimize startup skew, and stubs were avoided on clock lines.
+</p>
+
+<h3>Thermal Management</h3>
+<p>
+  While power dissipation was low, the STM32 and ADCs can generate moderate localized heat during burst logging. Copper pours beneath high-power ICs were thermally stitched using vias to inner and bottom layers to spread heat. Sensitive analog sections were kept thermally decoupled by layout zoning.
+</p>
+
+
+<h3>Silkscreen & Debug Accessibility</h3>
+<p>
+  All debug headers were labeled clearly with orientation dots and functional markings (e.g., “ADC IN 1–6”, “CAN TX/RX”, “SDIO CLK”). GPIO test pads were exposed with clearance around them for easy clip-on access with oscilloscope probes during firmware validation. Mounting holes were placed symmetrically for enclosure compatibility.
+</p>
+
+<h3>Design Rule Strategy</h3>
+<p>
+  Critical trace width, clearance, and via rules included:
+  <ul>
+    <li>20 mil power traces for MCU and ADC core VDD</li>
+    <li>12 mil differential pair width and spacing for CAN lines</li>
+    <li>10 mil standard signal routing width</li>
+    <li>20 mil clearance between analog and digital zones</li>
+    <li>Thermal reliefs for all regulator output pads</li>
+  </ul>
+  These rules ensured manufacturability and robustness across temperature and voltage swings.
+</p>
+
+
+
+
+
+
+<h2><u>Challenges & Future Work</u></h2>
+
+<h3>Design-Time Challenges</h3>
+<p>
+  One of the foremost challenges was balancing high-speed digital logging with low-noise analog acquisition on a single board. The data logger needed to support simultaneous sampling across six ADC channels while writing to an SD card via SDIO at speeds upwards of 8–10 Mbps. This created three significant design bottlenecks:
+  <ul>
+    <li><b>Signal Integrity:</b> Digital switching noise from the SDIO interface risked coupling into the analog front-end. Careful layer partitioning and dedicated power planes were required to isolate domains and preserve measurement accuracy.</li>
+    <li><b>Power Supply Stability:</b> The SD card’s burst current demand often exceeds 100 mA, which can cause brownouts or ripple on the 3.3V line. This was mitigated using aggressive decoupling (both ceramic and bulk capacitors), ferrite isolation, and via stitching to distribute return paths.</li>
+    <li><b>Trace Routing Complexity:</b> With six analog channels, a microcontroller, high-speed SPI interfaces, and CAN transceiver all needing direct, clean routing, congestion was inevitable. The 6-layer stackup allowed sufficient flexibility, but forced a strict hierarchy of layer usage: analog signals and ground routing were locked early to avoid cross-domain interference.</li>
+  </ul>
+</p>
+
+<h3>Firmware Bottlenecks</h3>
+<p>
+  Although the STM32F407 provides a powerful Cortex-M4 core and DMA engine, tuning DMA for high-throughput SDIO logging under real-time constraints was non-trivial:
+  <ul>
+    <li>DMA transfer completion interrupts had to be processed without stalling ADC sampling loops.</li>
+    <li>Buffer overruns during long SD card write bursts necessitated a ring-buffer scheme in SRAM, which consumed nearly 70% of the available 192KB RAM.</li>
+    <li>Clock synchronization between ADC sampling, SPI reads, and SDIO transfers required both hardware timers and software-controlled flow management to avoid race conditions.</li>
+  </ul>
+  These issues were partially resolved through staggered priority IRQ configurations and double-buffered DMA memory regions.
+</p>
+
+<h3>ADC Channel Crosstalk & Noise</h3>
+<p>
+  During testing, small artifacts were noticed on adjacent ADC channels when high-frequency signals were injected on a single input. These appeared to be caused by:
+  <ul>
+    <li>Shared ground return paths between ADC input pins</li>
+    <li>Capacitive coupling on long analog traces adjacent to digital SPI lines</li>
+    <li>Insufficient shielding for high-impedance ADC inputs</li>
+  </ul>
+  Mitigation strategies included increasing analog trace spacing, introducing copper shielding on Layer 3, and reducing trace lengths using more vertical via placement.
+</p>
+
+<h3>CAN Debugging Latency</h3>
+<p>
+  The SN65HVD230 CAN transceiver was added to enable system-level integration and logging into broader diagnostic platforms. However, under high traffic conditions, collisions and bit-stuffing created delays in transmission. A hardware workaround involved using the STM32’s CAN FIFO and time-triggered transmission scheduling to reduce latency jitter and improve CAN throughput consistency.
+</p>
+
+<h3>Future Improvements</h3>
+<ul>
+  <li><b>Upgrade to Parallel Flash:</b> Replacing the SD card with QSPI flash (e.g., Winbond W25Q256) would allow faster, deterministic logging without file system overhead.</li>
+  <li><b>Onboard ML Inference:</b> Integration of a lightweight CNN or SVM model using CMSIS-NN to classify signals (e.g., neural spike detection) in real time.</li>
+  <li><b>BLE Telemetry Stack:</b> Adding a BLE module (e.g., nRF52 or ESP32) would allow real-time wireless preview of high-priority data, ideal for wearable or implantable research scenarios.</li>
+  <li><b>Shielded Analog Daughterboard:</b> Moving the analog front-end onto a shielded daughterboard would further isolate noise and permit easy replacement or upgrades to the signal chain (e.g., different filters or gain stages).</li>
+  <li><b>Streaming Over USB-C:</b> USB CDC logging could supplement or replace microSD-based logging for continuous desktop-based debugging environments.</li>
+</ul>
+
+
+
+
+  
+</div>
+</body>
+</html>
