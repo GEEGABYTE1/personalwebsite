@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Grid Node </title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Smart Grid Node with Remote Fault Detection</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+    <figure>
+      <img src="/images/smartgridnode/pcb3d.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 1: PCB 3D</figcaption>
+    </figure>
+
+  <h2><u>Overview</u></h2>
+  <p>
+    The Smart Grid Node is a custom-designed embedded system for real-time voltage and current monitoring, fault detection, and remote telemetry in decentralized electrical infrastructure. Built around the STM32F103C8T6 microcontroller, the node features precision analog sensing, GPS-synchronized real-time clock logging, isolated CAN communication, and power regulation for distributed deployments. It enables scalable fault diagnosis and telemetry across smart grid environments with robust sensor interfaces and data logging capabilities.
+  </p>
+
+  <h2><u>Key Features</u></h2>
+  
+  <h3>Voltage & Current Sensing</h3>
+  <figure>
+      <img src="/images/smartgridnode/PowerinputRegVoltageSensing.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 2: Power Regulation and Voltage Sensing Schematic</figcaption>
+    </figure>
+
+  <figure>
+      <img src="/images/smartgridnode/currentSensing.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 3: Current Sensing Schematic</figcaption>
+    </figure>
+  <p>
+    The system monitors critical AC/DC grid lines using precision resistor dividers and current sense amplifiers. Voltage levels are scaled down via high-impedance dividers and filtered with RC stages before reaching the ADC. For current measurement, a shunt resistor feeds into an INA219 current sensor, selected for its I<sup>2</sup>C interface, built-in ADC, and 0.1% precision current measurement capability.
+  </p>
+
+  <h3>RTC-GPS Synchronization</h3>
+  <figure>
+      <img src="/images/smartgridnode/RTCGPSSync.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 4: RTC + GPS Sync Schematic</figcaption>
+    </figure>
+  <p>
+    A DS3231 real-time clock logs time-stamped events onto a microSD card. To ensure sub-second global accuracy, a GPS module's 1PPS signal is fed into the RTC or MCU to periodically resynchronize timestamps, a key requirement for grid-wide fault correlation and timing diagnostics.
+  </p>
+
+  <h3>ESP32 BLE Communication Interface</h3>
+   <figure>
+      <img src="/images/smartgridnode/esp32.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 5: ESP32 BLE Logging</figcaption>
+    </figure>
+<p>
+  To modernize telemetry and remote diagnostics, the Smart Grid Node integrates the <strong>ESP32-WROOM-32E</strong> module as its primary wireless interface. This module provides robust <strong>Bluetooth Low Energy (BLE)</strong> communication, chosen for its:
+</p>
+<ul>
+  <li>Low-power, always-on operation suitable for embedded grid applications</li>
+  <li>Integrated dual-core MCU with enough headroom to offload basic protocol handling</li>
+  <li>Seamless compatibility with mobile diagnostics tools and field maintenance devices</li>
+</ul>
+<p>
+  BLE was preferred over traditional CAN due to:
+</p>
+<ul>
+  <li>Wireless convenience during rapid diagnostics in field deployments without requiring wired access</li>
+  <li>Built-in TCP/IP and UART bridge support for future firmware upgrades and API integration</li>
+  <li>Support for mesh networking if the grid expands into multi-node monitoring configurations</li>
+</ul>
+<p>
+  The <strong>ESP32</strong> was connected directly to the STM32 via UART and optionally via SPI for high-throughput streaming. A UART bridge protocol was implemented using DMA on the STM32 side to reduce CPU overhead and allow bidirectional messaging with minimal latency.
+</p>
+
+<h4>Isolation and Safety</h4>
+<p>
+  To protect the ESP32 from transients and ESD events common in power electronics environments:
+</p>
+<ul>
+  <li>TVS diodes were placed on TX/RX lines</li>
+  <li>The <strong>VCC_3V3 rail</strong> supplying the ESP32 is isolated via ferrite beads and local bypass capacitors (100nF + 10μF)</li>
+  <li>Decoupling strategy was adopted to suppress noise during RF transmission bursts</li>
+</ul>
+
+<h4>Antenna & Layout</h4>
+<p>
+  Special care was taken in PCB layout (see Figure 8):
+</p>
+<ul>
+  <li>The onboard antenna was <strong>kept free from copper pours</strong> and other noisy digital traces</li>
+  <li>A <strong>cutout in the ground plane</strong> underneath the antenna ensured maximum transmission range</li>
+  <li>The ESP32 module was placed near the board edge to optimize BLE signal strength in sealed enclosures</li>
+</ul>
+
+<h4>Advantages</h4>
+<ul>
+  <li>Enabled <strong>wireless configuration</strong> and real-time status broadcasting</li>
+  <li>Provided <strong>failover telemetry</strong> in case of SD card failure or GPS desynchronization</li>
+  <li>Supported <strong>OTA firmware updates</strong>, reducing maintenance overhead</li>
+</ul>
+
+
+  </ul>
+
+  <h3>Power Regulation</h3>
+  <p>
+    As seen in Figure 1, the board accepts unregulated 12VDC input and regulates to 5V and 3.3V via AMS1117 LDOs. To prevent overcurrent faults, each rail is protected with resettable polyfuses. Strategic ferrite beads isolate analog and digital domains, minimizing coupling noise from high-frequency switching or telemetry bursts.
+  </p>
+
+  <h3>Data Logging System</h3>
+  
+  <p>
+    A microSD slot stores sampled data with timestamps for offline analysis. Logging is triggered during predefined voltage/current anomalies or by manual command via CAN. The SD card operates over SPI and is interfaced using a dedicated chip-select to avoid contention during CAN activity.
+  </p>
+
+  <h2><u>PCB Layout Strategy</u></h2>
+   <figure>
+      <img src="/images/smartgridnode/pcb2d.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 6: PCB 2d</figcaption>
+    </figure>
+  <p>
+    The 6-layer PCB follows a structure of Power + Signal, Power1, Power2 (VCC_3V3 pour), Signal1, Signal2 (unused), and GND. Analog sensing lines are shielded with ground pours and routed away from CAN and MCU switching traces. Clock and reset lines are short, terminated, and isolated from high-current planes. A star-grounding approach ensures low return-path impedance, and decoupling capacitors are placed within 2mm of each IC.
+  </p>
+   <figure>
+      <img src="/images/smartgridnode/gndPour.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 7: GND Pour</figcaption>
+    </figure>
+     <figure>
+      <img src="/images/smartgridnode/powerPour.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 8: 3V3 Pour</figcaption>
+    </figure>
+
+  <h2><u>Challenges & Future Work</u></h2>
+  <ul>
+    <li>Managing ground bounce from large inrush currents during voltage transients</li>
+    <li>Thermal drift in voltage dividers, requiring future calibration via onboard EEPROM</li>
+    <li>Improving RTC-GPS integration by using interrupt-driven 1PPS syncing</li>
+    <li>Enhancing remote reconfigurability via CAN message parsing and bootloader updates</li>
+  </ul>
+
+  <h2><u>Tools & Skills Used</u></h2>
+  <ul>
+    <li><b>Altium Designer</b> – Multilayer PCB layout and signal integrity planning</li>
+    <li><b>STM32CubeIDE</b> – Firmware for ADC sampling, CAN telemetry, RTC-GPS logic</li>
+    <li><b>MATLAB</b> – Sensor signal analysis and trend visualization</li>
+    <li><b>Oscilloscope + Logic Analyzer</b> – Fault injection and timing debug</li>
+  </ul>
+
+</div>
+</body>
+</html>
