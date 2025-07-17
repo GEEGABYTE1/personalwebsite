@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tesla Roadster Infotainment System </title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tesla Infotainment System</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+    </div>
+
+<h2><u>Overview</u></h2>
+<figure>
+      <img src="/images/TeslaInfotainmentSystem/pcb3d.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 1: PCB 3D</figcaption>
+    </figure>
+<p>
+  The Tesla Roadster Infotainment System project is a custom-engineered 8-layer embedded PCB designed to deliver a robust, responsive, and feature-rich in-vehicle infotainment interface. Inspired by—but distinctly improved from—an open-source Tesla infotainment module, this board was architected from scratch to address noise isolation, signal routing efficiency, layout compactness, and audio-visual integration challenges often overlooked in open designs.
+</p>
+<p>
+  While the open-source reference board served as an architectural baseline, our design restructured the stackup, re-routed power domains for greater thermal stability, and redesigned the human-machine interface (HMI) circuitry for enhanced responsiveness. Notably, the capacitive touch and TFT display interfaces were isolated via cleaner SPI routing and decoupled voltage planes to reduce cross-domain EMI and improve visual clarity during runtime.
+</p>
+<p>
+  The system is powered by a high-efficiency MP1584EN buck converter, with proper filtering and isolation stages to minimize ripple artifacts in sensitive analog sections—an area where the original design suffered from audio distortion and ESP32 instability. A dedicated PAM8403 stereo amplifier was integrated to drive onboard audio output with sufficient fidelity and volume, avoiding the coupling noise issues present in the earlier community design.
+</p>
+<p>
+  Core functions are driven by an ESP32-WROOM module that manages BLE/Wi-Fi, ILI9341 TFT display updates, XPT2046 capacitive touch inputs, and button matrix events in real-time. A CAN transceiver (SN65HVD230) enables future expansion for vehicle integration. USB-C support provides both power and serial development access, and all subsystems were rerouted to improve electrical partitioning and reduce layout congestion.
+</p>
+<p>
+  Altogether, the redesign presents a refined, more scalable infotainment system suitable for custom EV builds or as a testbed for next-generation cabin UX experiments—highlighting system-level design thinking, layout optimization, and real-world interface tuning.
+</p>
+
+
+    
+  <h2><u>Key Features</u></h2>
+
+<h3>1. MP1584EN Buck Regulator – Power Distribution Backbone</h3>
+<figure>
+      <img src="/images/TeslaInfotainmentSystem/PowerInputRegulationSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 2: Power Input Regulation Schematic</figcaption>
+    </figure>
+<p>
+  The MP1584EN was selected as the primary power supply IC to step down 12V automotive input to a stable 5V rail. It supports up to 3A output current, ideal for powering ESP32, TFT display, audio amplifier, and touch IC simultaneously. Key reasons for its selection include:
+</p>
+<ul>
+  <li>Wide input range (4.5V to 28V) for automotive compatibility</li>
+  <li>High efficiency (~90%) with minimal thermal rise</li>
+  <li>Fixed-frequency operation for predictable EMI behavior</li>
+</ul>
+<p>
+  We added external 22μH inductor and low-ESR ceramic capacitors for output filtering. The COMP and FREQ pins were left floating, using internal defaults for ease of layout and minimizing external noise sensitivity.
+</p>
+
+<h3>2. ESP32-WROOM-32E – Embedded Controller with BLE + Wi-Fi</h3>
+<figure>
+      <img src="/images/TeslaInfotainmentSystem/MCUCoreDebugSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 3: MCU Core Debug Schematic</figcaption>
+    </figure>
+<p>
+  The ESP32 module handles:
+</p>
+<ul>
+  <li>BLE communication with paired devices</li>
+  <li>TFT screen updates via SPI</li>
+  <li>Capacitive touch position decoding</li>
+  <li>Debounced button matrix interface</li>
+</ul>
+<p>
+  We chose the ESP32-WROOM-32E variant for its stable silicon revision, large RAM/flash, and excellent community support. Its multi-core architecture allowed decoupling BLE tasks from display refresh loops, and SPI DMA modes were used to accelerate rendering without overloading CPU.
+</p>
+
+<h3>3. ILI9341 TFT Display + XPT2046 Touchscreen Controller</h3>
+<figure>
+      <img src="/images/TeslaInfotainmentSystem/DisplayTouchSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 4: Display Touch Schematic</figcaption>
+    </figure>
+<p>
+  This SPI-based 320x240 TFT module was integrated for HMI display, while the XPT2046 chip provided capacitive touch tracking. We improved upon the open-source layout by:
+</p>
+<ul>
+  <li>Separating SPI clock lines for display and touch controllers</li>
+  <li>Using 33Ω series resistors on SPI to damp reflections</li>
+  <li>Placing both components along one edge to ease ribbon cable routing</li>
+</ul>
+<p>
+  Additionally, we used a shared 5V→3.3V LDO (AMS1117) to power the ILI9341 and XPT2046 with decoupled bulk caps to reduce cross-device ripple coupling.
+</p>
+
+<h3>4. PAM8403 Stereo Class-D Audio Amplifier</h3>
+<figure>
+      <img src="/images/TeslaInfotainmentSystem/AudioInterfaceSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 5: Audio Interface Schematic</figcaption>
+    </figure>
+<p>
+  The PAM8403 was selected for its 3W/channel output, filterless operation, and 90% efficiency at 5V input. It simplified layout by eliminating external inductors. Our design:
+</p>
+<ul>
+  <li>Placed the amplifier away from SPI traces to avoid noise injection</li>
+  <li>Included pop-suppression RC filters at the speaker outputs</li>
+  <li>Used large trace widths and short paths for speaker power routing</li>
+</ul>
+<p>
+  The original design suffered from speaker hum due to poor power domain isolation. We addressed this by adding a ferrite bead between MP1584EN and PAM8403 input, with local ceramic filtering.
+</p>
+
+
+<h3>6. USB-C Connector – Dual Role Power & Debug</h3>
+
+<p>
+  As seen in Figure 3, a USB-C breakout was used to supply 5V power to the board and provide serial programming/debug interface. ESD protection diodes (PESD5V0S1UL) were added at the D+ and D− lines. The CH340C USB-UART bridge was used for minimal footprint and automatic reset wiring with ESP32's EN and IO0 lines.
+</p>
+
+<h3>7. SN65HVD230 CAN Transceiver</h3>
+<figure>
+      <img src="/images/TeslaInfotainmentSystem/CANInterfaceSchematic.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 6: CAN Interface Schematic</figcaption>
+    </figure>
+<p>
+  To support future expansion into full EV-CAN networks, a SN65HVD230 was integrated. The RS pin was tied low for high-speed mode. CANH and CANL lines were routed as a differential pair with 120Ω termination across header pins. While not yet utilized, this transceiver was strategically included for roadmap flexibility.
+</p>
+
+
+
+  <h2><u>PCB Layout Strategy</u></h2>
+  <figure>
+      <img src="/images/TeslaInfotainmentSystem/pcb2d.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 7: PCB 2D</figcaption>
+    </figure>
+
+<p>The PCB layout for the <strong>Tesla Roadster Infotainment System</strong> board was a critical aspect of the overall system design, with decisions made to optimize for signal integrity, thermal efficiency, mechanical reliability, and production scalability. This was not a simple routing task—it was an exercise in architectural partitioning, functional prioritization, and manufacturability planning, given the dense integration of multimedia, power, analog, and digital domains across an 8-layer board.</p>
+
+<h3>1. Layer Stackup and Global Layout Partitioning</h3>
+<p>The board was designed as an 8-layer structure with the following stackup:</p>
+<ul>
+  <li><strong>Top Layer</strong> – Power + Signal (Component Mounting Layer)</li>
+  <li><strong>Layer 2</strong> – Power1 (Dedicated 3.3V polygon pours)</li>
+  <li><strong>Layer 3</strong> – Power2 (Shared analog + digital power zones)</li>
+  <li><strong>Layer 4</strong> – Signal1 (Primary digital communication routing)</li>
+  <li><strong>Layer 5</strong> – Signal2 (Secondary signals, BLE antenna routing)</li>
+  <li><strong>Layer 6</strong> – Signal3 (Auxiliary buses, backlight dimming, I²S)</li>
+  <li><strong>Layer 7</strong> – Signal4 (Control signals, LED arrays)</li>
+  <li><strong>Bottom Layer</strong> – GND (Solid, stitched reference)</li>
+</ul>
+
+<figure>
+      <img src="/images/TeslaInfotainmentSystem/3v3pour.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 8: 3V3 Pour on Layer 2</figcaption>
+    </figure>
+
+<figure>
+      <img src="/images/TeslaInfotainmentSystem/gndPour.PNG" alt="NeuroStimCore Board"  />
+      <figcaption>Figure 9: GND Pour </figcaption>
+    </figure>
+
+<h3>2. Functional Zoning & Placement Philosophy</h3>
+<p>Functional blocks were deliberately placed based on thermal performance, user interface accessibility, and noise segregation. For instance, the MP1584EN buck converter was top-left for thermals and input isolation; the STM32F103 and ESP32-WROOM digital core was centered; and the PAM8403 audio amp sat bottom-left with thermal vias beneath. BLE antenna clearance zones were enforced on layers 1–5.</p>
+
+<h3>3. Via Strategy and Inter-layer Routing</h3>
+<p>We employed through-hole vias, blind vias, and dense stitching:</p>
+<ul>
+  <li>Power vias dropped from buck/LDOs into Power1/Power2</li>
+  <li>Signal vias for SPI, I²S, UART routed through Signal1–Signal3</li>
+  <li>Thermal vias under MP1584EN and PAM8403 aided dissipation</li>
+  <li>Via stitching around GND borders and between reference planes reduced EMI and increased rigidity</li>
+</ul>
+
+<h3>4. Trace Width, Length, and Impedance</h3>
+<ul>
+  <li><strong>SPI Lines:</strong> 10 mil wide, matched within 5%, spaced 6 mil</li>
+  <li><strong>I²S Audio:</strong> 15 mil with adjacent GND shielding</li>
+  <li><strong>Power Traces:</strong> 3.3V @ 50–70 mil; audio/backlight @ 80 mil; widths calculated using IPC-2221</li>
+</ul>
+
+<h3>5. EMI and Crosstalk Mitigation</h3>
+<ul>
+  <li>BLE keep-out zones cleared on multiple layers</li>
+  <li>Guard traces and grounded pours around analog audio</li>
+  <li>Backlight PWM routed as differential pair to minimize coupling</li>
+  <li>Analog/digital GND islands tied at a single star point beneath LDO</li>
+</ul>
+
+<h3>6. Component Orientation and Accessibility</h3>
+<p>All connectors were edge-aligned for ease of access. Test points for SPI, UART, I²S, and reset were exposed with labeled silkscreen. All components were top-mounted for reflow compatibility.</p>
+
+<h3>7. Silkscreen, Annotation, and Assembly</h3>
+<ul>
+  <li>Text height ≥ 0.8mm for legibility</li>
+  <li>Arrows for signal direction, polarity indicators for caps/LEDs</li>
+  <li>QR code linked to GitHub docs</li>
+</ul>
+
+<h3>8. Lessons Learned and Optimization</h3>
+<ul>
+  <li>Series 22Ω resistors helped SPI bus stability</li>
+  <li>Audio noise solved by GND plane break under MP1584EN</li>
+  <li>BLE antenna rerouted after RSSI drop caused by pour overlap</li>
+</ul>
+
+
+<h2><u>Challenges & Constraints</u></h2>
+
+<p>
+Designing the Tesla Roadster Infotainment System board presented several unique technical challenges, spanning electrical, mechanical, thermal, and electromagnetic domains. Many of these constraints stemmed from adapting and improving upon an open-source reference design while enhancing it for robustness, manufacturability, and field deployment. Each design tradeoff was carefully evaluated in the context of automotive requirements for reliability, real-time responsiveness, and power efficiency.
+</p>
+
+<h3>1. Limited Stackup Clearance and Layer Assignment</h3>
+<p>
+While an 8-layer PCB afforded substantial routing flexibility, the constraints of mechanical fit within the vehicle’s infotainment housing required careful planning of copper pour zones and signal transitions. Blind and buried vias were avoided to maintain manufacturability, so trace congestion in Signal1–Signal4 was a recurring issue. We had to route sensitive I²S audio lines in Signal2 while avoiding SPI and BLE antenna paths crossing over GND discontinuities.
+</p>
+
+<h3>2. Power Distribution Noise and Load Switching</h3>
+<p>
+A major challenge emerged in managing the switching noise of the MP1584EN buck converter during transient load spikes—particularly when driving the TFT backlight and PAM8403 amplifier simultaneously. To mitigate voltage ripple, we added bulk ceramic capacitance at both the input and output rails, placed ferrite beads between analog and digital 3.3V domains, and introduced ground-plane separation between the high-current and low-noise sections of the board.
+</p>
+
+<h3>3. Audio and Digital Coexistence</h3>
+<p>
+Audio quality degradation was observed when SPI transfers occurred concurrently with I²S playback. This stemmed from capacitive coupling between the SPI_CLK and I²S_WS lines routed adjacently. To solve this, we re-routed audio signals on separate layers, added 22Ω series termination, and shielded with a grounded trace guard. We also reserved the PAM8403 power input trace to its own layer to reduce noise coupling from switching devices.
+</p>
+
+<h3>4. Bluetooth RSSI Interference</h3>
+<p>
+During BLE performance testing, significant RSSI attenuation occurred when copper polygons on Power2 overlapped the ESP32-WROOM module’s antenna region. This caused detuning and unpredictable pairing behavior. To fix this, we implemented an antenna keep-out zone extending through layers 1–5 and removed all GND pours under the antenna stub. BLE performance improved by >20 dBm in post-fix trials.
+</p>
+
+<h3>5. Mechanical Constraints and Connector Access</h3>
+<p>
+All I/O headers had to be accessible from a side-mounted panel within a confined chassis. The original layout placed the TFT interface header centrally, which conflicted with screen mounting. We redesigned the board’s orientation and moved the TFT and audio headers to the right edge, optimizing for cable routing and connector strain relief. Components taller than 4mm were repositioned to avoid heat sink conflict.
+</p>
+
+<h3>6. Silkscreen Clarity and Test Point Planning</h3>
+<p>
+The silkscreen initially lacked polarity markings and signal direction annotations, leading to early assembly confusion. We revised the silkscreen with labeled test points (e.g., MOSI, MISO, RESET), added voltage domain markings (3.3V vs 5V), and introduced visual cues like triangle arrows for logic flow. This significantly reduced debug time and improved developer onboarding.
+</p>
+
+<h3>7. Thermal Balancing and Regulator Efficiency</h3>
+<p>
+The MP1584EN buck converter and AMS1117 LDO generated localized heating under continuous screen draw (~300 mA backlight current). We improved thermal performance by adding copper pours under these ICs, introducing thermal vias to bottom GND, and spacing capacitors to prevent heat concentration. We also ensured airflow compatibility with passive convection in a sealed enclosure.
+</p>
+
+<h3>8. Firmware Bring-Up and Hardware Interlock Debug</h3>
+<p>
+The STM32 and ESP32 required simultaneous firmware debugging, which proved difficult due to shared UART and I²C buses. Debugging USB-TTL adapters caused intermittent resets when interfaced with the touch controller and display. To isolate these, we added jumpers to disconnect the UART RX/TX lines during programming, and decoupled the I²C bus using 1kΩ resistors and TVS diodes to protect from surge.
+</p>
+
+<h3>9. Design Rule Violations and Rework</h3>
+<p>
+During initial manufacturing review, we encountered DRC violations including clearance issues between high-speed lines and polygon fills, and un-stitched ground islands. These were fixed by re-tuning clearance constraints in Altium and adding 0.25mm spacing between GND and 3.3V planes. We also added stitching vias at 100 mil intervals around high-speed buses to eliminate floating copper zones.
+</p>
+
+<h3>10. Integration With Legacy Open-Source Designs</h3>
+<p>
+The original open-source board lacked ESD protection, adequate silkscreen documentation, and did not support simultaneous UART + BLE debug. We retained the core functional architecture but re-engineered the layout to include:
+<ul>
+  <li>Integrated USB-C with ESD TVS diodes</li>
+  <li>Re-routable debug jumper blocks</li>
+  <li>Layer-separated high-speed vs power domains</li>
+</ul>
+This provided a clearer system structure and significantly improved robustness.
+</p>
+
+
+
+
+
+
+
+  
+</div>
+</body>
+</html>
