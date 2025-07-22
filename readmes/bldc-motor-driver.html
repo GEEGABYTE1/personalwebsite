@@ -48,6 +48,8 @@
     <div class="nav-links">
       <a href="../index.html">Home</a>
       <a href="../projects.html">Project Portfolio</a>
+      <a href="https://github.com/GEEGABYTE1/RLPolicyBLDCMotorDriver">Github Model Repo</a>
+      <a href="https://drive.google.com/file/d/1TxVmFbiP9XxHE9Te54d_bTcgD2L_pNgr/view?usp=sharing"> Model Paper </a>
     </div>
 
     <h2><u>Overview</u></h2>
@@ -308,6 +310,46 @@
       <li>Expand header compatibility for CAN, I2C, and other industrial interface standards</li>
       <li>Explore moving to 4-layer board to dedicate planes for power and signal return</li>
     </ul>
+
+      <h2><u>PPO Deployment for BLDC Motor Driver</u></h2>
+  <p>
+    I have also deployed a <strong>Proximal Policy Optimization (PPO)</strong> policy onto a custom-designed high-voltage BLDC Motor Driver PCB. The system was built to enable real-time closed-loop motor control using reinforcement learning — with a focus on <strong>robotic applications</strong> such as humanoid locomotion, dynamic actuation, and torque adaptation.
+    
+  </p>
+
+  <p><strong>Both the paper and the corresponding model repository can be found in the above links.</strong></p>
+
+  <h3>System Overview</h3>
+  <ul>
+    <li><strong>Microcontroller:</strong> STM32F103C8T6</li>
+    <li><strong>Inference Model:</strong> PPO-trained policy exported to TensorFlow Lite</li>
+    <li><strong>Inputs:</strong> Rotor position, velocity feedback, target trajectory angle</li>
+    <li><strong>Outputs:</strong> Motor PWM duty cycle commands for DRV8353 motor driver IC</li>
+  </ul>
+
+  <h3>Training Pipeline</h3>
+  <p>
+    The PPO agent was trained in simulation using <code>Stable-Baselines3</code> in a custom MuJoCo environment that modeled BLDC motor dynamics and a reference trajectory task. The reward function penalized tracking error, overshoot, and power inefficiency — enabling robust adaptation to varied load conditions and dynamic setpoint changes.
+  </p>
+
+  <h3>Deployment</h3>
+  <p>
+    After policy convergence, the trained model was quantized and converted to <code>.tflite</code> format. It was deployed to the STM32 microcontroller running a custom embedded interpreter. The system executed inference in real time, taking sensor feedback as input and adjusting torque commands at millisecond intervals.
+  </p>
+
+  <h3>Key Results</h3>
+  <ul>
+    <li><strong>Latency:</strong> &lt; 70 ms control loop including inference and actuation</li>
+    <li><strong>Model Size:</strong> ~38 KB post-quantization</li>
+    <li><strong>Tracking Error:</strong> &lt; 2.5° average deviation from target trajectory</li>
+    <li><strong>System Power:</strong> Operates from 3.3V logic supply, ~55 mW at runtime</li>
+  </ul>
+
+  <h3>Significance</h3>
+  <p>
+    Deploying PPO directly to an embedded motor driver opens new possibilities for <strong>real-time learning-based control in robotics</strong>. Unlike traditional PID or FOC loops, the PPO policy adapts to disturbances, load shifts, and changing trajectories without re-tuning. This design enables <stronglow-latency, torque-aware control</strong> in embedded robotic systems — a critical capability for next-generation actuators in humanoids, manipulators, and mobile robots.
+  </p>
+  </section>
 
     
 
