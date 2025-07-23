@@ -48,6 +48,8 @@
     <div class="nav-links">
       <a href="../index.html">Home</a>
       <a href="../projects.html">Project Portfolio</a>
+      <a href="https://drive.google.com/file/d/1hBmqx_9sWqOwcMe0_67193EGOkG2q-n8/view?usp=sharing">Model Paper</a>
+      <a href="https://github.com/GEEGABYTE1/TransformerSmartGridNode">Model Github Repo </a>
     </div>
 
     <figure>
@@ -183,6 +185,53 @@
     <li><b>MATLAB</b> – Sensor signal analysis and trend visualization</li>
     <li><b>Oscilloscope + Logic Analyzer</b> – Fault injection and timing debug</li>
   </ul>
+
+  
+  <h2><u>Transformer-Based Fault Detection for Smart Grid Node</u></h2>
+  <p>
+    This project implements a <strong>self-supervised Transformer-based neural network</strong> for real-time fault detection on a custom Smart Grid Node PCB. The system performs embedded anomaly recognition from raw voltage and current waveforms, enabling low-latency fault detection without external supervision or cloud inference.
+  </p>
+
+  <p><strong>Both the paper and model repo can be found in the links above.</strong></p>
+
+  <h3>System Overview</h3>
+  <ul>
+    <li><strong>Microcontroller:</strong> STM32F103C8T6</li>
+    <li><strong>Telemetry:</strong> BLE (ESP32-WROOM-32E)</li>
+    <li><strong>Logging:</strong> microSD with RTC-GPS synchronization</li>
+    <li><strong>Inputs:</strong> 1 kHz voltage and current signals across multiple grid lines</li>
+    <li><strong>Outputs:</strong> Anomaly flags, BLE transmission, local fault logs</li>
+  </ul>
+
+  <h3>Model Architecture</h3>
+  <p>
+    The model uses a <strong>Transformer encoder</strong> with 3 layers, 4 attention heads, and sinusoidal positional encodings. Trained exclusively on normal signals, the model learns to forecast future signal trajectories using next-step prediction. Faults are detected via elevated reconstruction error — measured as the deviation between predicted and observed voltages and currents.
+  </p>
+
+  <h3>Self-Supervised Training Pipeline</h3>
+  <p>
+    A custom dataset of synthetic 1-second waveforms (1 kHz sampling) was generated, containing normal and fault conditions such as overvoltage, undervoltage, disconnect, flicker, and drift. Only normal data was used during training. A frozen standard scaler was applied for normalization, and dynamic thresholding was used during inference.
+  </p>
+
+  <h3>Deployment</h3>
+  <p>
+    The model was quantized and converted to <code>.tflite</code> format. Inference was deployed on the STM32 microcontroller using TensorFlow Lite Micro, with <strong>rolling 1-second input windows</strong>. Faults were detected every 100 ms based on anomaly score thresholds and transmitted over BLE for immediate response.
+  </p>
+
+  <h3>Evaluation & Results</h3>
+  <ul>
+    <li><strong>ROC-AUC:</strong> &gt; 0.90 across all fault types</li>
+    <li><strong>Latency:</strong> ~95 ms per inference cycle</li>
+    <li><strong>Model Size:</strong> 54 KB post-quantization</li>
+    <li><strong>Power:</strong> ~70 mW average during inference</li>
+    <li><strong>Interpretability:</strong> Attention maps localize fault onset; PCA visualizations separate latent fault clusters</li>
+  </ul>
+
+  <p>
+    This approach enables <strong>interpretable, real-time fault detection</strong> directly on edge microcontrollers, without fault labels or cloud processing. Unlike threshold-based or supervised models, the self-supervised Transformer generalizes to unseen disruptions, offers visual insight into fault timing via attention heads, and operates entirely within the constraints of embedded hardware. This makes it a robust and scalable solution for intelligent grid diagnostics in future decentralized power networks.
+  </p>
+
+
 
 </div>
 </body>

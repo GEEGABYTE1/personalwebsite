@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects – Jaival Patel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Independent Research</h1>
+      <a href="../index.html">Home</a>
+    <p>Things I've investigated</p>
+    <div class="grid" id="project-grid"></div>
+  </div>
+
+  <script>
+    const projects = [
+      {
+        title: "Transformer-Based Edge Agent for Real-Time Fault Detection in Smart Grid Nodes",
+        file: "https://drive.google.com/file/d/1hBmqx_9sWqOwcMe0_67193EGOkG2q-n8/view?usp=sharing",
+        image: "images/papers/TransformerBasedEdgeAgent.png",
+        caption: "A self-supervised Transformer model trained on 1 kHz voltage/current sequences to detect power line faults directly on embedded Smart Grid hardware (view Smart Grid Node PCB in 'Works'). The model uses next-step forecasting and anomaly scoring to flag overvoltage, undervoltage, drift, and flicker in real-time, without needing labeled fault data."
+      },
+        {
+        title: "World Model-Based Reinforcement Learning for Real-Time Motor Control",
+        file: "https://drive.google.com/file/d/1TxVmFbiP9XxHE9Te54d_bTcgD2L_pNgr/view?usp=sharing",
+        image: "images/papers/WorldModelBasedReinforcementLearningBLDC.png",
+        caption: "This paper compares two neural control strategies—Dreamer (a model-based RL agent with a learned latent dynamics model) and a supervised LSTM—for torque control in a simulated BLDC motor environment for BLDC Motor Driver (view board in 'Works'). Dreamer achieves smooth, phase-stable control and robust recovery under disturbance by simulating imagined rollouts in latent space, while the LSTM reacts faster to target switches but exhibits instability. "
+      },
+      {
+        title: "Spatially-Informed Neural Compression via GCN-Enhanced Transformers for BCI Systems",
+        file: "https://drive.google.com/file/d/19BBpEKwNMY2gQG58iEllfGWsf1WAHDjw/view?usp=sharing",
+        image: "images/papers/SpatiallyInformedNeuralCompression.png",
+        caption: "This study proposes two transformer-based architectures for real-time neural signal compression in BCI applications: a Fourier-augmented transformer and a GCN-enhanced variant that captures spatial relationships between EEG electrodes. Both models were trained on simulated EEG datasets with class-specific spectral structure."
+      },
+      {
+        title: "AlexNet Improved: Technical Analysis and Optimization",
+        file: "https://drive.google.com/file/d/1rickrjY4sw9hcE6rIGBmygPwA7OHb_5y/view?usp=sharing",
+        image: "images/papers/AlexnetImproved.png",
+        caption: "This technical document revisits the original AlexNet architecture and proposes a performance-optimized variant using fewer parameters and deeper convolutional layers. Key improvements include smaller kernel sizes, ReLU activation throughout, batch normalization, and improved regularization. "
+      },
+      {
+        title: "Transition Metal Atomic Radius Effect on Activation Energy",
+        file: "https://drive.google.com/file/d/10jWHMgogdVcpGnM-GSJY8Opn_PEXEOll/view?usp=sharing",
+        image: "images/papers/TransitionMetalAtomicRadius.png",
+        caption: "This investigation models how the atomic radius of transition metals affects the activation energy of catalytic reactions. Using theoretical bond strength estimates and periodic trends, the paper finds that metals with moderate atomic radii yield lower activation barriers due to optimal orbital overlap, confirming the volcano curve pattern in catalysis."
+      },
+      {
+        title: "Pendulum Behavior in the Presence of Air Resistance",
+        file: "https://drive.google.com/file/d/1j_el7jBHSs00NTp8MoQatEI6xF2qV35D/view?usp=sharing",
+        image: "images/papers/PendulumBehaviour.png",
+        caption: "This paper models the damping effect of air resistance on a swinging pendulum using both analytical and numerical methods. The drag force is incorporated as a velocity-dependent term, resulting in nonlinear equations of motion. Simulations demonstrate exponential decay in amplitude and confirm that the damping coefficient significantly affects time to equilibrium."
+      },
+      {
+        title: "Square Root Algorithm Analysis and Iterative Convergence",
+        file: "https://drive.google.com/file/d/1VthqtFggSjfT57mPQrkNLSdJiE2zl2_3/view?usp=sharing",
+        image: "images/papers/SquareRootAlg.png",
+        caption: "This paper illustrates an improved Newtonian algorithm of the arithmetic mean that can ap-proximate square-roots of numbers both prime and composite within 3% with quadratic convergence."
+      },
+      {
+        title: "Study of Complex and Real Functions as They Approach Infinity",
+        file: "https://drive.google.com/file/d/1HFMntXkSLs1IVH0ugVKfjSR1YQtjFXbP/view?usp=sharing",
+        image: "images/papers/complexrealfunctions.png",
+        caption: "This paper examines asymptotic behavior of several real and complex-valued functions as their domain approaches infinity. It explores convergence rates, dominant term approximations, and applies L’Hôpital’s Rule and limit tests. Graphical and symbolic analysis reveals how growth rate hierarchies differ between real and complex planes."
+      }
+      
+      
+      // Add more projects here
+    ];
+
+    const gridEl = document.getElementById('project-grid');
+
+    projects.forEach(proj => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const img = document.createElement('img');
+      img.src = proj.image;
+      img.alt = proj.title;
+
+      const title = document.createElement('h3');
+      title.textContent = proj.title;
+
+      const desc = document.createElement('p');
+      desc.textContent = proj.caption;
+
+      card.appendChild(img);
+      card.appendChild(title);
+      card.appendChild(desc);
+      card.addEventListener('click', () => {
+        window.open(proj.file, '_blank');
+      });
+      gridEl.appendChild(card);
+    });
+  </script>
+</body>
+</html>
