@@ -1,0 +1,449 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tesla Roadster Infotainment System </title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tesla BLE EVSE Board</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../projects.html">Project Portfolio</a>
+      <a href="https://drive.google.com/file/d/1yNBfLVW2bxDHkCrF-n0V3zSCPtdq7IGY/view?usp=sharing">Model Paper</a>
+      <a href="https://github.com/GEEGABYTE1/RLEVSE">Model Repository</a>
+    </div>
+
+<h2><u>Overview</u></h2>
+<figure>
+      <img src="/images/TeslaEVSE/pcb3d.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 1: BLDC Motor Driver Complete</figcaption>
+    </figure>
+<p>
+  The Tesla-Grade BLE EVSE Board is a custom-engineered charging controller designed to meet and exceed the safety, communication, and reliability standards of modern electric vehicle supply equipment (EVSE). While inspired by the open-source OpenEVSE schematic, this board represents a significant architectural improvement, refactored from the ground up for tighter integration, higher robustness, and BLE-based diagnostics—making it suitable for advanced automotive and robotic infrastructure.
+</p>
+
+<p>
+  At its core, the system integrates a robust STM32 microcontroller for state management and real-time control, an ESP32 module for BLE-based telemetry, and a pilot signal sensing interface compliant with SAE J1772 to detect EV presence and control relay activation. The hardware is designed to be fail-safe: it features temperature and ground continuity (GCP) fault detection through dedicated analog comparators, combined via a diode-OR logic to disable charging immediately under unsafe conditions.
+</p>
+
+<p>
+  The power distribution architecture supports multiple voltage rails—3.3V, 5V, and 12V—each isolated and protected for clean digital and analog domain operation. A high-current relay interface allows the board to control the power flow to the EV, while the pilot signal circuit ensures compliance with the PWM-based charging protocol.
+</p>
+
+<p>
+  Designed on a 6-layer PCB, the layout optimizes for signal integrity, electromagnetic compatibility (EMC), and thermal management. Layer partitioning separates power planes for 3.3V and 12V operation while providing solid return paths and shielding for digital and analog signals. Diagnostic feedback is logged and transmitted over BLE, enabling mobile app or desktop-based monitoring—a significant step toward connected EVSE infrastructure.
+</p>
+
+<p>
+  This project not only addresses the limitations of existing open-source designs but modernizes the EVSE architecture to align with Tesla-grade standards. It provides enhanced safety logic, embedded BLE stack integration, and future extensibility for cloud-based telemetry, remote diagnostics, and smart charging algorithms.
+</p>
+
+
+    
+<h2><u>Key Features & Design Decisions</u></h2>
+
+<p>
+  The Tesla-Grade BLE EVSE Board was architected from first principles to improve upon the open-source OpenEVSE schematic and bring charging system control up to modern automotive-grade standards. Each subsystem—ranging from signal sensing and relay actuation to fault detection and wireless diagnostics—was selected and refined to ensure safety, modularity, robustness, and extensibility for next-generation vehicle charging workflows.
+</p>
+
+<h3>STM32 Microcontroller Core</h3>
+<figure>
+      <img src="/images/TeslaEVSE/STM32ESP3DiodeORSchematic.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 2: STM32, BLE Schematic</figcaption>
+    </figure>
+<p>
+  The STM32F103C8T6 was chosen as the control core for this EVSE board due to its deterministic real-time performance, built-in ADCs, USARTs, GPIO flexibility, and proven reliability in embedded automotive applications. Its 72 MHz Cortex-M3 core allowed us to implement a clean finite-state machine (FSM) that governs the J1772 state transitions:
+</p>
+<ul>
+  <li><b>State A:</b> No vehicle connected</li>
+  <li><b>State B:</b> Vehicle detected</li>
+  <li><b>State C:</b> Vehicle requesting charge</li>
+  <li><b>State D:</b> Ventilation required</li>
+  <li><b>State E:</b> Fault or error</li>
+</ul>
+<p>
+  By using timer interrupts and analog read thresholds, the microcontroller continuously monitors the pilot signal, ground continuity, and temperature sensors. The FSM transitions trigger actions like relay enable, BLE alert, or system shutdown. The STM32's low-power modes were also evaluated for future versions that may operate intermittently from solar or off-grid sources.
+</p>
+
+<h3>BLE Telemetry via ESP32-WROOM-32E</h3>
+<p>
+  BLE-based diagnostics were added to modernize the EVSE interface and allow real-time communication with mobile or desktop apps. The ESP32-WROOM-32E module was selected for its robust BLE stack, UART/ADC interfaces, and compatibility with over-the-air (OTA) updates. Communication between the STM32 and ESP32 is UART-based with a shared protocol layer for:
+</p>
+<ul>
+  <li>State reporting (FSM transitions, charge active, fault status)</li>
+  <li>Temperature and pilot signal telemetry</li>
+  <li>Relay on/off command logging</li>
+</ul>
+<p>
+  BLE integration enables features typically unavailable in traditional EVSEs—like usage history, predictive diagnostics, and remote lockout. It also facilitates secure firmware debugging without physical access to the charger internals.
+</p>
+
+<h3>Pilot Signal Detection Circuitry</h3>
+<figure>
+      <img src="/images/TeslaEVSE/PilotSignalGenerationSchematic.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 3: Pilot Signal Generation and Measurement Schematic</figcaption>
+    </figure>
+<p>
+  Pilot signal detection is the heart of EVSE logic. The pilot is a ±12V PWM waveform sent by the EVSE and measured back by the vehicle to signal its readiness. We implemented this sensing path using a precision voltage divider, low-pass filter, and op-amp buffer, feeding into the STM32 ADC. This allowed robust reading of voltage levels and accurate duty cycle capture, used to determine:
+</p>
+<ul>
+  <li>Vehicle presence (valid ±12V swing)</li>
+  <li>Charging current limit (based on PWM duty cycle)</li>
+  <li>Error or ground fault conditions</li>
+</ul>
+<p>
+  The analog front-end was carefully matched to handle both the bipolar signal range and the low-noise filtering required for proper FSM decoding under noisy environmental conditions.
+</p>
+
+<h3>Relay Control & Enable Signal Conditioning</h3>
+<figure>
+      <img src="/images/TeslaEVSE/ACPowerInputRelayControl.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 4: AC Power Input and Relay Control Schematic</figcaption>
+    </figure>
+<p>
+  The high-voltage relay that energizes the charging line is controlled through an N-channel logic-level MOSFET, driven by the STM32. A flyback diode and snubber network are included across the relay coil to suppress inductive transients, ensuring long-term component health and compliance with electromagnetic emission standards. The system architecture includes:
+</p>
+<ul>
+  <li>Signal inverter buffer before MOSFET gate (optional)</li>
+  <li>Relay active-status feedback to STM32 (via voltage divider)</li>
+  <li>Current path rated for high surge withstand (relay selected accordingly)</li>
+</ul>
+<p>
+  This design guarantees that relay activation is tightly controlled and monitored, preventing unexpected activation during faults or communication errors.
+</p>
+
+<h3>Temperature Fault Detection (TEMP_FAULT)</h3>
+<p>
+  An analog comparator circuit compares a thermistor divider to a reference threshold. If the sensed temperature exceeds a safe level (typically 70–80°C), the comparator outputs a LOW signal which triggers a system-wide shutdown. This TEMP_FAULT signal is diode-ORed with other fault conditions (e.g., GCP_COMP) to enforce the following:
+</p>
+<ul>
+  <li>Automatic disabling of relay enable signal</li>
+  <li>LED status indication (overheat condition)</li>
+  <li>BLE fault broadcast</li>
+</ul>
+<p>
+  By isolating this signal in hardware, we achieve a fail-safe shutdown mechanism independent of firmware responsiveness. This is a critical requirement in automotive-grade EVSEs to prevent connector damage or user injury.
+</p>
+
+<h3>Ground Continuity Protection (GCP_COMP)</h3>
+<figure>
+      <img src="/images/TeslaEVSE/GFCIEarthDetectionleakageSchematic.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 5: Earth Detection Schematic</figcaption>
+    </figure>
+<p>
+  Ground continuity is critical for safe EV charging. GCP sensing is implemented using a voltage divider between pilot and ground routed into a comparator (e.g., LM393). If the voltage drops below a minimum expected threshold, GCP_COMP is pulled LOW. This line feeds into the same diode-OR fault network, disabling the relay and alerting the system.
+</p>
+<p>
+  This setup is aligned with best practices in EVSE design and validates proper earth connection to the vehicle chassis. It is particularly useful in field-deployed chargers exposed to high-impedance ground loops or corroded connectors.
+</p>
+
+<h3>Diode-OR Fault Logic (ENABLE_FAULT)</h3>
+<p>
+  ENABLE_FAULT is the output of a diode-OR network combining TEMP_FAULT and GCP_COMP lines (view Figure 1). When any of the two signals is asserted LOW, ENABLE_FAULT also goes LOW, which disables the DRV (relay driver). This hardware-level logic is implemented using 1N4148 switching diodes and a pull-up resistor. The line then drives:
+</p>
+<ul>
+  <li>An NPN transistor (Q1) which sinks relay enable current</li>
+  <li>A red LED for visual indication of fault condition</li>
+</ul>
+<p>
+  This circuitry was chosen over software-based fault shutdown because it provides sub-millisecond response time, isolating the fault path from firmware logic and ensuring robust operation under corner-case transients.
+</p>
+
+<h3> Power Regulation Architecture</h3>
+<figure>
+      <img src="/images/TeslaEVSE/PowerSupplySchematic2.png" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 6: Power Reg Schematic</figcaption>
+    </figure>
+<p>
+  The EVSE operates from a wide-range DC input (typically 12V–24V), supplied via barrel jack or XT60 connector. The board includes:
+</p>
+<ul>
+  <li><b>3.3V Rail:</b> Generated using an AMS1117-3.3 LDO. Used for STM32, ESP32, and BLE stack peripherals. The regulator was selected for its simplicity and ability to supply 800mA peak current—sufficient for low-power embedded tasks.</li>
+  <li><b>12V Rail:</b> Direct input or created using a step-up topology (TPS6104 or similar) in future versions for auxiliary needs.</li>
+  <li><b>TVS + Reverse Polarity Protection:</b> Series diode and 5V clamping TVS diode were added to protect the board from voltage spikes and incorrect barrel jack connections.</li>
+</ul>
+<p>
+  Each regulator is bypassed with ceramic capacitors (0.1µF + 10µF) and polyfuse-protected to contain shorts. Power domains were separated by ferrite beads to reduce noise coupling.
+</p>
+
+<h3>9. LED Status Indicators</h3>
+<p>
+  To assist debugging, three LED indicators were added:
+</p>
+<ul>
+  <li><b>POWER:</b> Indicates 3.3V system rail active</li>
+  <li><b>RELAY:</b> Indicates high-voltage relay is energized</li>
+  <li><b>FAULT:</b> Indicates ENABLE_FAULT condition is active</li>
+</ul>
+<p>
+  These allow installers and developers to visually assess board health and fault status without needing external instruments.
+</p>
+
+<h3>BLE Debug Commands & Logging</h3>
+<p>
+  BLE command handlers were implemented in the ESP32 firmware to support diagnostics:
+</p>
+<ul>
+  <li>Request current FSM state</li>
+  <li>Query last fault condition</li>
+  <li>Read PWM duty cycle from pilot signal</li>
+  <li>Enable/disable relay manually</li>
+</ul>
+<p>
+  These features offer significant convenience during bring-up and field testing, and may be expanded into mobile app-based controls.
+</p>
+
+
+
+<h2><u>PCB Layout Strategy</u></h2>
+<figure>
+      <img src="/images/TeslaEVSE/pcb2d.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 7: PCB 2d</figcaption>
+    </figure>
+
+<p>
+  The layout of the Tesla-Grade BLE EVSE board was guided by principles of electrical isolation, thermal robustness, signal clarity, and EMI reduction, all while achieving a compact and modular form factor. This section outlines the rationale behind the placement of subsystems, layer stackup design, trace routing, grounding philosophy, and EMI containment—all crucial for high-reliability automotive charging environments.
+</p>
+
+<h3>1. Layer Stackup Rationale</h3>
+<p>
+  A 6-layer PCB architecture was used with the following structure:
+</p>
+<ul>
+  <li><b>Layer 1 (Top):</b> Power traces + component placement</li>
+  <li><b>Layer 2:</b> Power (3.3V polygon pour)</li>
+  <li><b>Layer 3:</b> Power2 (used for 12V routing and wide-pour shielding)</li>
+  <li><b>Layer 4:</b> Signal (high-speed UART, ADC, and pilot signal routes)</li>
+  <li><b>Layer 5:</b> Signal2 (pilot return paths, debug UART, and enable line)</li>
+  <li><b>Layer 6 (Bottom):</b> Solid GND plane with via stitching</li>
+</ul>
+
+<figure>
+      <img src="/images/TeslaEVSE/3V3Pour.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 8: 3V3 Pour on Layer 2</figcaption>
+    </figure>
+
+  <figure>
+      <img src="/images/TeslaEVSE/12VPour.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 9: 12V Pour on Layer 3</figcaption>
+    </figure>
+
+  <figure>
+      <img src="/images/TeslaEVSE/GNDPour.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 10: GND Pour on Layer 6</figcaption>
+    </figure>
+<p>
+  This stack was selected to enable effective vertical separation of sensitive analog signals (e.g. pilot detection) from high-power or switching nodes (e.g. relay coil and power input). The use of dual internal power planes allows distributed decoupling without compromising trace impedance control.
+</p>
+
+<h3>Analog vs Digital Domain Partitioning</h3>
+<p>
+  The analog pilot signal front-end and temperature sensing logic were physically separated from the digital FSM and BLE telemetry logic. The STM32 sits near the digital center of the board, flanked on one side by the analog front-end (e.g., pilot buffer, comparator, temperature fault logic) and on the other by the UART connection to the ESP32.
+</p>
+<p>
+  A moat-like ground isolation approach was used: a continuous copper pour surrounds the analog front-end and connects to the global GND only via a single-point ferrite bead near the STM32 AGND pin. This topology avoids ground loops and prevents digital switching noise from contaminating pilot signal ADC reads.
+</p>
+
+<h3>BLE Module Placement & Routing</h3>
+<p>
+  The ESP32-WROOM-32E was placed at the top right edge of the board to expose the onboard PCB antenna to free air, reducing RF interference. The UART TX/RX lines to the STM32 were routed on inner layers with consistent spacing and shielding via adjacent ground copper. A keepout zone was declared below the antenna and on the top layer copper to preserve antenna radiation pattern and BLE signal range.
+</p>
+<p>
+  Additional care was taken to separate noisy switching circuits (relay coil, DRV gate driver) from the BLE module’s 3.3V supply rail, using ferrite bead isolation and localized decoupling (10µF + 0.1µF).
+</p>
+
+<h3>Power Distribution & Protection Layout</h3>
+<p>
+  Power entry occurs at the top-left XT60 connector, with wide 100 mil traces routing 12V to the relay and 3.3V regulators. The AMS1117-3.3 was placed directly adjacent to the STM32 to reduce IR drop and suppress load transients. Output capacitors were placed within 2 mm of the LDO VOUT pin and mirrored underneath with stitched vias to GND for optimal return current.
+</p>
+<p>
+  The diode-OR fault shutdown logic (ENABLE_FAULT) was routed close to the relay MOSFET and STM32 output pin to minimize propagation delay. Pull-up resistors and the transistor base bias resistor were co-located with the Q1 shutdown transistor, ensuring layout-induced signal reflection was minimized.
+</p>
+
+<h3>Pilot Signal Conditioning Path</h3>
+<p>
+  The pilot signal detection path follows this chain: pilot → resistor divider → filter cap → op-amp buffer → STM32 ADC pin. This entire chain was routed on the inner Signal layer with a continuous reference GND underneath. Sensitive nodes (e.g., filtered midpoint) were shielded with grounded copper pour and surrounded by analog GND stitching vias for protection against ambient RF.
+</p>
+<p>
+  The comparator outputs (TEMP_FAULT, GCP_COMP) were routed on Layer 4 directly into the diode-OR fault logic zone, avoiding any crossover with high-current relay lines or PWM outputs.
+</p>
+
+<h3>Relay Control Circuit & High-Current Path</h3>
+<p>
+  The N-channel MOSFET controlling the relay was placed near the relay coil with wide 70 mil traces connecting to the 12V high-current plane. A flyback diode (1N5822) was placed as close as possible across the coil terminals to clamp inductive spikes. All control signals were routed on inner layers, isolated from the relay power paths.
+</p>
+<p>
+  The ground return from the relay coil was routed directly into the solid GND plane via a dedicated low-inductance path, avoiding interaction with analog or digital ground returns.
+</p>
+
+<h3>Debug Interfaces & Programming Headers</h3>
+<p>
+  The SWD programming header for the STM32 and UART breakout for ESP32 debugging were placed at the board edges for tool-free access during bench testing. Both were surrounded by GND copper zones and labeled clearly via silkscreen. Series resistors (10Ω) were added to prevent line ringing on high-speed SWDIO/SWCLK lines.
+</p>
+
+<h3>Fault Logic Placement & Visualization</h3>
+<p>
+  The TEMP_FAULT and GCP_COMP comparators, along with the ENABLE_FAULT logic and transistor switch, were grouped into a cohesive sub-circuit near the relay gate driver. This allowed tight coupling between:
+</p>
+<ul>
+  <li>Fault detection signals</li>
+  <li>Shutdown gate signal to DRV</li>
+  <li>FAULT LED indicator</li>
+</ul>
+<p>
+  The red LED is current-limited via a 330Ω resistor and positioned on the top right corner of the board for clear visibility inside enclosures.
+</p>
+
+<h3>Ground Plane Strategy & EMI Mitigation</h3>
+<p>
+  As seen from Figure 10, Layer 6 (Bottom) is a continuous solid GND plane stitched liberally with vias from all decoupling caps and connectors. GND stitching vias were placed:
+</p>
+<ul>
+  <li>Along the perimeter of the board (every 5 mm)</li>
+  <li>Underneath every bypass cap pair</li>
+  <li>Between analog and digital domains to form a fence</li>
+</ul>
+<p>
+  This extensive ground network lowers loop inductance and provides effective shielding against radiated emissions. Additionally, power trace loops were minimized by placing decoupling caps adjacent to supply pins and using short, wide traces.
+</p>
+
+<h3>10 Thermal Planning</h3>
+<p>
+  While this board handles low-to-moderate power loads ( less than 1A typical), thermal relief was added to the AMS1117 LDO and relay MOSFET zones. Copper planes on Layers 2 and 3 were used as heat spreaders. Thermal vias were stitched around the LDO to aid passive dissipation, and the relay was spaced to avoid coupling into adjacent low-power ICs.
+</p>
+
+
+<p>
+  The Tesla-Grade BLE EVSE PCB layout exemplifies principles of clean system partitioning, EMI-resilient design, and real-world maintainability. Every signal path—from BLE telemetry and STM32 control to fault isolation and analog sensing—was routed with purpose. Compared to the original OpenEVSE layout, this version enhances electrical integrity, improves safety isolation, and supports modern wireless debugging workflows—making it suitable for real deployment in robotic test chargers, EV development benches, and automotive R&D settings.
+</p>
+
+<h2><u>Challenges & Future Work</u></h2>
+
+<h3>Design Constraints and Trade-offs</h3>
+<p>
+  While the final board demonstrates robust telemetry, safety logic, and charging control, several key design challenges were encountered during development. These included power domain isolation, BLE signal integrity, thermal considerations around the AMS1117 LDO, and tuning fault propagation delay between comparator outputs and DRV shutdown logic.
+</p>
+
+<h4>1. BLE Interference and Antenna Isolation</h4>
+<p>
+  The ESP32-WROOM-32E’s onboard PCB antenna required a strict keepout zone and physical separation from switching noise sources such as the relay gate driver and PWM-controlled DRV signals. Despite placing the module near the board edge, EMI coupling through shared 3.3V rails caused intermittent telemetry dropouts during high switching activity. This was mitigated with local decoupling (10μF + 0.1μF) and ferrite bead filtering (600Ω@100MHz) but future designs may benefit from an external ceramic antenna or shielded module.
+</p>
+
+<h4>2. Grounding Complexity</h4>
+<p>
+  Achieving effective analog/digital ground separation without introducing ground loops was non-trivial. Early revisions suffered from ripple injection into the pilot ADC due to shared return paths with USB UART lines. This was corrected by restructuring the GND plane and introducing analog-GND stitching only at the STM32 AGND pin via a ferrite bead. Even so, maintaining low-impedance return paths under dynamic loads remains a priority in future layouts.
+</p>
+
+<h4>3. AMS1117 Heat Dissipation</h4>
+<p>
+  Though the AMS1117-3.3 was chosen for its simplicity and availability, its linear nature led to significant heat buildup when sourcing over 200 mA—particularly during BLE transmission spikes and USB logging. The addition of copper flood heatsinking and thermal vias helped dissipate heat, but active regulation (e.g., switching buck converters) will be evaluated in next iterations to reduce thermal stress and improve battery efficiency.
+</p>
+
+<h4>4. DRV Gate Control Race Conditions</h4>
+<p>
+  The ENABLE_FAULT signal, derived from diode-OR logic combining TEMP_FAULT and GCP_COMP, controls the DRV8353’s ENABLE pin. However, initial testing revealed microsecond-scale race conditions when both comparators toggled simultaneously. This was traced to slow rise/fall times through the diode logic and insufficient pull-down strength on the transistor gate. Series resistance tuning and stronger pull-ups were introduced, but future revisions may use a logic buffer or dedicated fault controller IC to guarantee edge cleanliness.
+</p>
+
+<h4>5. Mechanical & Debug Accessibility</h4>
+<p>
+  Because the BLE EVSE board is intended for embedded use in constrained test rigs, physical access to the SWD header and UART debug lines was critical. During initial bring-up, dense trace routing around the STM32 limited the accessibility of these headers for probe clips. The final layout pushed these headers to the board edge, but future revisions may introduce a debug mezzanine or snap-off section to preserve mechanical integration while retaining access.
+</p>
+
+<h3>Future Improvements</h3>
+<p>
+  The Tesla-Grade BLE EVSE board is deployment-ready, but several upgrades are planned to extend its performance and field usability:
+</p>
+<ul>
+  <li><b>Switching Regulators:</b> Replace the AMS1117 with a buck regulator (e.g., TPS62125) to reduce power loss and improve efficiency under BLE loads.</li>
+  <li><b>BLE Firmware Enhancements:</b> Extend the ESP32 firmware to support OTA updates, encrypted telemetry, and adaptive advertising based on fault state.</li>
+  <li><b>Wireless Power Integration:</b> Combine with a future QiBridge receiver board to explore BLE-based contactless charging modules with full telemetry feedback.</li>
+  <li><b>CAN-FD Telemetry Expansion:</b> Introduce an optional CAN-FD transceiver to support automotive bus diagnostics alongside BLE, useful in hybrid or dual-stack development settings.</li>
+  <li><b>Sensor Expansion:</b> Add hall sensors or current sense amplifiers (e.g., INA240) to validate actual relay load behavior and implement closed-loop fault prediction.</li>
+  <li><b>Conformal Coating & Assembly:</b> Use automotive-grade soldermask, silkscreen labeling, and pre-applied conformal coating to support field deployment in harsh environments.</li>
+</ul>
+
+<h2><u>Reinforcement Learning for Embedded EV Charging Control</u></h2>
+<p>
+  This project implements a <strong>Proximal Policy Optimization (PPO)-based reinforcement learning controller</strong> for a custom EVSE (Electric Vehicle Supply Equipment) system. The agent learns to toggle the relay based on temperature and pilot signal feedback, optimizing for safe, fault-free charging while running entirely on embedded hardware.
+</p>
+
+<p><strong>Both the paper and model repo can be found in the links above.</strong></p>
+
+<h3>System Overview</h3>
+<ul>
+  <li><strong>Microcontroller:</strong> STM32F103C8T6</li>
+  <li><strong>Telemetry:</strong> BLE (ESP32-WROOM-32E)</li>
+  <li><strong>Inference:</strong> Quantized TFLite model deployed via TensorFlow Lite Micro</li>
+  <li><strong>Inputs:</strong> Pilot signal status, relay state, internal temperature, and fault flags</li>
+  <li><strong>Outputs:</strong> Relay control signal and BLE telemetry for rollout monitoring</li>
+</ul>
+
+<h3>Environment & Reward Design</h3>
+<p>
+  The EVSE environment simulates thermal dynamics, relay-induced heating, and fault zones using a 4D observation space. PPO is rewarded for charging safely (<code>+2.0</code>) under <code>temp &lt; 0.9</code>, lightly penalized for risky behavior, and heavily penalized (<code>-10.0</code>) when a fault occurs. A fault-aware policy emerges that balances long-term safety and energy efficiency.
+</p>
+
+<h3>Training Pipeline</h3>
+<p>
+  The PPO agent is trained for 500,000 steps in Gymnasium using Stable-Baselines3. Random initial states and stochastic temperature dynamics encourage robustness. The final policy is exported to ONNX, converted to TFLite, and quantized to 8-bit for deployment.
+</p>
+
+<h3>Deployment</h3>
+<p>
+  The model is run on the STM32 microcontroller with inference every 100 ms. Relay control is updated based on the PPO action output, and BLE transmits rollout data for live visualization. The full deployment pipeline fits within 30 KB flash and runs under 100 ms latency per cycle.
+</p>
+
+<h3>Evaluation & Results</h3>
+<ul>
+  <li><strong>Reward Gain:</strong> PPO achieves 2.3× higher reward than heuristic and 3.1× over random policies</li>
+  <li><strong>Ablation Resilience:</strong> Robust to connector dropouts and hot starts, sensitive to sensor noise</li>
+  <li><strong>Fault Avoidance:</strong> Maintains temperature <code>&lt; 0.95</code> in over 98% of rollouts</li>
+  <li><strong>Deployment Footprint:</strong> 28 KB quantized model; less than 80 ms average inference time</li>
+</ul>
+
+<p>
+  This project demonstrates <strong>safe, real-time control with embedded reinforcement learning</strong> on a low-power microcontroller. It replaces rule-based EVSE firmware with an adaptive policy that learns from environmental interaction, respects physical safety limits, and generalizes across perturbations. The full stack — from simulation to STM32 deployment — showcases how RL can unlock new capabilities in autonomous embedded energy systems.
+</p>
+
+</div>
+</body>
+</html>
