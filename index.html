@@ -1,49 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jaival Patel</title>
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      margin: 0;
+      padding: 4rem 20%;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      background-color: #f9f9f9;
+      color: #111;
+      line-height: 1.6;
+      background-image: radial-gradient(#ddd 0.5px, transparent 0.5px);
+      background-size: 20px 20px;
+      transition: background 0.4s ease;
+    }
+
+    body:hover {
+      background-image: radial-gradient(#ccc 0.5px, transparent 0.5px);
+    }
+
+    h1, h2, h3 {
+      margin-bottom: 0.2em;
+      font-weight: 500;
+    }
+
+    a {
+      color: #000;
+      text-decoration: none;
+    }
+
+    a.underline-link {
+      position: relative;
+    }
+
+    a.underline-link::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background-color: black;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    a.underline-link:hover::after {
+      transform: scaleX(1);
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .section {
+      margin-bottom: 4rem;
+    }
+
+    .link-group a {
+      margin-right: 1rem;
+    }
+    #glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 500px;
+  height: 500px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(0,0,0,0), rgba(0,0,0,0));
+  filter: blur(100px);
+  border-radius: 50%;
+  z-index: 0;
+  transform: translate(-50%, -50%);
+  transition: background 0.4s ease;
+}
+  </style>
 </head>
 <body>
-  <main class="container">
+  <div id="glow"></div>
+  <header class="fade-in">
     <h1>Jaival Patel</h1>
-    <p><strong>Engineering Science (major: ECE) @ University of Toronto</strong></p>
-    <h2>Currently</h2>
-    <ul>
-        <li>Designing Intelligent Embodied Systems from PCBs to Policy Models</li>
-        <li>Designing PCB for PNS signal capturing @ <a href="https://www.eecg.utoronto.ca/~roman/lab/index.html">Intelligent Sensory Microsystems Lab</a>  </li>
-        <li>IC and Embedded Systems Research under Phd. Mohammad Abdolrazzaghi @ <a href="https://www.eecg.utoronto.ca/~roman/lab/index.html">Intelligent Sensory Microsystems Lab</a></li>
-        <li>Developing Evolutionary Algorithm models to infer microcircuit dynamics in L2/3 from EEG signals under Phd. Romesa Khan @ <a href="https://www.utsc.utoronto.ca/people/niemeier/">ConSENS</a></li>
-        <li><strong>Interests</strong>: Electronics, Robotic Reasoning </li>
-    </ul>
+    <p>Electronics · Embodied Intelligence · Neuro</p>
+    <div class="link-group">
+      <a class="underline-link" href="https://www.linkedin.com/in/jaivalpatel/">LinkedIn</a>
+      <a class="underline-link" href="https://github.com/GEEGABYTE1">GitHub</a>
+    </div>
+  </header>
 
-    <h2>Previously</h2>
-    <ul>
-      <li>Software Lead and Hardware Engineer @ <a href="https://www.utat.ca/rocketry">UTAT Rocketry</a></li>
-      <li>Flight System Intern at <a href="https://lunrcorp.com/">LUNR</a></li>
-      <li>Fullstack Engineer at <a href="https://www.ourwave.co/">Our Wave</a></li>
-      <li>Author of <a href="https://www.amazon.ca/Beauty-Mathematics-Jaival-Patel/dp/B09DN162SQ/ref=sr_1_1?crid=2TZELLR4IPHG4&dib=eyJ2IjoiMSJ9.QbQgMxZi4vwtbwU4q8FiSeOnEiEZXiy34XTzrXfxdYc.FqwhRMx0O2usGfFjN80_d1bbPomRUFDJyZp8y85hSQI&dib_tag=se&keywords=beauty+of+mathematics+jaival+patel&qid=1744898981&sprefix=beauty+of+mathematics+jaival+patel%2Caps%2C77&sr=8-1">Beauty of Mathematics</a></li>
-      <li>HackTheNorth 2022 Finalist</li>
-      <li><a href="https://top.mlh.io/2023/profiles/jaival-patel">MLH Top 50</a></li>
-    </ul>
+  <section class="section fade-in">
+  <h2>Me</h2>
 
-    <p><strong>Last Updated: 07/22/2025</strong></p>
+  <p>Currently an undegraduate student at the University of Toronto studying Engineering Science, majoring in ECE and minoring in Robotics.</p>
 
-    <nav>
-      <a href="projects.html">Works</a>
-      <a href="papers.html">Independent Research</a>
-      <a href="https://drive.google.com/file/d/1ojeMeJvcnnZFuYgg_ZotuNNP_siFBRb6/view?usp=sharing">Resume</a>
-      <a href="https://github.com/GEEGABYTE1">GitHub</a>
-      <a href="https://www.linkedin.com/in/jaivalpatel/">LinkedIn</a>
-    </nav>
+  <p>
+    I'm building intelligent systems at the intersection of AI, neuroscience, and robotics.
+    I design embedded hardware for brain–computer interfaces, develop AI agents for physical control in BCI applications, and study how learning emerges from constraint.
+  </p>
+
+  <p>
+  Right now, I’m focused on embodied intelligence and neural interfaces — training reinforcement learning and imitation learning agents to control real systems, while designing hardware that senses, responds, and adapts to brain-derived signals.  
+  I’m particularly drawn to low-latency, neuromorphic platforms where inference happens on-device, in real time.
+  </p>
+
+  <p>
+    I care about creating systems that are both functional and elegant — from wearable neural loggers and EVSE boards, to Transformer-based control policies and world models for motor drivers.
+    I see engineering as an artistic process, where constraints force creativity and the medium is physical.
+  </p>
+
+  <p>
+    <b>Some things I'm interested in</b>:
+    <i>cultural identity and formation</i>, <i>intelligence</i>, <i>intuition</i>, and <i>artistic expression</i>.
+      I'm excited by ideas that let you build for the body and the mind with tools that feel as intuitive as movement, as deliberate as thought, and as expressive as art.
+  </p>
+
+  <p>
+      In the long term, I plan to center my work around early developmental learning — the window when the brain is most malleable, and the foundation for a lifetime is quietly laid. 
+  I also hope to contribute to the development of solutions for neurological disorders that surface in childhood, when intervention matters most.  
+  I’m drawn to the subtle art of shaping cognition — not by force, but by understanding how growth unfolds when gently guided.
+  </p>
+  </section>
 
 
-  </main>
+  <section class="section fade-in">
+    <h2>Research & Experience</h2>
+    <p><strong>ConSENS Lab</strong> — Developing evolutionary algorithms to infer L2/3 microcircuit dynamics from EEG signals, under PhD Romesa Khan, <em>2025–</em></p>
+    <p><strong>Intelligent Microsystems Lab</strong> — RF board design for wireless neural implants, under PhD Mohammad Abdolrazzaghi, <em>2025–</em></p>
+    <p><strong>UofT Aerospace Team</strong> — Software lead, <em>2024-2025</em></p>
+    <p><strong>LUNR Corp</strong> — Flight systems intern, neural fin generation & GCS dev, <em>2024</em></p>
+    <p><strong>Major League Hacking</strong> — Top 50 Hacker, <em>2023</em></p>
+    <p><strong>Our Wave Hub</strong> — Fullstack developer intern, <em>2022</em></p>
+    <p><strong>HackTheNorth</strong> — Finalist, <em>2022</em></p>
+    <p><strong>Beauty of Mathematics</strong> — Author, <em>2021</em></p>
+  </section>
 
-  <footer>
-    <p>© Jaival Patel 2025</p>
-  </footer>
+  <section class="section fade-in">
+    <h2>Selected Projects</h2>
+
+    <h3>— Agents</h3>
+    <p><strong>World Model-Based Reinforcement Learning for Real-Time Motor Control</strong><br />
+    World model RL agent trained in PyBullet and deployed to STM32 for torque control with < 0.2 ms inference.<br />
+    <a class="underline-link" href="https://drive.google.com/file/d/1TxVmFbiP9XxHE9Te54d_bTcgD2L_pNgr/view?usp=sharing">[Paper]</a>
+    <a class="underline-link" href="./readmes/bldc-motor-driver.html">[Board]</a>
+    <a class="underline-link" href="https://github.com/GEEGABYTE1/RLPolicySmartGridNode">[Code]</a></p>
+
+    <p><strong>Transformer-Based Edge Agent for Real-Time Fault Detection in Smart Grid Nodes</strong><br />
+    Self-supervised Transformer deployed to embedded node for real-time power grid anomaly detection (AUC > 0.90).<br />
+    <a class="underline-link" href="https://drive.google.com/file/d/1hBmqx_9sWqOwcMe0_67193EGOkG2q-n8/view?usp=sharing">[Paper]</a>
+    <a class="underline-link" href="./readmes/smart-grid-node.html">[Board]</a>
+    <a class="underline-link" href="https://github.com/GEEGABYTE1/TransformerSmartGridNode">[Code]</a></p>
+
+    <p><strong>Reinforcement Learning for Embedded EV Charging Control: Sim-to-Real Optimization of Relay Policies via PPO</strong><br />
+    PPO agent trained to optimize EV charging control under relay timing, thermal, and fault constraints.<br />
+     <a class="underline-link" href="https://drive.google.com/file/d/1yNBfLVW2bxDHkCrF-n0V3zSCPtdq7IGY/view?usp=sharing">[Paper]</a>
+    <a class="underline-link" href="./readmes/teslaevse.html">[Board]</a>
+    <a class="underline-link" href="https://github.com/GEEGABYTE1/RLEVSE">[Code]</a></p>
+  
+    <p><strong>Spatially-Informed Neural Compression via GCN-Enhanced Transformers for BCI Systems</strong><br />
+    EEG + IMU → Transformer → Action command. Visualizes attention maps and exports to ONNX.<br />
+    <a class="underline-link" href="https://drive.google.com/file/d/19BBpEKwNMY2gQG58iEllfGWsf1WAHDjw/view?usp=sharing">[Paper]</a>
+    <a class="underline-link" href="https://github.com/GEEGABYTE1/eeProjects/blob/main/Projects/BLELoggingModel/BLELogging.ipynb">[Code]</a></p>
+
+    <p><strong>AlexNet Improved: Technical Analysis and Optimization</strong><br />
+    Architecture-level modifications to AlexNet for enhanced feature extraction and classification accuracy.<br />
+    <a class="underline-link" href="https://drive.google.com/file/d/1rickrjY4sw9hcE6rIGBmygPwA7OHb_5y/view?usp=sharing">[Paper]</a>
+    <a class="underline-link" href="https://github.com/GEEGABYTE1/eeProjects/blob/master/Projects/neuralNetFromScratchC/readme.md">[Code]</a></p>
+
+
+    <p><a class="underline-link" href="/all-papers.html">→ View all papers</a></p>
+
+    <h3>— Embedded Electrical Boards</h3>
+      
+      <p><strong>Tesla BLE EVSE Board</strong><br />
+      STM32-based EV charger with BLE telemetry, pilot sensing, relay control, and thermal/GCP fault logic.<br />
+      <a class="underline-link" href="./readmes/teslaevse.html">[Technical Writeup]</a></p>
+
+      <p><strong>Smart Grid Node with Remote Fault Detection</strong><br />
+      Precision voltage/current sensing with BLE telemetry, RTC-GPS sync, and transformer-based fault detection.<br />
+      <a class="underline-link" href="./readmes/smart-grid-node.html">[Technical Writeup]</a></p>
+
+      <p><strong>Tesla Roadster Infotainment System</strong><br />
+      Redesigned 8-layer board for media/audio interface, CAN I/O, and UX improvements over open-source layout.<br />
+      <a class="underline-link" href="./readmes/teslainfotainmentsystem.html">[Technical Writeup]</a></p>
+
+      <p><strong>NeuroStimCore</strong><br />
+      Closed-loop stimulation system for neuroadaptive feedback with STM32 control and fault-protected outputs.<br />
+      <a class="underline-link" href="./readmes/neuroStimCore.html">[Technical Writeup]</a></p>
+
+      <p><strong>CDAQ-EEG</strong><br />
+      Compact STM32-based EEG acquisition board with BLE streaming, microSD logging, and CNN-based neural decoding.<br />
+      <a class="underline-link" href="./readmes/cdaqeeg.html">[Technical Writeup]</a></p>
+
+      <p><strong>ASICFakeout</strong><br />
+      6-layer test board for ASIC emulation and FPGA validation, with multi-rail power, clocking, and SPI hooks.<br />
+      <a class="underline-link" href="./readmes/asic-fakeout-board.html">[Technical Writeup]</a></p>
+
+      <p><strong>SmartInterfaceCore</strong><br />
+      Embedded interface bridge with CAN isolation, microSD logging, trip logic, and STM32-based sensor routing.<br />
+      <a class="underline-link" href="./readmes/SmartInterfaceCore.html">[Technical Writeup]</a></p>
+
+    <p><a class="underline-link" href="/all-projects.html">→ View all Boards</a></p>
+  </section>
+
+
+  <script>
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    });
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+      observer.observe(el);
+    });
+  </script>
+  <script>
+  const glow = document.getElementById('glow');
+  const colorOptions = [
+    ['rgba(255, 0, 150, 0.3)', 'rgba(0, 200, 255, 0.3)'],
+    ['rgba(255, 150, 0, 0.3)', 'rgba(255, 255, 0, 0.3)'],
+    ['rgba(0, 255, 150, 0.3)', 'rgba(200, 100, 255, 0.3)'],
+    ['rgba(100, 255, 200, 0.3)', 'rgba(255, 0, 255, 0.3)'],
+    ['rgba(50, 100, 255, 0.3)', 'rgba(255, 150, 255, 0.3)']
+  ];
+  const [c1, c2] = colorOptions[Math.floor(Math.random() * colorOptions.length)];
+  glow.style.background = `radial-gradient(circle at 30% 30%, ${c1}, transparent 60%), radial-gradient(circle at 70% 70%, ${c2}, transparent 60%)`;
+
+  document.addEventListener('mousemove', (e) => {
+    glow.style.left = `${e.clientX}px`;
+    glow.style.top = `${e.clientY}px`;
+  });
+</script>
 </body>
 </html>

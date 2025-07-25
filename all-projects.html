@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Projects — Jaival Patel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 4rem 20%;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      background-color: #f9f9f9;
+      color: #111;
+      line-height: 1.6;
+      background-image: radial-gradient(#ddd 0.5px, transparent 0.5px);
+      background-size: 20px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    h1, h2 {
+      font-weight: 500;
+    }
+    a {
+      color: #000;
+      text-decoration: none;
+      position: relative;
+    }
+    a::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background-color: black;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease-in-out;
+    }
+    a:hover::after {
+      transform: scaleX(1);
+    }
+    #glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 500px;
+      height: 500px;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(0,0,0,0), rgba(0,0,0,0));
+      filter: blur(100px);
+      border-radius: 50%;
+      z-index: 0;
+      transform: translate(-50%, -50%);
+      transition: background 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="glow"></div>
+  <h1>All Projects</h1>
+
+  
+  <h2>Embedded Electrical Systems</h2>
+  <p><strong>Neural EEG Acquisition Board</strong><br />
+  Compact PCB for BLE-based EEG streaming with onboard CNN classifier and real-time gesture decoding.<br />
+  <a href="./readmes/eeg-neural-wearable.html">[Technical Writeup]</a></p>
+
+  <p><strong>Tesla BLE EVSE</strong><br />
+  STM32-controlled BLE charger with pilot sensing, fault detection (GCP, thermal), and safe relay actuation.<br />
+  <a href="./readmes/teslaevse.html">[Technical Writeup]</a></p>
+
+  <p><strong>Smart Grid Node with Remote Fault Detection</strong><br />
+  Real-time BLE telemetry system for voltage/current diagnostics with RTC-GPS sync and precision ADCs.<br />
+  <a href="./readmes/smart-grid-node.html">[Technical Writeup]</a></p>
+
+  <p><strong>High-Speed Data Logger</strong><br />
+  Parallel ADC data acquisition system with STM32 and SDIO-based microSD storage for neural signals.<br />
+  <a href="./readmes/highspeeddatalogger.html">[Technical Writeup]</a></p>
+
+  <p><strong>BLDC Motor Driver with Field-Oriented Control</strong><br />
+  STM32-controlled BLDC driver with DRV8353, hardware fault logic, and EMI-optimized FOC layout for robotics-grade torque control.<br />
+  <a href="./readmes/bldc-motor-driver.html">[Technical Writeup]</a></p>
+
+  <p><strong>Tesla Roadster Infotainment System</strong><br />
+  Custom 8-layer automotive PCB with stereo audio, USB-C, BLE telemetry, and STM32 control — rebuilt from scratch for optimized UX hardware.<br />
+  <a href="./readmes/teslainfotainmentsystem.html">[Technical Writeup]</a></p>
+
+  <p><strong>HIL Testing Rig for Embedded Systems</strong><br />
+  6-layer fault-injection and sensor-emulation platform with STM32 control, SPI logging, and real-time closed-loop test support for embedded validation.<br />
+  <a href="./readmes/HIL_Testing_Rig_Portfolio_Report.html">[Technical Writeup]</a></p>
+
+  <p><strong>NeuroStimCore — Closed-Loop Neural Stimulator</strong><br />
+  Real-time neural stimulation board with Bipolar analog frontend, adaptive feedback control, precision current delivery, and STM32-based closed-loop actuation.<br />
+  <a href="./readmes/neuroStimCore.html">[Technical Writeup]</a></p>
+
+  <p><strong>NeuroCapsule — BLE Logging Capsule for Neural Signals</strong><br />
+  Wearable 6-layer board for real-time BLE streaming, spike detection with onboard CNN, and microSD logging of biopotential signals for wearable BCI prototyping.<br />
+  <a href="./readmes/neurocapsule.html">[Technical Writeup]</a></p>
+
+  <p><strong>ASIC-Fakeout Board</strong><br />
+  6-layer emulation platform mimicking ASIC signal behavior, with fault injection pathways for pre-silicon validation and hardware-in-loop testing for neural systems.<br />
+  <a href="./readmes/asic-fakeout-board.html">[Technical Writeup]</a></p>
+
+  <p><strong>QiBridge</strong><br />
+  Wireless Power Interface with LiPo Charging and Isolated Regulation for Sealed Implantable Neural systems.<br />
+  <a href="./readmes/qibridge.html">[Technical Writeup]</a></p>
+
+  <p><strong>Neural AFE v1.0</strong><br />
+  Low-Noise Analog Front-End with Hardware Trip Logic and Signal Conditioning for Implantable Neural Interfaces.<br />
+  <a href="./readmes/neural-afe-board.html">[Technical Writeup]</a></p>
+
+  <p><strong>High Voltage Motor Driver with Interlocks</strong><br />
+  Automotive-Grade High-Voltage Motor Driver with Fault Interlocks & Real-Time CAN Diagnostics for BLDC Propulsion Systems.<br />
+  <a href="./readmes/voltagemotordriverinterlocks.html">[Technical Writeup]</a></p>
+
+  <p><strong>TrackLink PDU</strong><br />
+  Motorsport-grade CAN + STM32 interface with precision power regulation for real-time endurance data systems.<br />
+  <a href="./readmes/telemetryPowerHub.html">[Technical Writeup]</a></p>
+
+  <p><strong>Smart Interface Core</strong><br />
+  Modular STM32 interface hub with isolated CAN, fault-detecting ADC front end, RTC-synced microSD logging, and 6-layer EMI-optimized layout for EV diagnostics and sensor integration.<br />
+  <a href="./readmes/SmartInterfaceCore.html">[Technical Writeup]</a></p>
+
+  <p><strong>Thermal Safety Board with Analog Frontend</strong><br />
+  6-layer STM32-based thermal trip board with analog comparator logic, multiplexed sensing, and MATLAB-validated fail-safe thresholds for real-time overtemperature protection.<br />
+  <a href="./readmes/thermalsafetyboard.html">[Technical Writeup]</a></p>
+
+  <p><strong>CAN Node Emulator</strong><br />
+  STM32-based ECU simulator with SN65HVD230 CAN transceiver, USB-C interface, DIP-configurable node profiles, and fault injection support.<br />
+  <a href="./readmes/cannodeemulator.html">[Technical Writeup]</a></p>
+
+  <p><strong>CDAQ-EEG</strong><br />
+  Multilayer STM32H7 EEG node with ADS1299 acquisition, BLE telemetry, USB-C data interface, and analog/RF isolation for BCI applications.<br />
+  <a href="./readmes/cdaqeeg.html">[Technical Writeup]</a></p>
+
+  <p><strong>Smart Electromechanical Test Rig</strong><br />
+  Embedded ESP32 test rig with INA219 current sensing, SPI microSD logging, BLE GATT streaming, and modular analog/digital diagnostics.<br />
+  <a href="./readmes/electromechanicalTestRig.html">[Technical Writeup]</a></p>
+
+  <p><strong>Custom USBC Peripheral</strong><br />
+  STM32-based USB-C peripheral with UART bridge, load switch control, and DFU bootloader support.<br />
+  <a href="./readmes/usbcperipheral.html">[Technical Writeup]</a></p>
+
+  <p><strong>Modular Sensor + Mesh Networking</strong><br />
+  ESP32-WROOM-32E sensor node with modular I2C/analog input, LiPo/solar power, and multi-hop mesh networking via ESP-MDF for Robotics applications.<br />
+  <a href="./readmes/sensor-node-project-report.html">[Technical Writeup]</a></p>
+
+  <p><strong>Battery Management System</strong><br />
+  Custom 3-Rail BMS with Battery Monitoring, Safe Switching, and Power Integrity Enhancements for Embedded Systems.<br />
+  <a href="./readmes/bms.html">[Technical Writeup]</a></p>
+
+  <p><strong>Avionics Power Management</strong><br />
+  Power Management Board for Avionics of the Discovery Liquid Rocket at UTAT Rocketry<br />
+  <a href="./readmes/avionics_power_management.html">[Technical Writeup]</a></p>
+
+  <p><strong>Communication Board for RF Sensors</strong><br />
+  RF signal and Communication board for wireless monitoring of microwave sensors at ISML.<br />
+  <a href="./readmes/communication-board.html">[Technical Writeup]</a></p>
+
+  <p><strong>DC-DC Buck Converter TPS561208DDCR</strong><br />
+  Breakout board for TPS561208DDCR.<br />
+  <a href="./readmes/buck-converter.html">[Technical Writeup]</a></p>
+
+  <p><strong>Spitha</strong><br />
+  React wrapper component that renders components quicker<br />
+  <a href="./readmes/spitha.html">[Technical Writeup]</a></p>
+
+  <p><strong>FireWallet</strong><br />
+  Web3 Wallet with custom partioning algorithm to protect on-chain supply attacks.<br />
+  <a href="./readmes/firewallet.html">[Technical Writeup]</a></p>
+
+  
+
+
+
+
+  
+
+
+
+
+
+
+  <p><a href="index.html">← Back to Home</a></p>
+
+  <script>
+    const glow = document.getElementById('glow');
+    const colorOptions = [
+      ['rgba(255, 0, 150, 0.3)', 'rgba(0, 200, 255, 0.3)'],
+      ['rgba(255, 150, 0, 0.3)', 'rgba(255, 255, 0, 0.3)'],
+      ['rgba(0, 255, 150, 0.3)', 'rgba(200, 100, 255, 0.3)'],
+      ['rgba(100, 255, 200, 0.3)', 'rgba(255, 0, 255, 0.3)'],
+      ['rgba(50, 100, 255, 0.3)', 'rgba(255, 150, 255, 0.3)']
+    ];
+    const [c1, c2] = colorOptions[Math.floor(Math.random() * colorOptions.length)];
+    glow.style.background = `radial-gradient(circle at 30% 30%, ${c1}, transparent 60%), radial-gradient(circle at 70% 70%, ${c2}, transparent 60%)`;
+
+    document.addEventListener('mousemove', (e) => {
+      glow.style.left = `${e.clientX}px`;
+      glow.style.top = `${e.clientY}px`;
+    });
+  </script>
+</body>
+</html>

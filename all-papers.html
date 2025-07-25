@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Papers — Jaival Patel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 4rem 20%;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      background-color: #f9f9f9;
+      color: #111;
+      line-height: 1.6;
+      background-image: radial-gradient(#ddd 0.5px, transparent 0.5px);
+      background-size: 20px 20px;
+    }
+    h1, h2 {
+      font-weight: 500;
+    }
+    a {
+      color: #000;
+      text-decoration: none;
+      position: relative;
+    }
+    a::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background-color: black;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease-in-out;
+    }
+    a:hover::after {
+      transform: scaleX(1);
+      
+    }
+
+#glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 500px;
+  height: 500px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(0,0,0,0), rgba(0,0,0,0));
+  filter: blur(100px);
+  border-radius: 50%;
+  z-index: 0;
+  transform: translate(-50%, -50%);
+  transition: background 0.4s ease;
+}
+
+  </style>
+</head>
+<body>
+  <!-- Add just inside <body>, at the top -->
+<div id="glow"></div>
+
+  <h1>All Papers</h1>
+
+  <h2>World Model-Based Reinforcement Learning for Real-Time Motor Control</h2>
+  <p>World model RL agent trained in PyBullet and deployed to STM32 for torque control with < 0.2 ms inference.<br />
+  <a class="underline-link" href="https://drive.google.com/file/d/1TxVmFbiP9XxHE9Te54d_bTcgD2L_pNgr/view?usp=sharing">[Paper]</a>
+  <a class="underline-link" href="./readmes/bldc-motor-driver.html">[Board]</a>
+  <a class="underline-link" href="https://github.com/GEEGABYTE1/RLPolicySmartGridNode">[Code]</a></p>
+
+
+  <h2>Transformer-Based Edge Agent for Real-Time Fault Detection in Smart Grid Nodes</h2>
+  <p>Self-supervised Transformer deployed to embedded node for real-time power grid anomaly detection (AUC > 0.90).<br />
+  <a class="underline-link" href="https://drive.google.com/file/d/1hBmqx_9sWqOwcMe0_67193EGOkG2q-n8/view?usp=sharing">[Paper]</a>
+  <a class="underline-link" href="./readmes/smart-grid-node.html">[Board]</a>
+  <a class="underline-link" href="https://github.com/GEEGABYTE1/TransformerSmartGridNode">[Code]</a></p>
+
+  <h2>Reinforcement Learning for Embedded EV Charging Control: Sim-to-Real Optimization of Relay Policies via PPO</h2>
+  <p>PPO agent trained to optimize EV charging control under relay timing, thermal, and fault constraints.<br />
+  <a class="underline-link" href="https://drive.google.com/file/d/1yNBfLVW2bxDHkCrF-n0V3zSCPtdq7IGY/view?usp=sharing">[Paper]</a>
+  <a class="underline-link" href="./readmes/teslaevse.html">[Board]</a>
+  <a class="underline-link" href="https://github.com/GEEGABYTE1/RLEVSE">[Code]</a></p>
+  
+  
+  <h2>Spatially-Informed Neural Compression via GCN-Enhanced Transformers for BCI Systems</h2>
+  <p>EEG + IMU → Transformer → Action command. Visualizes attention maps and exports to ONNX.<br />
+  <a class="underline-link" href="https://drive.google.com/file/d/19BBpEKwNMY2gQG58iEllfGWsf1WAHDjw/view?usp=sharing">[Paper]</a>
+  <a class="underline-link" href="https://github.com/GEEGABYTE1/eeProjects/blob/main/Projects/BLELoggingModel/BLELogging.ipynb">[Code]</a></p>
+
+  <h2>AlexNet Improved: Technical Analysis and Optimization</h2>
+  <p>Architecture-level modifications to AlexNet for enhanced feature extraction and classification accuracy.<br />
+  <a class="underline-link" href="https://drive.google.com/file/d/1rickrjY4sw9hcE6rIGBmygPwA7OHb_5y/view?usp=sharing">[Paper]</a>
+  <a class="underline-link" href="https://github.com/GEEGABYTE1/eeProjects/blob/master/Projects/neuralNetFromScratchC/readme.md">[Code]</a></p>
+
+  <h2>Recursive Square Root Algorithm</h2>
+  <p>Recursive algorithm for prime and composite root approximation using adaptive mean-based stepping (≤3% error).<br /><a href="https://drive.google.com/file/d/1VthqtFggSjfT57mPQrkNLSdJiE2zl2_3/view?usp=sharing">[Paper]</a></p>
+
+  <h2>Behavior of Real and Complex Functions at Infinity</h2>
+  <p>Explores convergence, divergence, and oscillatory behavior of functions as they approach infinity in ℝ and ℂ.<br /><a href="https://drive.google.com/file/d/1HFMntXkSLs1IVH0ugVKfjSR1YQtjFXbP/view?usp=sharing">[Paper]</a></p>
+
+  <h2>Atomic Radius vs. Activation Energy in Transition Metals</h2>
+  <p>Analyzes how atomic radius influences catalytic activation energy trends across first-row transition metals.<br /><a href="https://drive.google.com/file/d/10jWHMgogdVcpGnM-GSJY8Opn_PEXEOll/view?usp=sharing">[Paper]</a></p>
+
+
+
+  <p><a href="index.html">← Back to Home</a></p>
+
+  <!-- Add at the bottom inside <script> -->
+<script>
+  const glow = document.getElementById('glow');
+  const colorOptions = [
+    ['rgba(255, 0, 150, 0.3)', 'rgba(0, 200, 255, 0.3)'],
+    ['rgba(255, 150, 0, 0.3)', 'rgba(255, 255, 0, 0.3)'],
+    ['rgba(0, 255, 150, 0.3)', 'rgba(200, 100, 255, 0.3)'],
+    ['rgba(100, 255, 200, 0.3)', 'rgba(255, 0, 255, 0.3)'],
+    ['rgba(50, 100, 255, 0.3)', 'rgba(255, 150, 255, 0.3)']
+  ];
+  const [c1, c2] = colorOptions[Math.floor(Math.random() * colorOptions.length)];
+  glow.style.background = `radial-gradient(circle at 30% 30%, ${c1}, transparent 60%), radial-gradient(circle at 70% 70%, ${c2}, transparent 60%)`;
+
+  document.addEventListener('mousemove', (e) => {
+    glow.style.left = `${e.clientX}px`;
+    glow.style.top = `${e.clientY}px`;
+  });
+</script>
+
+</body>
+</html>
