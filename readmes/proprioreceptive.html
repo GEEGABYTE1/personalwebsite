@@ -1,0 +1,443 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proprioceptive Sensor Node  </title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .nav-links {
+      margin-bottom: 2rem;
+    }
+    .nav-links a {
+      margin-right: 1rem;
+      text-decoration: underline;
+      color: #1a0dab;
+    }
+    .nav-links a:hover {
+      color: #888;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #000;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h1, h2, h3 {
+      margin-top: 2rem;
+    }
+    pre {
+      background-color: #f7f7f7;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      overflow-x: auto;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Proprioceptive Sensor Node with Transformer Inference</h1>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../all-projects.html">Project Portfolio</a>
+      <a href="https://drive.google.com/file/d/1uYeAPFhp3g96rJ3ubpWxUZbb1GOrXzYw/view?usp=sharing">Model Paper</a>
+      <a href="https://github.com/GEEGABYTE1/propriorecptiveML">Model Repository</a>
+    </div>
+  
+    <h2>Overview</h2>
+    <figure>
+      <img src="/images/proprioreceptiveboard/pcb3d.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 1: PCB 3D</figcaption>
+    </figure>
+  <p>
+    This project introduces a custom-designed Proprioceptive Sensor Node, optimized for deployment on robotic limbs to perform real-time contact state inference using embedded neural networks. The system integrates inertial (IMU) and joint encoder feedback into a compact, battery-powered PCB featuring an ESP32-WROOM-32E and optional STM32 co-processor. By fusing proprioceptive inputs, the board supports real-time inference of terrain interaction modes such as <i>slip</i>, <i>drag</i>, <i>airborne</i>, and <i>stable stance</i>, enabling more responsive locomotion control in quadrupedal and humanoid robots.
+  </p>
+
+  <p>
+    This hardware platform was developed in parallel with a research initiative titled <strong>Sim2Real Transformer for Proprioceptive Contact State Estimation in Legged Robots</strong>, which explores Transformer-based sequence models trained in simulation (PyBullet) and adapted for real-world deployment through domain adaptation. The final model is deployed on-device using TensorFlow Lite for low-latency inference directly from sensor streams.
+  </p>
+
+  <p>
+    Unlike prior solutions relying on high-frequency foot-mounted contact sensors or external perception systems, this approach infers contact conditions purely from internal joint and inertial signals. This enables scalable, low-power, and terrain-agnostic feedback for motion planners and adaptive controllers. The system also supports live telemetry, logging via microSD, and test-mode evaluation over USB.
+  </p>
+
+  <h3>Hardware Summary</h3>
+  <ul>
+    <li><b>MCU:</b> ESP32-WROOM-32E with BLE and WiFi support</li>
+    <li><b>Sensors:</b> 6-axis IMU (I2C/SPI), incremental encoder input</li>
+    <li><b>Signal Conditioning:</b> Analog buffers and RC filters for encoder readout</li>
+    <li><b>ML Deployment:</b> Quantized Transformer model via TensorFlow Lite</li>
+    <li><b>Power System:</b> Onboard Li-Ion charging, 3.3V regulation, reverse polarity protection</li>
+    <li><b>Logging:</b> Optional microSD + RTC module for labeled field data capture</li>
+  </ul>
+
+  <p>
+    This project is positioned as a showcase of embedded machine learning, sensor fusion, and Sim2Real adaptation in the context of real-world robotics. It targets roles at companies like Tesla Optimus, Figure AI, 1X, and Neuralink where onboard state estimation and low-latency feedback are central to robotic control stacks.
+  </p>
+
+
+    
+<h2>Key Features & Design Decisions</h2>
+
+<p>
+  The Proprioceptive Sensor Node was architected as a tightly integrated platform capable of fusing internal motion signals from encoders and inertial sensors for intelligent contact state estimation. Every subsystem—from sensor interfacing to neural model deployment—was carefully selected and tuned to support high-resolution data capture, low-latency inference, and seamless integration with legged robotic systems. This section outlines the rationale behind each major design choice, backed by performance requirements, electrical constraints, and deployment use cases.
+</p>
+
+<h3>ESP32-WROOM-32E – Main Microcontroller</h3>
+<figure>
+      <img src="/images/proprioreceptiveboard/BLETelemetrySchematic.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 2: BLE Telemetry</figcaption>
+    </figure>
+<p>
+  The ESP32-WROOM-32E was chosen as the central compute module due to its:
+</p>
+<ul>
+  <li>240 MHz dual-core Xtensa architecture with enough performance for real-time TensorFlow Lite inference</li>
+  <li>Integrated WiFi and BLE for wireless data streaming and debugging</li>
+  <li>Low-power modes for battery-conscious deployments</li>
+  <li>Rich peripheral set (UART, SPI, I2C, PWM) needed for interfacing sensors and actuators</li>
+</ul>
+<p>
+  Compared to STM32 MCUs, the ESP32 provided a superior balance between edge ML deployment and connectivity support. We used one core for sensor acquisition and real-time preprocessing, and the other for inference execution and BLE telemetry streaming. This separation improved latency consistency during contact state transitions.
+</p>
+
+<h3>IMU Interface – MPU-6050 (Modular)</h3>
+<figure>
+      <img src="/images/proprioreceptiveboard/IMUINterfaceschematic.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 3: IMU Interface</figcaption>
+    </figure>
+<p>
+  For inertial feedback, the board supports a 6-axis IMU module connected over SPI or I2C. We designed the footprint and pin mapping to be compatible with both ICM-42688 and MPU-6050 breakout modules. The selection was driven by:
+</p>
+<ul>
+  <li><b>Sampling Rate:</b> Required ≥1 kHz readout for inertial signals to match encoder sampling</li>
+  <li><b>Drift Performance:</b> MPU-6050 provides lower bias instability and higher accuracy, better for model generalization</li>
+  <li><b>Library Support:</b> MPU-6050 was used in early development for its wide driver availability</li>
+</ul>
+<p>
+  To ensure clean communication, a series resistor (220Ω) was placed on the IMU's SDA/SCL or MISO/MOSI lines, acting as a basic low-pass filter for digital noise suppression.
+</p>
+
+<h3> Encoder Signal Conditioning</h3>
+<figure>
+      <img src="/images/proprioreceptiveboard/EncoderInterfaceSchematic.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 4: Encoder Interface</figcaption>
+    </figure>
+<p>
+  The node supports quadrature encoder inputs for joint angle feedback, which are crucial for proprioceptive analysis. 
+</p>
+
+<p>
+  We designed the analog front-end for encoder inputs with flexibility to support both analog voltage encoders and digital incremental encoders. This allowed the same hardware to be reused across robotic arms, legs, and test benches.
+</p>
+
+<h3>Signal Fusion Pipeline (IMU + Encoder)</h3>
+<p>
+  The ESP32 collects synchronized readings from both the encoder and IMU streams and constructs a proprioceptive observation vector:
+</p>
+<pre>
+  obs = [θ₁, θ̇₁, θ₂, θ̇₂, ..., acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z]
+</pre>
+<p>
+  This observation vector is normalized in-place using precomputed mean and variance from the training dataset. The resulting vector is then forwarded into the Transformer encoder, either directly or via a local FIFO buffer. The fusion strategy was designed to:
+</p>
+<ul>
+  <li>Mitigate sensor desynchronization artifacts</li>
+  <li>Preserve sequence-level dynamics across multiple time steps</li>
+  <li>Simplify domain adaptation during Sim2Real transfer</li>
+</ul>
+
+
+<h3> Power Architecture</h3>
+<figure>
+      <img src="/images/proprioreceptiveboard/PowerManagementSchematic.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 5: Power Interface</figcaption>
+    </figure>
+<ul>
+  <li><b>Primary Supply:</b> USB-C connector with ESD protection (TPD3S014)</li>
+  <li><b>Battery Option:</b> 3.7V Li-Ion cell with TP4056-based charging and over-discharge protection</li>
+  <li><b>3.3V Regulation:</b> Low-dropout AMS1117-3.3 regulator with 10 µF decoupling caps</li>
+  <li><b>Reverse Polarity:</b> Input PMOS (IRLML6344) gate-tied to GND with pull-up for backfeed protection</li>
+</ul>
+<p>
+  The dual-power design enables both bench-top development and mobile deployment. The analog and digital rails were separated using ferrite beads to limit cross-domain noise. Additional Schottky diodes (MBR0520) protect from back EMF if used in active robotics legs.
+</p>
+
+
+<h3>8. Telemetry and Debugging</h3>
+<p>
+  Debugging and live telemetry are handled over:
+</p>
+<ul>
+  <li><b>BLE:</b> Custom service for real-time prediction streaming (50 Hz updates)</li>
+  <li><b>USB-C:</b> CDC serial used for initial flashing and UART-based live plot</li>
+</ul>
+<p>
+  These features allow seamless deployment with ROS-based visualization stacks or Python scripts for on-limb debugging.
+</p>
+
+
+<h2>PCB Layout Strategy</h2>
+
+<figure>
+      <img src="/images/proprioreceptiveboard/pcb2d.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 6: PCB 2d</figcaption>
+    </figure>
+
+<p>
+  The PCB layout of the Proprioceptive Sensor Node was engineered for high signal integrity, EMI resilience, and form factor adaptability for robotic limbs. Given the mixed-signal nature of the board—with analog front-end buffering, inertial sensing, and digital inference processing—special attention was paid to power domain isolation, ground return path optimization, and mechanical mountability. The following sections break down the layout rationale across layers, subsystems, and routing domains.
+</p>
+
+<h3>Stack-Up Configuration (4 Layers)</h3>
+<ul>
+  <li><b>Layer 1 – Power + Signal:</b> Top layer for components, short signal traces, and local decoupling</li>
+  <li><b>Layer 2 – Power Plane:</b> 3.3V polygon pour with ferrite-bead boundaries to isolate analog and digital zones</li>
+  <li><b>Layer 3 – Signal2:</b> Primary routing for SPI, UART, and encoder paths</li>
+  <li><b>Layer 4 – Ground:</b> Solid GND pour for minimal impedance and EMI shielding</li>
+</ul>
+
+<figure>
+      <img src="/images/proprioreceptiveboard/3v3pour.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 7: 3v3 Pour</figcaption>
+    </figure>
+
+<figure>
+      <img src="/images/proprioreceptiveboard/GNDpour.PNG" alt="BLDC Motor Driver"  />
+      <figcaption>Figure 8: GND Pour</figcaption>
+    </figure>
+<p>
+  This stack-up minimized noise coupling between analog sensor signals and digital inference pipelines, especially under BLE transmission loads or encoder phase transitions.
+</p>
+
+<h3>Component Placement Strategy</h3>
+<ul>
+  <li><b>ESP32 Module:</b> Centered to minimize trace lengths to BLE antenna and SPI bus</li>
+  <li><b>IMU Socket:</b> Placed orthogonal to board edge for 3D alignment with leg coordinate frames</li>
+  <li><b>Encoder Header:</b> Located on bottom-right with adjacent buffer op-amps to reduce I/O loading</li>
+  <li><b>microSD + RTC:</b> Top-right for easy access during logging mode swaps</li>
+  <li><b>Power In + Charging:</b> Bottom-left to minimize thermal and EMI propagation into sensor domain</li>
+</ul>
+<p>
+  Placement ensured modular swappability and debugging access while keeping high-speed and analog signals segregated.
+</p>
+
+<h3>Analog Routing and Shielding</h3>
+<p>
+  The INA333-based encoder buffers and IMU signal lines were routed exclusively over the GND layer (Layer 4) with a 10 mil clearance and adjacent return vias every 500 mil. Signals were routed using 6 mil traces with no layer transitions to avoid return path discontinuities. Shield polygons (tied to AGND) surrounded all analog traces to:
+</p>
+<ul>
+  <li>Minimize capacitive coupling to digital lines</li>
+  <li>Reduce susceptibility to BLE-induced RF spikes</li>
+  <li>Protect signal integrity during mechanical motion</li>
+</ul>
+
+<h3>Digital Domain and Bus Routing</h3>
+<p>
+  SPI and UART lines from the ESP32 were routed on Layer 3 with matched trace lengths (less than 10 mil skew) for the following buses:
+</p>
+<ul>
+  <li>SPI1: DAC, ADC, and microSD</li>
+  <li>SPI2: Optional Flash or expansion modules</li>
+  <li>UART0: BLE debug and fallback USB serial</li>
+</ul>
+<p>
+  Crosstalk between buses was minimized by keeping a 3W clearance (3× trace width spacing) and inserting ground return vias at bus entry/exit points to confine signal loops.
+</p>
+
+<h3>Ground Plane Strategy</h3>
+<p>
+  Layer 4 served as the reference GND plane with via stitching across all signal transitions. The layout followed a "split zone" concept:
+</p>
+<ul>
+  <li><b>AGND:</b> For analog buffer and IMU reference</li>
+  <li><b>DGND:</b> For ESP32 digital logic, BLE, and UART</li>
+</ul>
+<p>
+  These were tied together at a single-point star connection near the voltage regulator output to prevent ground loops. Differential ground return paths were enforced with loop area minimization for all analog and high-speed lines.
+</p>
+
+<h3>Power Delivery and Decoupling</h3>
+<p>
+  Each IC had 100 nF + 10 µF ceramic capacitors placed within 2 mm of VDD. ESP32 had additional 22 µF bulk capacitance near the module. Ferrite beads (600Ω @ 100 MHz) separated power domains:
+</p>
+<ul>
+  <li><b>Bead 1:</b> 3.3V digital rail (ESP32 + BLE)</li>
+  <li><b>Bead 2:</b> 3.3V analog rail (IMU + op-amps)</li>
+</ul>
+<p>
+  Power traces were routed using 20 mil width and 1 oz copper to support peak draw from BLE bursts and inference cycles. High-current paths (Li-Ion input to TP4056) used 50 mil traces with copper pour fill for heat dissipation.
+</p>
+
+<h3>BLE RF Optimization</h3>
+<p>
+  The ESP32 antenna edge was left unpopulated (keepout of 4 mm) and free from copper pour, silkscreen, and ground stitching vias. The closest traces were placed 6 mm away from the antenna to comply with RF propagation constraints. BLE signal drop was measured under 2.1 dBm loss at 2.4 GHz in field tests.
+</p>
+
+<h3>Test Points and Debug Headers</h3>
+<p>
+  Test headers were provided for:
+</p>
+<ul>
+  <li>Encoder analog inputs</li>
+  <li>IMU SPI lines</li>
+  <li>Power rails (3.3V, GND, Li-Ion)</li>
+  <li>BLE UART logging (via CP2102)</li>
+</ul>
+<p>
+  Vias were tented except at labeled square pads (1.1 mm), where spring-loaded pogo pins could be attached for real-time debugging. These were clustered in the bottom-left for ergonomic probe access.
+</p>
+
+<h3>Thermal Design and Protection</h3>
+<p>
+  Power dissipating components (e.g., AMS1117, TP4056, LM2662M) were isolated from IMU and signal path zones by thermal vias and copper relief zones. LDOs had exposed pads connected to bottom-layer copper with 0.3 mm via arrays for heat spreading. A TVS diode array (PESD3V3L1BA) was added near USB-C to absorb transient ESD spikes during connection.
+</p>
+
+<h3>Mechanical Mounting</h3>
+<p>
+  The board was designed with 2x M2 mounting holes, placed diagonally to reduce vibration transfer to analog zones. Edge-mounted JST PH headers allowed easy cabling to legs or actuators without obstructing the antenna path. Silkscreen labels were placed on both sides with directional arrows for encoder rotation and IMU axis references.
+</p>
+
+<p>
+  Overall, the PCB layout strategy ensured high-fidelity sensor acquisition, EMI minimization during BLE operation, and robustness for field deployment in dynamic robotic environments. The architecture and routing decisions enable reliable real-time proprioceptive inference across legged morphologies.
+</p>
+
+
+
+<h2>Challenges & Future Work</h2>
+
+<h3>Challenges Faced During Development</h3>
+
+<ul>
+  <li>
+    <strong>Mixed-Signal Layout Complexity:</strong>
+    Designing a compact PCB that included precision analog front-end circuits (INA333 buffers), high-speed digital processing (ESP32 BLE), and power regulation for both analog and digital rails required careful partitioning. Crosstalk and noise coupling were initial concerns during the routing of encoder and IMU signals near switching regulators.
+  </li>
+
+  <li>
+    <strong>BLE EMI and Signal Integrity:</strong>
+    Ensuring that BLE transmission from the ESP32 did not interfere with high-gain analog signals was nontrivial. Shielding sensitive traces, adding ground planes, and isolating analog and digital domains helped mitigate this, but antenna detuning from nearby copper still needed tuning during prototype validation.
+  </li>
+
+  <li>
+    <strong>Precision Resistor Availability:</strong>
+    Gain-setting resistors for the INA333 required sub-1% tolerance. Some values (e.g., 49.9Ω) were difficult to source during component shortages, leading to design iterations with alternative resistor networks and error margin simulations.
+  </li>
+
+  <li>
+    <strong>Power Supply Transients:</strong>
+    Simultaneous use of BLE transmission, SD logging, and SPI inference led to transient power draws. These occasionally caused brownout resets during early testing. We mitigated this by adding local bulk capacitance and adjusting the LDO thermal relief layout to improve dropout resilience.
+  </li>
+
+  <li>
+    <strong>IMU Orientation & Connector Footprint:</strong>
+    To align with the leg coordinate system of the quadruped platform, the IMU had to be rotated. This required re-defining the axis frame in firmware, and necessitated a redesign of the connector orientation and silkscreen layout to reduce setup errors during integration.
+  </li>
+
+  <li>
+    <strong>Sensor Desynchronization:</strong>
+    During Transformer training, we observed that slight timestamp drift between encoder and IMU readings caused domain misalignment. This was traced back to loop timing issues in the firmware, leading us to implement interrupt-based sampling and synchronize using the microsecond timer registers.
+  </li>
+</ul>
+
+<h3>Future Improvements</h3>
+
+<ul>
+  <li>
+    <strong>Upgrade to Dual-Core MCU or AI Edge SoC:</strong>
+    To reduce latency and enable onboard Transformer inference at higher sampling rates, we plan to upgrade from the ESP32 to a more powerful MCU like the ESP32-S3 or a dedicated edge-AI chip (e.g., Himax WE-I Plus or NXP i.MX RT1170).
+  </li>
+
+  <li>
+    <strong>Sensor Fusion with Additional Modalities:</strong>
+    Future iterations will integrate force sensors (e.g., FSRs or load cells) and joint torque sensors to improve the richness of proprioceptive inputs and generalization performance in contact state inference.
+  </li>
+
+  <li>
+    <strong>Custom Flex-PCB for Limb Integration:</strong>
+    To allow seamless embedding in robotic legs, we aim to migrate the design to a thin, flexible PCB with modular sensor pods for IMU and encoder placement closer to joints.
+  </li>
+
+  <li>
+    <strong>Real-Time Inference Optimization:</strong>
+    Quantization-aware training and conversion to ONNX/TensorFlow Lite will be applied to the Transformer model to enable efficient deployment on embedded hardware with less than 5 ms inference time.
+  </li>
+
+  <li>
+    <strong>Domain Adaptation & Self-Supervised Learning:</strong>
+    We plan to integrate Sim2Real domain adaptation pipelines—such as MMD loss and contrastive learning—to enhance generalization from synthetic data to physical deployment without manual labeling.
+  </li>
+
+  <li>
+    <strong>Closed-Loop Feedback Integration:</strong>
+    A companion board for haptic or actuator feedback will be designed to allow bidirectional control—enabling this sensor node to serve as both a sensing and reactive control unit in quadrupedal robots.
+  </li>
+
+  <li>
+    <strong>BLE Mesh and Logging Enhancements:</strong>
+    Future revisions will add BLE Mesh support for multi-node coordination and in-situ collaborative locomotion logging. SD write buffering and compressed telemetry will reduce energy consumption and improve data throughput.
+  </li>
+</ul>
+
+<p>
+  These improvements aim to extend the node's applicability from robotic locomotion labs to real-world field robotics and embedded neuroprosthetics. With Transformer-based contact state estimation already validated in simulation, this board offers a pathway to efficient, real-time proprioceptive inference on embedded platforms—unlocking next-gen embodied intelligence.
+</p>
+
+<h2><u>Sim2Real Transformer for Proprioceptive Contact State Estimation</u></h2>
+<p>
+  This project implements a <strong>Transformer-based contact state estimator</strong> trained on simulated proprioceptive data from a robotic arm and quadruped. The model learns to infer binary contact states (<code>air</code> vs <code>contact</code>) using fused joint encoder and IMU signals. After training in simulation, it is deployed onto a custom embedded sensor node for real-time inference in robotic locomotion tasks.
+</p>
+
+<p><strong>Both the paper and model repo can be found in the links above.</strong></p>
+
+<h3>System Overview</h3>
+<ul>
+  <li><strong>Sensor Node MCU:</strong> ESP32-WROOM-32E</li>
+  <li><strong>Inference Model:</strong> Transformer encoder with positional embedding and attention pooling</li>
+  <li><strong>Inputs:</strong> 128-timestep sequences of IMU (acceleration, gyro) and joint encoder signals</li>
+  <li><strong>Output:</strong> Binary contact prediction (<code>air</code> or <code>contact</code>) at each timestep</li>
+  <li><strong>Deployment Target:</strong> Proprioceptive Sensor Node with BLE, INA333, and ADS1118 ADC</li>
+</ul>
+
+<h3>Data Generation & Simulation Setup</h3>
+<p>
+  Training data was generated in PyBullet using two domains:
+  <ul>
+    <li><strong>Arm Domain:</strong> 3-DOF robotic arm lifting, sliding, and tapping a cube across varying surfaces</li>
+    <li><strong>Quadruped Domain:</strong> Laikago robot walking over terrain using PPO-learned gait policies</li>
+  </ul>
+  Each episode produced labeled sequences with true contact states, synchronized IMU and joint encoder logs, and randomized domain parameters for Sim2Sim robustness.
+</p>
+
+<h3>Model Architecture & Training</h3>
+<p>
+  The model consists of a 3-layer Transformer encoder with 4 heads, input projection layers, and a final binary classifier head. Training was performed with binary cross-entropy loss on 20,000+ sequences. Synthetic domain shift was introduced (e.g., sensor dropout, misalignment) to encourage generalization. Fine-tuning on quadruped data improved transfer robustness.
+</p>
+
+<h3>Sim2Real Deployment & Optimization</h3>
+<p>
+  The trained model was converted to TensorFlow Lite and quantized to 8-bit integer format. It was deployed on the ESP32 sensor node, running inference every 100 ms using onboard IMU and encoder readings. BLE telemetry transmitted predictions and sensor traces for real-time monitoring. Inference latency was measured at <code>&lt;50 ms</code>, with a memory footprint of under <code>200 KB</code>.
+</p>
+
+<h3>Evaluation & Results</h3>
+<ul>
+  <li><strong>Arm Domain Accuracy:</strong> 94.8% contact classification accuracy on test data</li>
+  <li><strong>Quadruped Domain Accuracy:</strong> 91.4% after domain adaptation</li>
+  <li><strong>F1 Score (Sim2Real):</strong> 0.83 under sensor noise and orientation perturbations</li>
+  <li><strong>Embedded Inference:</strong> 38 ms per cycle, 8-bit quantized model under 180 KB</li>
+</ul>
+
+<p>
+  This project demonstrates <strong>Sim2Real generalization using Transformers for embedded proprioceptive reasoning</strong>. The pipeline—from synthetic data generation to model deployment on a wearable sensor node—enables robust and low-latency contact state inference without external sensors. This capability unlocks new feedback and control strategies for legged robots, prosthetic limbs, and wearable neurotech platforms.
+</p>
+
+</div>
+</body>
+</html>
