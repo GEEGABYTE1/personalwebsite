@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects – Jaival Patel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Works</h1>
+      <a href="../index.html">Home</a>
+    <p>Things I've built</p>
+    <div class="grid" id="project-grid"></div>
+  </div>
+
+  <script>
+    const projects = [
+      {
+        title: "Tesla BLE EVSE Board",
+        file: "readmes/teslaevse.html",
+        image: "images/TeslaEVSE/pcb3d.PNG",
+        caption: "BLE-Enabled EVSE System with STM32 Relay Control, Pilot Signal Detection, Thermal Fault Logic, and Embedded PPO-Based Reinforcement Learning Policy for Safe, Adaptive Edge Charging in Low-Power Autonomous Energy Interfaces."
+      },
+      {
+        title: "Smart Grid Node with Remote Fault Detection",
+        file: "readmes/smart-grid-node.html",
+        image: "images/smartgridnode/pcb3d.PNG",
+        caption: "Wireless Smart Grid Node for Real-Time Power Line Monitoring with ESP32 BLE, RTC-GPS Synchronization, Precision Voltage/Current Sensing, and Embedded Transformer-Based Fault Detection Algorithm for Self-Supervised Edge Diagnostics in Distributed Energy Systems."
+      },
+        {
+        title: "BLDC Motor Driver with FOC",
+        file: "readmes/bldc-motor-driver.html",
+        image: "images/BLDCMotorDriver/pcb3d.PNG",
+        caption: "High-performance BLDC motor driver with DRV8353, encoder feedback, EMI-optimized layout, and embedded World Model-based Reinforcement Learning for real-time motor control in Robotic applications."
+      },
+      {
+        title: "Tesla Roadster Infotainment System",
+        file: "readmes/teslainfotainmentsystem.html",
+        image: "images/TeslaInfotainmentSystem/pcb3d.PNG",
+        caption: "Redesigned Tesla Roadster Infotainment System with Enhanced BLE Control, Optimized Power Delivery, and Custom Audio Pipeline."
+      },
+      {
+        title: "High Speed Data Logger - 6 Channel Parallel ADC Sampling",
+        file: "readmes/highspeeddatalogger.html",
+        image: "images/highspeeddatalogger/PCB3D.PNG",
+        caption: "High-Speed Data Logger with Parallel ADC Acquisition and SDIO-Based Streaming for Precision Telemetry in Embedded and Neural Systems."
+      },
+      {
+        title: "HIL-Testing Rig",
+        file: "readmes/hiltestingrig.html",
+        image: "images/HILTestingRig/pcb3d.PNG",
+        caption: "Neural Signal Emulation and Fault Injection Rig with DAC/ADC I/O, Closed-Loop Stimulus-Response Logging, and Real-Time USB/CAN Telemetry for Embedded BCI System Validation."
+      },
+      {
+        title: "NeuroStimCore",
+        file: "readmes/neuroStimCore.html",
+        image: "images/NeuroStimBoard/pcb3d.PNG",
+        caption: "Medical-Grade Wearable Sensor Node with Bipolar Analog Front-End, Real-Time Logging, Thermal Trip Logic, and Multi-Rail Power for Advanced Neural and Biopotential Sensing."
+      },
+      {
+        title: "Transformer-Based Neural Signal Compression",
+        file: "readmes/transformer-bci-encoder.html",
+        image: "images/transformerbciencoder/thumbnail.png",
+        caption: "Independently written Paper on Transformer-Based Neural Signal Encoder for Low-Latency BCI Compression and Intention Decoding."
+      },
+      {
+        title: "NeuroCapsule",
+        file: "readmes/neurocapsule.html",
+        image: "images/NeuroCapsule/pcb3d.PNG",
+        caption: "BLE-Powered Neural Spike Detection Capsule with Embedded CNN Inference, Precision Analog Front-End, and Real-Time USB-C Streaming for Wearable BCI Prototyping."
+      },
+      {
+        title: "ASIC Fakeout",
+        file: "readmes/asic-fakeout-board.html",
+        image: "images/ASICFakeout/pcb3d.PNG",
+        caption: "Emulation-grade PCB simulating ASIC I/O, CAN telemetry, isolation, and fault injection pathways for pre-silicon validation and hardware-in-the-loop testing for Neural systems."
+      },
+      {
+        title: "QiBridge",
+        file: "readmes/qibridge.html",
+        image: "images/QiBridge/pcb3d.PNG",
+        caption: "Wireless Power Interface with LiPo Charging and Isolated Regulation for Sealed Implantable Neural systems."
+      },
+      {
+        title: "Neural AFE V1.0",
+        file: "readmes/neural-afe-board.html",
+        image: "images/NeuralAFE/pcb3d.PNG",
+        caption: "Low-Noise Analog Front-End with Hardware Trip Logic and Signal Conditioning for Implantable Neural Interfaces."
+      },
+      {
+        title: "High Voltage Motor Driver with Interlocks",
+        file: "readmes/voltagemotordriverinterlocks.html",
+        image: "images/highvoltagemotordriverwithinterlocks/pcb3d.PNG",
+        caption: "Automotive-Grade High-Voltage Motor Driver with Fault Interlocks & Real-Time CAN Diagnostics for BLDC Propulsion Systems."
+      },
+      {
+        title: "TrackLink PDU",
+        file: "readmes/telemetryPowerHub.html",
+        image: "images/powerHubTelemetry/pcb3d.PNG",
+        caption: "Motorsport-grade CAN + STM32 interface with precision power regulation for real-time endurance data systems."
+      },
+      {
+        title: "Motorsport Lap Time Sim",
+        file: "readmes/laptimesim.html",
+        image: "images/lapSim/sim.png",
+        caption: "Lap time simulator that models tire wear, fuel mass reduction, pit stop strategy, and overtaking. Simulated sector-based track performance with compound-specific degradation and traffic penalties. "
+      },
+      {
+        title: "SmartInterfaceCore",
+        file: "readmes/SmartInterfaceCore.html",
+        image: "images/SmartInterfaceCore/pcb3d.PNG",
+        caption: "Modular STM32 interface hub with isolated CAN, fault-detecting ADC front end, RTC-synced microSD logging, and 6-layer EMI-optimized layout for EV diagnostics and sensor integration."
+      },
+      {
+        title: "Thermal Safety Board with Analog Front end",
+        file: "readmes/thermalsafetyboard.html",
+        image: "images/thermalSafetyBoard/pcb3d.PNG",
+        caption: "6-layer STM32-based thermal trip board with analog comparator logic, multiplexed sensing, and MATLAB-validated fail-safe thresholds for real-time overtemperature protection."
+      },
+      {
+        title: "CAN Node Emulator",
+        file: "readmes/cannodeemulator.html",
+        image: "images/cannodeemulator/pcb3d.PNG",
+        caption: "STM32-based ECU simulator with SN65HVD230 CAN transceiver, USB-C interface, DIP-configurable node profiles, and fault injection support."
+      },
+      {
+        title: "CDAQ-EEG",
+        file: "readmes/cdaqeeg.html",
+        image: "images/cdaqEEG/pcb3d.PNG",
+        caption: "Multilayer STM32H7 EEG node with ADS1299 acquisition, BLE telemetry, USB-C data interface, and analog/RF isolation for BCI applications."
+      },
+      {
+        title: "Smart Electromechanical Test Rig",
+        file: "readmes/electromechanicalTestRig.html",
+        image: "images/electromechanicalTestRig/pcb3d.PNG",
+        caption: "Embedded ESP32 test rig with INA219 current sensing, SPI microSD logging, BLE GATT streaming, and modular analog/digital diagnostics."
+      },
+      
+    {
+        title: "Custom USBC Peripheral",
+        file: "readmes/usbcperipheral.html",
+        image: "images/usbc/pcb3d.PNG",
+        caption: "STM32-based USB-C peripheral with UART bridge, load switch control, and DFU bootloader support."
+      },
+    {
+        title: "Modular Sensor + Mesh Networking",
+        file: "readmes/sensor-node-project-report.html",
+        image: "images/ModularSensorNode/images/pcb3d.PNG",
+        caption: "ESP32-WROOM-32E sensor node with modular I2C/analog input, LiPo/solar power, and multi-hop mesh networking via ESP-MDF for Robotics applications."
+      },
+    {
+        title: "Battery Management System",
+        file: "readmes/bms.html",
+        image: "images/bms/pcb3d.PNG",
+        caption: "Custom 3-Rail BMS with Battery Monitoring, Safe Switching, and Power Integrity Enhancements for Embedded Systems."
+      },
+    
+      {
+        title: "EEG Neural Wearable",
+        file: "readmes/eeg-neural-wearable.html",
+        image: "images/eegthumbnail.png",
+        caption: "Wearable PCB with onboard CNN for EEG classification"
+      },
+      {
+        title: "Avionics Power Management Board",
+        file: "readmes/avionics_power_management.html",
+        image: "images/avi_power_management/3DModel.PNG",
+        caption: "Power Management Board for Avionics of the Discovery Liquid Rocket at UTAT Rocketry"
+      },
+      {
+        title: "Communication Board for RF Sensors",
+        file: "readmes/communication-board.html",
+        image: "images/communication_board_isml/isml2.PNG",
+        caption: "RF signal and Communication board for wireless monitoring of microwave sensors at ISML."
+      },
+      {
+        title: "DC-DC Buck Converter TPS561208DDCR",
+        file: "readmes/buck-converter.html",
+        image: "images/TPS561208/thumbnail.png",
+        caption: "Breakout board for TPS561208DDCR."
+      },
+      {
+        title: "AlexNetV2",
+        file: "readmes/alexnetv2.html",
+        image: "images/alexnet/thumbnail.png",
+        caption: "Improved AlexNet model by increasing computational performance by 3×."
+      },
+      {
+        title: "Spitha",
+        file: "readmes/spitha.html",
+        image: "images/spitha/thumbnail.png",
+        caption: "React wrapper component that renders components quicker"
+      },
+      {
+        title: "FireWallet",
+        file: "readmes/firewallet.html",
+        image: "images/firewallet/thumbnail.png",
+        caption: "Web3 Wallet with custom partioning algorithm to protect on-chain supply attacks."
+      },
+      
+      
+      // Add more projects here
+    ];
+
+    const gridEl = document.getElementById('project-grid');
+
+    projects.forEach(proj => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const img = document.createElement('img');
+      img.src = proj.image;
+      img.alt = proj.title;
+
+      const title = document.createElement('h3');
+      title.textContent = proj.title;
+
+      const desc = document.createElement('p');
+      desc.textContent = proj.caption;
+
+      card.appendChild(img);
+      card.appendChild(title);
+      card.appendChild(desc);
+      card.addEventListener('click', () => {
+        window.open(proj.file, '_blank');
+      });
+      gridEl.appendChild(card);
+    });
+  </script>
+</body>
+</html>

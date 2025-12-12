@@ -2,246 +2,402 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jaival Patel</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    html {
-      scroll-behavior: smooth;
+    :root {
+      --bg: #faf4e8;
+      --fg: #2f261f;
+      --muted: #7d6f63;
+      --accent: #c47231;
+      --accent-soft: rgba(196, 114, 49, 0.08);
+      --border: #e2d4c2;
+      --max-width: 720px;
     }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      padding: 4rem 20%;
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      background-color: #f9f9f9;
-      color: #111;
-      line-height: 1.6;
-      background-image: radial-gradient(#ddd 0.5px, transparent 0.5px);
-      background-size: 20px 20px;
-      transition: background 0.4s ease;
-    }
-
-    body:hover {
-      background-image: radial-gradient(#ccc 0.5px, transparent 0.5px);
-    }
-
-    h1, h2, h3 {
-      margin-bottom: 0.2em;
-      font-weight: 500;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "SF Pro Text", "Segoe UI", sans-serif;
     }
 
     a {
-      color: #000;
+      color: inherit;
       text-decoration: none;
     }
 
-    a.underline-link {
-      position: relative;
+    a:hover {
+      text-decoration: underline;
     }
 
-    a.underline-link::after {
+    .page {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    /* NAVBAR */
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 0.9rem 0 0.85rem;
+      margin-bottom: 2rem;
+      background: rgba(250, 244, 232, 0.94);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+    }
+
+    .nav-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      color: var(--muted);
+    }
+
+    .nav-link {
+      position: relative;
+      padding-bottom: 0.05rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .nav-link::after {
       content: "";
       position: absolute;
-      bottom: -2px;
       left: 0;
-      width: 100%;
+      bottom: 0;
+      width: 0;
       height: 1px;
-      background-color: black;
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease-in-out;
+      background: var(--accent);
+      transition: width 0.15s ease-out;
     }
 
-    a.underline-link:hover::after {
-      transform: scaleX(1);
+    .nav-link:hover::after {
+      width: 100%;
     }
 
-    .fade-in {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    @media (max-width: 640px) {
+      .page {
+        padding-inline: 1.2rem;
+      }
+
+      .nav-inner {
+        gap: 0.8rem;
+      }
+
+      .nav-right {
+        gap: 0.8rem;
+        font-size: 0.8rem;
+      }
     }
 
-    .fade-in.visible {
-      opacity: 1;
-      transform: none;
+    /* MAIN */
+
+    main {
+      margin-top: 0.5rem;
+    }
+
+    .headline {
+      font-family: "Iowan Old Style", "Palatino", "Georgia", "Times New Roman",
+        serif;
+      font-size: clamp(2.1rem, 4vw, 2.5rem);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.02em;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 1.8rem;
     }
 
     .section {
-      margin-bottom: 4rem;
+      margin-bottom: 2.2rem;
     }
 
-    .link-group a {
-      margin-right: 1rem;
+    .subtle-label {
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
     }
-    #glow {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 500px;
-  height: 500px;
-  pointer-events: none;
-  background: radial-gradient(circle, rgba(0,0,0,0), rgba(0,0,0,0));
-  filter: blur(100px);
-  border-radius: 50%;
-  z-index: 0;
-  transform: translate(-50%, -50%);
-  transition: background 0.4s ease;
-}
+
+    .find-me-card {
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.65);
+      padding: 0.9rem 0.95rem 0.9rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .social-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.4rem;
+    }
+
+    .pill-link {
+      font-size: 0.8rem;
+      padding: 0.22rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: rgba(250, 244, 232, 0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--muted);
+      transition: background 0.15s ease-out, border-color 0.15s ease-out,
+        transform 0.12s ease-out;
+    }
+
+    .pill-link span.dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .pill-link:hover {
+      border-color: rgba(196, 114, 49, 0.65);
+      background: var(--accent-soft);
+      color: var(--fg);
+      text-decoration: none;
+      transform: translateY(-0.5px);
+    }
+
+    .body-text {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--fg);
+    }
+
+    .muted-text {
+      color: var(--muted);
+    }
+
+    ul.custom-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 0.4rem 0 0;
+    }
+
+    ul.custom-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    ul.custom-list li .bullet {
+      width: 0.35rem;
+      height: 0.35rem;
+      border-radius: 999px;
+      background: var(--accent);
+      margin-top: 0.45rem;
+      flex-shrink: 0;
+    }
+
+    .link-inline {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(196, 114, 49, 0.4);
+      padding-bottom: 0.05rem;
+    }
+
+    .link-inline:hover {
+      border-bottom-color: rgba(196, 114, 49, 0.9);
+    }
+
+    .footer-note {
+      margin-top: 2.2rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
-  <div id="glow"></div>
-  <header class="fade-in">
-    <h1>Jaival Patel</h1>
-    <p>Electronics · Embodied Intelligence · Neuro</p>
-    <div class="link-group">
-      <a class="underline-link" href="https://www.linkedin.com/in/jaivalpatel/">LinkedIn</a>
-      <a class="underline-link" href="https://github.com/GEEGABYTE1">GitHub</a>
-    </div>
-  </header>
+  <div class="page">
+    <!-- NAVBAR -->
+    <header class="nav">
+      <div class="nav-inner">
+        <div class="nav-left">
+          <div class="nav-dot"></div>
+          <div>Jaival Patel</div>
+        </div>
+        <nav class="nav-right">
+          <a href="#home" class="nav-link">Home</a>
+          <a href="projects.html" class="nav-link">Projects</a>
+          <a href="#interests" class="nav-link">Resume</a>
+          <a href="#more" class="nav-link">More</a>
+        </nav>
+      </div>
+    </header>
 
-  <section class="section fade-in">
-  <h2>Me</h2>
+    <!-- MAIN CONTENT -->
+    <main id="home">
+      <section class="section">
+        <h1 class="headline">Jaival Patel</h1>
+        <p class="tagline">
+          
+        </p>
 
-  <p>Currently an undegraduate student at the University of Toronto studying Engineering Science, majoring in ECE and minoring in Robotics.</p>
+        <!-- Short bullets -->
+        <section class="section" id="about">
+            <div class="subtle-label">About me</div>
+          
+          <ul class="custom-list">
+            <li>
+              <div class="bullet"></div>
+              <div>
+                I study Engineering Science (major ECE, minor Robotics) at the University of Toronto.
+              </div>
+            </li>
+            <li>
+              <div class="bullet"></div>
+              <div>
+                My current interests lie in high performance PCBs in <span class="muted-text">aerospace</span>, 
+                <span class="muted-text">implant</span>, <span class="muted-text">medical imaging</span>,  and <span class="muted-text">motorsport</span> applications.
+                 
+              </div>
+            </li>
+            <li>
+              <div class="bullet"></div>
+              <div>
+                Outside of designing boards and debugging with the scope, I like to delve in the world of <span class="muted-text">motorsport (WEC)</span>, 
+                <span class="muted-text">dance</span>, <span class="muted-text">music</span>, <span class="muted-text">street fashion</span> and <span class="muted-text">cricket</span>.
+                  
+              </div>
+            </li>
+          </ul>
+        </section>
+      </section>
 
-  <p>
-    I'm building intelligent systems at the intersection of AI, neuroscience, and robotics.
-    I design embedded hardware for brain–computer interfaces, develop Deep Learning models to learn about brain behaviour, and study how learning emerges from constraint.
-  </p>
+      <section class="section" id="interests">
+        <div class="subtle-label">Experience</div>
+        <ul class="custom-list">
+          <li>
+            <div class="bullet"></div>
+            <div>
+              <span class="muted-text">NeuroTechUofT</span> - Leading design of electrical system for Stroke Rehab Prosthetic, <i>Sept 2025-</i>
+            </div>
+          </li>
+          <li>
+            <div class="bullet"></div>
+            <div>
+              <span class="muted-text">CoNSens Lab</span> - Developing evolutionary algorithms to infer L2/3 microcircuit dynamics from EEG signals under Dr. Niemeier, <i>May 2025-</i>
+            </div>
+          </li>
+          <li>
+            <div class="bullet"></div>
+            <div>
+              <span class="muted-text">Intelligent Microsystems Lab</span> - RF board design for wireless spine implants under Professor. Roman Genov, <i> Jan 2025 - Aug 2025</i>
+            </div>
 
- 
+          </li>
+          <li>
+            <div class="bullet"></div>
+            <div>
+              <span class="muted-text">Uoft Aerospace Team</span> - Software Lead and Avionics Engineer, <i>Sept 2024 - May 2025</i>
+            </div>
+          </li>
+          <li>
+            <div class="bullet"></div>
+            <div>
+              <span class="muted-text">LUNR Corp</span> - Flight System Intern, <i>May 2024 - Aug 2024</i>
+            </div>
+          </li>
+          <li>
+            <div class="bullet"></div>
+            <div>
+              <span class="muted-text">Major League Hacking</span> - Top 50, <i>2023</i>
+            </div>
+          </li>
+          <li>
+            <div class="bullet"></div>
+            <div>
+              <span class="muted-text">Our Wave Hub</span> - Fullstack Developer, <i>2022</i>
+            </div>
+          </li>
+          <li>
+            <div class="bullet"></div>
+            <div>
+              <span class="muted-text">HackTheNorth</span> - Finalist, <i>2022</i>
+            </div>
+          </li>
+          <li>
+            <div class="bullet"></div>
+            <div>
+              <span class="muted-text">Beauty of Mathematics</span> - Author, <i>2021</i>
+            </div>
+          </li>
+          
+          
+        </ul>
+      </section>
 
+      <section class="section" id="more">
+        <p class="body-text">
+          If you're curious, you can browse more details on
+          <a href="https://jaivalpatel.com" class="link-inline" target="_blank" rel="noreferrer">
+            my site
+          </a>
+          or reach out on
+          <a
+            href="https://www.linkedin.com/in/jaivalpatel/"
+            class="link-inline"
+            target="_blank"
+            rel="noreferrer"
+          >
+            LinkedIn
+          </a>.
+        </p>
+      </section>
 
-  <p>
-    <b>Some things I'm interested in</b>:
-    <i>cultural identity and formation</i>, <i>intelligence</i>, <i>intuition</i>, and <i>artistic expression</i>.
-      I'm excited by ideas that let you build for the body and the mind with tools that feel as intuitive as movement, deliberate as thought, and expressive as art.
-  </p>
-
-  <p>
-  In the long term, I plan to center my work around early developmental learning (when the brain is the most malleable).
-  I also hope to contribute to the development of solutions for neurological disorders that surface in childhood.  
-  I’m drawn to the subtle art of shaping cognition and not by force, through understanding how growth unfolds when gently guided.
-  </p>
-  </section>
-
-
-  <section class="section fade-in">
-    <h2>Research & Experience</h2>
-    <p><strong>Computational Neuroscience Lab</strong> — Building models for real-time speech decoding and control of BCIs, under Dr. Brokoslaw Laschowski, <em>2025-</em></p>
-    <p><strong>Cohere Labs</strong> — NLP and Behaviour models to understand language development, open-source research, <em>2025-</em></p>
-    <p><strong>ConSENS Lab</strong> — Developing evolutionary algorithms to infer L2/3 microcircuit dynamics from EEG signals, under Dr. Niemeier, <em>2025–</em></p>
-    <p><strong>Intelligent Microsystems Lab</strong> — RF board design for wireless neural implants, under Professor Roman Genov, <em>2025</em></p>
-    <p><strong>UofT Aerospace Team</strong> — Software lead, <em>2024-2025</em></p>
-    <p><strong>LUNR Corp</strong> — Flight systems intern, neural fin generation & GCS dev, <em>2024</em></p>
-    <p><strong>Major League Hacking</strong> — Top 50 Hacker, <em>2023</em></p>
-    <p><strong>Our Wave Hub</strong> — Fullstack developer intern, <em>2022</em></p>
-    <p><strong>HackTheNorth</strong> — Finalist, <em>2022</em></p>
-    <p><strong>Beauty of Mathematics</strong> — Author, <em>2021</em></p>
-  </section>
-
-  <section class="section fade-in">
-    <h2>Selected Projects</h2>
-
-    <h3>— Agents</h3>
-    <p><strong>World Model-Based Reinforcement Learning for Real-Time Motor Control</strong><br />
-    World model RL agent trained in PyBullet and deployed to STM32 for torque control with < 0.2 ms inference.<br />
-    <a class="underline-link" href="https://drive.google.com/file/d/1TxVmFbiP9XxHE9Te54d_bTcgD2L_pNgr/view?usp=sharing">[Paper]</a>
-    <a class="underline-link" href="./readmes/bldc-motor-driver.html">[Board]</a>
-    <a class="underline-link" href="https://github.com/GEEGABYTE1/RLPolicySmartGridNode">[Code]</a></p>
-
-    <p><strong>Transformer-Based Edge Agent for Real-Time Fault Detection in Smart Grid Nodes</strong><br />
-    Self-supervised Transformer deployed to embedded node for real-time power grid anomaly detection (AUC > 0.90).<br />
-    <a class="underline-link" href="https://drive.google.com/file/d/1hBmqx_9sWqOwcMe0_67193EGOkG2q-n8/view?usp=sharing">[Paper]</a>
-    <a class="underline-link" href="./readmes/smart-grid-node.html">[Board]</a>
-    <a class="underline-link" href="https://github.com/GEEGABYTE1/TransformerSmartGridNode">[Code]</a></p>
-
-    <p><strong>Reinforcement Learning for Embedded EV Charging Control: Sim-to-Real Optimization of Relay Policies via PPO</strong><br />
-    PPO agent trained to optimize EV charging control under relay timing, thermal, and fault constraints.<br />
-     <a class="underline-link" href="https://drive.google.com/file/d/1yNBfLVW2bxDHkCrF-n0V3zSCPtdq7IGY/view?usp=sharing">[Paper]</a>
-    <a class="underline-link" href="./readmes/teslaevse.html">[Board]</a>
-    <a class="underline-link" href="https://github.com/GEEGABYTE1/RLEVSE">[Code]</a></p>
-  
-    <p><strong>Spatially-Informed Neural Compression via GCN-Enhanced Transformers for BCI Systems</strong><br />
-    EEG + IMU → Transformer → Action command. Visualizes attention maps and exports to ONNX.<br />
-    <a class="underline-link" href="https://drive.google.com/file/d/19BBpEKwNMY2gQG58iEllfGWsf1WAHDjw/view?usp=sharing">[Paper]</a>
-    <a class="underline-link" href="https://github.com/GEEGABYTE1/eeProjects/blob/main/Projects/BLELoggingModel/BLELogging.ipynb">[Code]</a></p>
-
-  <p><strong>Sim2Real Transformer for Proprioceptive Contact Estimation</strong><br />
-  Transformer trained on simulated IMU + encoder data to infer contact states across robot morphologies, with MMD adaptation and STM32 deployment.<br />
-  <a class="underline-link" href="https://drive.google.com/file/d/1uYeAPFhp3g96rJ3ubpWxUZbb1GOrXzYw/view?usp=sharing">[Paper]</a>
-  <a class="underline-link" href="./readmes/proprioreceptive.html">[Board]</a>
-  <a class="underline-link" href="https://github.com/GEEGABYTE1/propriorecptiveML">[Code]</a></p>
-
-
-    <p><a class="underline-link" href="/all-papers.html">→ View all papers</a></p>
-
-    <h3>— Embedded Electrical Boards</h3>
-      
-      <p><strong>Tesla BLE EVSE Board</strong><br />
-      STM32-based EV charger with BLE telemetry, pilot sensing, relay control, and thermal/GCP fault logic.<br />
-      <a class="underline-link" href="./readmes/teslaevse.html">[Technical Writeup]</a></p>
-
-      <p><strong>Smart Grid Node with Remote Fault Detection</strong><br />
-      Precision voltage/current sensing with BLE telemetry, RTC-GPS sync, and transformer-based fault detection.<br />
-      <a class="underline-link" href="./readmes/smart-grid-node.html">[Technical Writeup]</a></p>
-
-      <p><strong>Tesla Roadster Infotainment System</strong><br />
-      Redesigned 8-layer board for media/audio interface, CAN I/O, and UX improvements over open-source layout.<br />
-      <a class="underline-link" href="./readmes/teslainfotainmentsystem.html">[Technical Writeup]</a></p>
-
-      <p><strong>NeuroStimCore</strong><br />
-      Closed-loop stimulation system for neuroadaptive feedback with STM32 control and fault-protected outputs.<br />
-      <a class="underline-link" href="./readmes/neuroStimCore.html">[Technical Writeup]</a></p>
-
-      <p><strong>CDAQ-EEG</strong><br />
-      Compact STM32-based EEG acquisition board with BLE streaming, microSD logging, and CNN-based neural decoding.<br />
-      <a class="underline-link" href="./readmes/cdaqeeg.html">[Technical Writeup]</a></p>
-
-      <p><strong>ASICFakeout</strong><br />
-      6-layer test board for ASIC emulation and FPGA validation, with multi-rail power, clocking, and SPI hooks.<br />
-      <a class="underline-link" href="./readmes/asic-fakeout-board.html">[Technical Writeup]</a></p>
-
-      <p><strong>SmartInterfaceCore</strong><br />
-      Embedded interface bridge with CAN isolation, microSD logging, trip logic, and STM32-based sensor routing.<br />
-      <a class="underline-link" href="./readmes/SmartInterfaceCore.html">[Technical Writeup]</a></p>
-
-    <p><a class="underline-link" href="/all-projects.html">→ View all Boards</a></p>
-  </section>
-
-
-  <script>
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    });
-
-    document.querySelectorAll('.fade-in').forEach(el => {
-      observer.observe(el);
-    });
-  </script>
-  <script>
-  const glow = document.getElementById('glow');
-  const colorOptions = [
-    ['rgba(255, 0, 150, 0.3)', 'rgba(0, 200, 255, 0.3)'],
-    ['rgba(255, 150, 0, 0.3)', 'rgba(255, 255, 0, 0.3)'],
-    ['rgba(0, 255, 150, 0.3)', 'rgba(200, 100, 255, 0.3)'],
-    ['rgba(100, 255, 200, 0.3)', 'rgba(255, 0, 255, 0.3)'],
-    ['rgba(50, 100, 255, 0.3)', 'rgba(255, 150, 255, 0.3)']
-  ];
-  const [c1, c2] = colorOptions[Math.floor(Math.random() * colorOptions.length)];
-  glow.style.background = `radial-gradient(circle at 30% 30%, ${c1}, transparent 60%), radial-gradient(circle at 70% 70%, ${c2}, transparent 60%)`;
-
-  document.addEventListener('mousemove', (e) => {
-    glow.style.left = `${e.clientX}px`;
-    glow.style.top = `${e.clientY}px`;
-  });
-</script>
+      <div class="footer-note">
+        Last updated in December 2025.
+      </div>
+    </main>
+  </div>
 </body>
 </html>

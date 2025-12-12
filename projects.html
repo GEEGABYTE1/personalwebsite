@@ -2,231 +2,385 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Projects – Jaival Patel</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Projects — Jaival Patel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #faf4e8;
+      --fg: #2f261f;
+      --muted: #7d6f63;
+      --accent: #c47231;
+      --accent-soft: rgba(196, 114, 49, 0.08);
+      --border: #e2d4c2;
+      --max-width: 960px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "SF Pro Text", "Segoe UI", sans-serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    /* NAVBAR */
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 0.9rem 0 0.85rem;
+      margin-bottom: 2rem;
+      background: rgba(250, 244, 232, 0.94);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+    }
+
+    .nav-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      color: var(--muted);
+    }
+
+    .nav-link {
+      position: relative;
+      padding-bottom: 0.05rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 1px;
+      background: var(--accent);
+      transition: width 0.15s ease-out;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding-inline: 1.2rem;
+      }
+
+      .nav-inner {
+        gap: 0.8rem;
+      }
+
+      .nav-right {
+        gap: 0.8rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    /* PAGE HEADER */
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .headline {
+      font-family: "Iowan Old Style", "Palatino", "Georgia", "Times New Roman",
+        serif;
+      font-size: clamp(2.1rem, 4vw, 2.4rem);
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.02em;
+    }
+
+    .subtext {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.6;
+    }
+
+    .subtle-label {
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    /* PROJECT GRID */
+
+    .projects-section {
+      margin-top: 1rem;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.4rem;
+    }
+
+    .project-card {
+      border-radius: 0.9rem;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 0.75rem 0.75rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out,
+        border-color 0.12s ease-out;
+    }
+
+    .project-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(196, 114, 49, 0.6);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+      text-decoration: none;
+    }
+
+    .project-image-wrapper {
+      border-radius: 0.7rem;
+      overflow: hidden;
+      border: 1px solid #eee0cf;
+      background: #f4e7d5;
+      aspect-ratio: 4 / 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .project-image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .project-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .project-desc {
+      font-size: 0.86rem;
+      line-height: 1.6;
+      color: var(--muted);
+      flex-grow: 1;
+    }
+
+    .project-footer {
+      margin-top: 0.1rem;
+    }
+
+    .report-link {
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding-bottom: 0.03rem;
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(196, 114, 49, 0.4);
+    }
+
+    .report-link:hover {
+      border-bottom-color: rgba(196, 114, 49, 0.9);
+    }
+
+    .report-link span.arrow {
+      font-size: 0.85em;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .back-link:hover {
+      color: var(--fg);
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Works</h1>
-      <a href="../index.html">Home</a>
-    <p>Things I've built</p>
-    <div class="grid" id="project-grid"></div>
+  <div class="page">
+    <!-- NAVBAR -->
+    <header class="nav">
+      <div class="nav-inner">
+        <div class="nav-left">
+          <div class="nav-dot"></div>
+          <div>Jaival Patel</div>
+        </div>
+        <nav class="nav-right">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="projects.html" class="nav-link">Projects</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <main>
+      <div class="page-header">
+        <a href="index.html" class="back-link">
+          <span>←</span>
+          <span>Back to home</span>
+        </a>
+        <h1 class="headline">Projects</h1>
+        <p class="subtext">
+          A selection of boards, simulators, and systems I’ve built. Each card
+          links to a more detailed technical report with schematics, design
+          decisions, and tests.
+        </p>
+      </div>
+
+      <section class="projects-section">
+        <div class="subtle-label">Past Projects</div>
+
+        <div class="projects-grid">
+          <!-- CARD 1 -->
+          <article class="project-card">
+            <div class="project-image-wrapper">
+              <!-- Replace with real image path -->
+              <img src="images/bms/pcb3d.PNG" alt="Battery Management System" />
+            </div>
+            <h2 class="project-title">Battery Management System</h2>
+            <p class="project-desc">
+                Custom 3-rail BMS with battery monitoring, safe switching, and power integrity enhancements for embedded systems.
+            </p>
+            <div class="project-footer">
+              <a href="/readmes/bms.html" class="report-link">
+                <span>Technical Report</span>
+                <span class="arrow">↗</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="project-card">
+            <div class="project-image-wrapper">
+              <!-- Replace with real image path -->
+              <img src="images/NeuroStimBoard/pcb3d.PNG" alt="NeuroStimCore" />
+            </div>
+            <h2 class="project-title">NeuroStimCore </h2>
+            <p class="project-desc">
+                Real-time neural stimulation board with Bipolar analog frontend, adaptive feedback control, precision current delivery, and STM32-based closed-loop actuation.
+            </p>
+            <div class="project-footer">
+              <a href="/readmes/neuroStimCore.html" class="report-link">
+                <span>Technical Report</span>
+                <span class="arrow">↗</span>
+              </a>
+            </div>
+          </article>
+
+          <!-- CARD 2 -->
+          <article class="project-card">
+            <div class="project-image-wrapper">
+              <img src="images/avi_power_management/3DModel.PNG" alt="Liquid Rocket Power Management Board" />
+            </div>
+            <h2 class="project-title">Liquid Rocket Power Management Board</h2>
+            <p class="project-desc">
+              Power management board for avionics of the Discovery Liquid Rocketry at UTAT.
+            </p>
+            <div class="project-footer">
+              <a href="/readmes/avionics_power_management.html" class="report-link">
+                <span>Technical Report</span>
+                <span class="arrow">↗</span>
+              </a>
+            </div>
+          </article>
+
+          <!-- CARD 3 -->
+          <article class="project-card">
+            <div class="project-image-wrapper">
+              <img src="images/communication_board_isml/isml2.PNG" alt="RF Communication Board" />
+            </div>
+            <h2 class="project-title">Communication Board for RF Sensors</h2>
+            <p class="project-desc">
+              RF signal and communication board for wireless monitoring of microwave sensors at ISML.
+            </p>
+            <div class="project-footer">
+              <a href="readmes/communication-board.html" class="report-link">
+                <span>Technical Report</span>
+                <span class="arrow">↗</span>
+              </a>
+            </div>
+          </article>
+
+          <!-- CARD 4 -->
+          <article class="project-card">
+            <div class="project-image-wrapper">
+              <img src="images/TPS561208/3d.png" alt="DC DC Buck Encoder" />
+            </div>
+            <h2 class="project-title">DC-DC Buck Converter</h2>
+            <p class="project-desc">
+              TPS561208DDCR breakout board.
+            </p>
+            <div class="project-footer">
+              <a href="readmes/buck-converter.html" class="report-link">
+                <span>Technical Report</span>
+                <span class="arrow">↗</span>
+              </a>
+            </div>
+          </article>
+
+
+        </div>
+      </section>
+    </main>
   </div>
-
-  <script>
-    const projects = [
-      {
-        title: "Tesla BLE EVSE Board",
-        file: "readmes/teslaevse.html",
-        image: "images/TeslaEVSE/pcb3d.PNG",
-        caption: "BLE-Enabled EVSE System with STM32 Relay Control, Pilot Signal Detection, Thermal Fault Logic, and Embedded PPO-Based Reinforcement Learning Policy for Safe, Adaptive Edge Charging in Low-Power Autonomous Energy Interfaces."
-      },
-      {
-        title: "Smart Grid Node with Remote Fault Detection",
-        file: "readmes/smart-grid-node.html",
-        image: "images/smartgridnode/pcb3d.PNG",
-        caption: "Wireless Smart Grid Node for Real-Time Power Line Monitoring with ESP32 BLE, RTC-GPS Synchronization, Precision Voltage/Current Sensing, and Embedded Transformer-Based Fault Detection Algorithm for Self-Supervised Edge Diagnostics in Distributed Energy Systems."
-      },
-        {
-        title: "BLDC Motor Driver with FOC",
-        file: "readmes/bldc-motor-driver.html",
-        image: "images/BLDCMotorDriver/pcb3d.PNG",
-        caption: "High-performance BLDC motor driver with DRV8353, encoder feedback, EMI-optimized layout, and embedded World Model-based Reinforcement Learning for real-time motor control in Robotic applications."
-      },
-      {
-        title: "Tesla Roadster Infotainment System",
-        file: "readmes/teslainfotainmentsystem.html",
-        image: "images/TeslaInfotainmentSystem/pcb3d.PNG",
-        caption: "Redesigned Tesla Roadster Infotainment System with Enhanced BLE Control, Optimized Power Delivery, and Custom Audio Pipeline."
-      },
-      {
-        title: "High Speed Data Logger - 6 Channel Parallel ADC Sampling",
-        file: "readmes/highspeeddatalogger.html",
-        image: "images/highspeeddatalogger/PCB3D.PNG",
-        caption: "High-Speed Data Logger with Parallel ADC Acquisition and SDIO-Based Streaming for Precision Telemetry in Embedded and Neural Systems."
-      },
-      {
-        title: "HIL-Testing Rig",
-        file: "readmes/hiltestingrig.html",
-        image: "images/HILTestingRig/pcb3d.PNG",
-        caption: "Neural Signal Emulation and Fault Injection Rig with DAC/ADC I/O, Closed-Loop Stimulus-Response Logging, and Real-Time USB/CAN Telemetry for Embedded BCI System Validation."
-      },
-      {
-        title: "NeuroStimCore",
-        file: "readmes/neuroStimCore.html",
-        image: "images/NeuroStimBoard/pcb3d.PNG",
-        caption: "Medical-Grade Wearable Sensor Node with Bipolar Analog Front-End, Real-Time Logging, Thermal Trip Logic, and Multi-Rail Power for Advanced Neural and Biopotential Sensing."
-      },
-      {
-        title: "Transformer-Based Neural Signal Compression",
-        file: "readmes/transformer-bci-encoder.html",
-        image: "images/transformerbciencoder/thumbnail.png",
-        caption: "Independently written Paper on Transformer-Based Neural Signal Encoder for Low-Latency BCI Compression and Intention Decoding."
-      },
-      {
-        title: "NeuroCapsule",
-        file: "readmes/neurocapsule.html",
-        image: "images/NeuroCapsule/pcb3d.PNG",
-        caption: "BLE-Powered Neural Spike Detection Capsule with Embedded CNN Inference, Precision Analog Front-End, and Real-Time USB-C Streaming for Wearable BCI Prototyping."
-      },
-      {
-        title: "ASIC Fakeout",
-        file: "readmes/asic-fakeout-board.html",
-        image: "images/ASICFakeout/pcb3d.PNG",
-        caption: "Emulation-grade PCB simulating ASIC I/O, CAN telemetry, isolation, and fault injection pathways for pre-silicon validation and hardware-in-the-loop testing for Neural systems."
-      },
-      {
-        title: "QiBridge",
-        file: "readmes/qibridge.html",
-        image: "images/QiBridge/pcb3d.PNG",
-        caption: "Wireless Power Interface with LiPo Charging and Isolated Regulation for Sealed Implantable Neural systems."
-      },
-      {
-        title: "Neural AFE V1.0",
-        file: "readmes/neural-afe-board.html",
-        image: "images/NeuralAFE/pcb3d.PNG",
-        caption: "Low-Noise Analog Front-End with Hardware Trip Logic and Signal Conditioning for Implantable Neural Interfaces."
-      },
-      {
-        title: "High Voltage Motor Driver with Interlocks",
-        file: "readmes/voltagemotordriverinterlocks.html",
-        image: "images/highvoltagemotordriverwithinterlocks/pcb3d.PNG",
-        caption: "Automotive-Grade High-Voltage Motor Driver with Fault Interlocks & Real-Time CAN Diagnostics for BLDC Propulsion Systems."
-      },
-      {
-        title: "TrackLink PDU",
-        file: "readmes/telemetryPowerHub.html",
-        image: "images/powerHubTelemetry/pcb3d.PNG",
-        caption: "Motorsport-grade CAN + STM32 interface with precision power regulation for real-time endurance data systems."
-      },
-      {
-        title: "Motorsport Lap Time Sim",
-        file: "readmes/laptimesim.html",
-        image: "images/lapSim/sim.png",
-        caption: "Lap time simulator that models tire wear, fuel mass reduction, pit stop strategy, and overtaking. Simulated sector-based track performance with compound-specific degradation and traffic penalties. "
-      },
-      {
-        title: "SmartInterfaceCore",
-        file: "readmes/SmartInterfaceCore.html",
-        image: "images/SmartInterfaceCore/pcb3d.PNG",
-        caption: "Modular STM32 interface hub with isolated CAN, fault-detecting ADC front end, RTC-synced microSD logging, and 6-layer EMI-optimized layout for EV diagnostics and sensor integration."
-      },
-      {
-        title: "Thermal Safety Board with Analog Front end",
-        file: "readmes/thermalsafetyboard.html",
-        image: "images/thermalSafetyBoard/pcb3d.PNG",
-        caption: "6-layer STM32-based thermal trip board with analog comparator logic, multiplexed sensing, and MATLAB-validated fail-safe thresholds for real-time overtemperature protection."
-      },
-      {
-        title: "CAN Node Emulator",
-        file: "readmes/cannodeemulator.html",
-        image: "images/cannodeemulator/pcb3d.PNG",
-        caption: "STM32-based ECU simulator with SN65HVD230 CAN transceiver, USB-C interface, DIP-configurable node profiles, and fault injection support."
-      },
-      {
-        title: "CDAQ-EEG",
-        file: "readmes/cdaqeeg.html",
-        image: "images/cdaqEEG/pcb3d.PNG",
-        caption: "Multilayer STM32H7 EEG node with ADS1299 acquisition, BLE telemetry, USB-C data interface, and analog/RF isolation for BCI applications."
-      },
-      {
-        title: "Smart Electromechanical Test Rig",
-        file: "readmes/electromechanicalTestRig.html",
-        image: "images/electromechanicalTestRig/pcb3d.PNG",
-        caption: "Embedded ESP32 test rig with INA219 current sensing, SPI microSD logging, BLE GATT streaming, and modular analog/digital diagnostics."
-      },
-      
-    {
-        title: "Custom USBC Peripheral",
-        file: "readmes/usbcperipheral.html",
-        image: "images/usbc/pcb3d.PNG",
-        caption: "STM32-based USB-C peripheral with UART bridge, load switch control, and DFU bootloader support."
-      },
-    {
-        title: "Modular Sensor + Mesh Networking",
-        file: "readmes/sensor-node-project-report.html",
-        image: "images/ModularSensorNode/images/pcb3d.PNG",
-        caption: "ESP32-WROOM-32E sensor node with modular I2C/analog input, LiPo/solar power, and multi-hop mesh networking via ESP-MDF for Robotics applications."
-      },
-    {
-        title: "Battery Management System",
-        file: "readmes/bms.html",
-        image: "images/bms/pcb3d.PNG",
-        caption: "Custom 3-Rail BMS with Battery Monitoring, Safe Switching, and Power Integrity Enhancements for Embedded Systems."
-      },
-    
-      {
-        title: "EEG Neural Wearable",
-        file: "readmes/eeg-neural-wearable.html",
-        image: "images/eegthumbnail.png",
-        caption: "Wearable PCB with onboard CNN for EEG classification"
-      },
-      {
-        title: "Avionics Power Management Board",
-        file: "readmes/avionics_power_management.html",
-        image: "images/avi_power_management/3DModel.PNG",
-        caption: "Power Management Board for Avionics of the Discovery Liquid Rocket at UTAT Rocketry"
-      },
-      {
-        title: "Communication Board for RF Sensors",
-        file: "readmes/communication-board.html",
-        image: "images/communication_board_isml/isml2.PNG",
-        caption: "RF signal and Communication board for wireless monitoring of microwave sensors at ISML."
-      },
-      {
-        title: "DC-DC Buck Converter TPS561208DDCR",
-        file: "readmes/buck-converter.html",
-        image: "images/TPS561208/thumbnail.png",
-        caption: "Breakout board for TPS561208DDCR."
-      },
-      {
-        title: "AlexNetV2",
-        file: "readmes/alexnetv2.html",
-        image: "images/alexnet/thumbnail.png",
-        caption: "Improved AlexNet model by increasing computational performance by 3×."
-      },
-      {
-        title: "Spitha",
-        file: "readmes/spitha.html",
-        image: "images/spitha/thumbnail.png",
-        caption: "React wrapper component that renders components quicker"
-      },
-      {
-        title: "FireWallet",
-        file: "readmes/firewallet.html",
-        image: "images/firewallet/thumbnail.png",
-        caption: "Web3 Wallet with custom partioning algorithm to protect on-chain supply attacks."
-      },
-      
-      
-      // Add more projects here
-    ];
-
-    const gridEl = document.getElementById('project-grid');
-
-    projects.forEach(proj => {
-      const card = document.createElement('div');
-      card.className = 'card';
-
-      const img = document.createElement('img');
-      img.src = proj.image;
-      img.alt = proj.title;
-
-      const title = document.createElement('h3');
-      title.textContent = proj.title;
-
-      const desc = document.createElement('p');
-      desc.textContent = proj.caption;
-
-      card.appendChild(img);
-      card.appendChild(title);
-      card.appendChild(desc);
-      card.addEventListener('click', () => {
-        window.open(proj.file, '_blank');
-      });
-      gridEl.appendChild(card);
-    });
-  </script>
 </body>
 </html>
