@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Research Work - Jaival Patel</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg: #ffffff;
+      --fg: #111111;
+      --text: #333333;
+      --muted: #777777;
+      --soft: #cccccc;
+      --surface: #f7f7f7;
+      --border: #e4e4e4;
+      --toggle-bg: #f5f5f5;
+      --toggle-border: #dddddd;
+      --font-sans: 'Lora', Georgia, serif;
+      --font-mono: 'Geist Mono', 'Courier New', monospace;
+    }
+    [data-theme="dark"] {
+      --bg: #111111;
+      --fg: #f3f3f3;
+      --text: #d5d5d5;
+      --muted: #999999;
+      --soft: #555555;
+      --surface: #181818;
+      --border: #333333;
+      --toggle-bg: #1b1b1b;
+      --toggle-border: #333333;
+    }
+    html { color-scheme: light; }
+    html[data-theme="dark"] { color-scheme: dark; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      margin: 0;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    a {
+      color: var(--fg);
+      text-decoration: underline;
+      text-decoration-color: var(--soft);
+      text-underline-offset: 3px;
+    }
+    a:hover { text-decoration-color: var(--fg); }
+    .shell {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 32px 72px;
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      margin-bottom: 52px;
+    }
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+    }
+    .nav-inner a {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+    .nav-inner a:hover { color: var(--fg); }
+    .theme-toggle {
+      appearance: none;
+      border: 1px solid var(--toggle-border);
+      background: var(--toggle-bg);
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      line-height: 1;
+      margin-left: auto;
+      padding: 0;
+      width: 30px;
+    }
+    .theme-toggle svg {
+      height: 15px;
+      width: 15px;
+    }
+    .kicker {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-size: 1.55rem;
+      font-weight: 500;
+      line-height: 1.3;
+      margin: 0 0 16px;
+    }
+    .intro {
+      color: var(--text);
+      margin: 0 0 40px;
+      max-width: 620px;
+    }
+    .work-list {
+      border-top: 1px solid var(--border);
+    }
+    .work-row {
+      display: grid;
+      gap: 8px;
+      padding: 24px 0;
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .work-row h2 {
+      color: var(--fg);
+      font-size: 1.05rem;
+      font-weight: 500;
+      line-height: 1.35;
+      margin: 0;
+    }
+    .work-row p {
+      color: var(--text);
+      margin: 0;
+    }
+    .meta {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+    @media (max-width: 600px) {
+      .shell { padding: 28px 20px 56px; }
+      .nav-inner { gap: 16px; margin-bottom: 40px; }
+      .nav-links { gap: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <nav class="nav-inner">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="research-notes.html">Research Notes</a>
+        <a href="research-work.html">Research Work</a>
+        <a href="projects.html">Systems Work</a>
+      </div>
+      <button class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false"></button>
+    </nav>
+
+    <header>
+      <div class="kicker">Research Work</div>
+      <h1>My Research</h1>
+      <p class="intro">
+        Independent Notable Work
+      </p>
+    </header>
+
+    <section class="work-list">
+      <a class="work-row" href="ai-6dof-rocket-landing.html">
+        <span class="meta">Apr 29, 2026 / controls, reinforcement learning, simulation</span>
+        <h2>RL-Enhanced 6DOF Rocket Landing</h2>
+        <p>
+          A Falcon 9-inspired 6DOF landing benchmark with a gain-scheduled LQR baseline, flat PPO, hierarchical PPO, and hybrid residual PPO.
+        </p>
+      </a>
+    </section>
+  </main>
+
+  <script>
+    const rootEl = document.documentElement;
+    const themeToggle = document.querySelector('.theme-toggle');
+
+    function setTheme(theme) {
+      rootEl.dataset.theme = theme;
+      localStorage.setItem('theme', theme);
+      themeToggle.innerHTML = theme === 'dark'
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.2A7.4 7.4 0 0 1 9.8 3a8.7 8.7 0 1 0 11.2 11.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+      themeToggle.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+      themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    }
+
+    const savedTheme = localStorage.getItem('theme');
+    const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    setTheme(savedTheme || preferredTheme);
+    themeToggle.addEventListener('click', () => {
+      setTheme(rootEl.dataset.theme === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>

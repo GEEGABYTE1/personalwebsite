@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Research Notes - Jaival Patel</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <link rel="stylesheet" href="research-notes/research-notes.css" />
+</head>
+<body>
+  <main class="notes-shell">
+    <nav class="notes-nav">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="research-notes.html">Research Notes</a>
+        <a href="research-work.html">Research Work</a>
+        <a href="projects.html">Systems Work</a>
+      </div>
+      <button class="theme-toggle" type="button"></button>
+    </nav>
+    <header>
+      <div class="page-kicker">Research Notes</div>
+      <h1>Fragments, Working Ideas.</h1>
+      <p class="intro">Thoughts that I think that are worth documenting when I work</p>
+    </header>
+    <section class="note-list"><a class="note-row" href="research-notes/do-we-have-to-compromise-what-rl-is-allowed-to-optimize-in-the-context-of-rocket-descent.html">
+      <span class="note-meta">Apr 30, 2026</span>
+      <h2>Do We Have to Compromise What RL Is Allowed to Optimize in the Context of Rocket Descent?</h2>
+      <p>Reinforcement learning is often framed as a method capable of solving control problems end-to-end. In the context of rocket landing, this leads to a natural assumption: given st...</p>
+    </a>
+<a class="note-row" href="research-notes/hyper-focused-athlete-lifestyle-should-be-adopted-in-engineering.html">
+      <span class="note-meta">Apr 30, 2026</span>
+      <h2>hyper-focused athlete lifestyle should be adopted in engineering</h2>
+      <p>Summer is approaching, which means I finally get to spend more time outside playing soccer and cricket, which are by far my favourites past times outside of reading and working....</p>
+    </a>
+<a class="note-row" href="research-notes/why-is-wind-so-hard-to-model-in-rocket-sims.html">
+      <span class="note-meta">Apr 30, 2026</span>
+      <h2>why is wind so hard to model in rocket sims</h2>
+      <p>After looking back on the RL-Enhanced 6DOF Landing Project, I recognized that one of the biggest challenges in that project was working with wind. Yes, not the physics of the ve...</p>
+    </a></section>
+  </main>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+<script>
+const rootEl = document.documentElement;
+const themeToggle = document.querySelector('.theme-toggle');
+function setTheme(theme) {
+  rootEl.dataset.theme = theme;
+  localStorage.setItem('theme', theme);
+  themeToggle.innerHTML = theme === 'dark'
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.2A7.4 7.4 0 0 1 9.8 3a8.7 8.7 0 1 0 11.2 11.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+  themeToggle.setAttribute('aria-label', 'Switch to ' + (theme === 'dark' ? 'light' : 'dark') + ' mode');
+  themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+}
+const savedTheme = localStorage.getItem('theme');
+const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+setTheme(savedTheme || preferredTheme);
+themeToggle.addEventListener('click', () => setTheme(rootEl.dataset.theme === 'dark' ? 'light' : 'dark'));
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ],
+      throwOnError: false
+    });
+  }
+});
+</script>
+</body>
+</html>

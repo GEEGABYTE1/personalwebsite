@@ -1,0 +1,29 @@
+Reinforcement learning is often framed as a method capable of solving control problems end-to-end. In the context of rocket landing, this leads to a natural assumption: given state variables such as position, velocity, and orientation, an RL policy should be able to output optimal control actions like throttle and thrust vectoring, and learn everything from interaction alone. While this is theoretically possible, it assumes that all variables in the system are equally suitable for learning. In practice, they are not.
+
+A rocket landing system is not a uniform optimization problem. Different components of the dynamics are governed by fundamentally different types of constraints. Some relationships are tightly dictated by physics, while others involve uncertainty, coupling, or environmental variability. Treating all variables as equally learnable forces the RL agent to rediscover structure that is already known, increasing the complexity of the learning problem and often leading to unstable or inefficient behaviour.
+
+The vertical descent profile illustrates this clearly. A safe landing requires reducing vertical velocity to zero exactly at ground contact, which is not an arbitrary objective but a constrained braking problem. The relationship between altitude and vertical velocity follows a known form derived from kinematics:
+
+$$v_z = -\sqrt{v_{\text{touch}}^2 + 2a_{\text{brake}}h}$$
+
+This equation defines the class of trajectories that guarantee a feasible stop under a given deceleration limit. It already encodes gravity, thrust constraints, and stopping distance. When RL is given full control over throttle without any structure, it is effectively tasked with discovering this relationship through trial and error. This introduces unnecessary variance into the policy and often results in late braking, oscillatory control, or failure to converge.
+
+This leads to a more fundamental insight: 
+
+> When designing an RL system, the key decision is not only how to define the reward or architecture, but which variables are even allowed to be optimized by learning. Including a variable in the action space assigns responsibility to the agent to discover its correct behaviour. If that behaviour is already well-defined by physics, this decision increases the difficulty of the problem without adding value.
+
+A more effective approach is to selectively constrain parts of the system while leaving others open to learning. This can be achieved through decomposition or by embedding physical constraints directly into the control logic. Separating vertical control from lateral and rotational control reduces coupling and simplifies the learning task. Introducing constraints such as minimum throttle levels or safe operating regions removes physically invalid behaviours from the action space. These changes do not reduce the capability of the system, they reduce the burden on the learning algorithm by incorporating prior knowledge.
+
+## Case Study: Phase 2B to Phase 2C
+
+In our [rocket landing experiments](), this tradeoff became clear during the transition from Phase 2B to Phase 2C. Phase 2B used a decomposed RL architecture where the throttle policy handled vertical descent and the TVC policy handled lateral position and attitude stabilization. This reduced the burden on the agent by separating the problem into smaller control tasks. However, even with decomposition, the vertical descent problem remained difficult. The agent could stabilize attitude and reduce horizontal error, but it still struggled to consistently achieve safe vertical touchdown speeds.
+
+This failure was revealing. The issue was not that RL could not control the system at all. The lateral and attitude components improved significantly. The problem was that vertical braking required precise timing. If the throttle policy delayed braking even slightly, the vehicle would reach the ground with excessive downward velocity. This indicated that vertical descent is not a domain where unrestricted learning is effective.
+
+Phase 2C introduced a more structured hybrid approach. Instead of allowing the policy to freely choose any throttle command, a braking constraint was added to enforce a minimum throttle level when the rocket was descending too quickly near the ground. This effectively encoded a non-negotiable physical requirement: if altitude is low and vertical velocity is high, braking must increase. RL remained part of the system, but it was no longer permitted to violate basic feasibility constraints.
+
+This shifted the role of RL. In Phase 2B, RL was responsible for discovering both the descent strategy and the control corrections. In Phase 2C, the physically constrained component handled the core braking behavior, while RL focused on refining the trajectory, stabilizing attitude, and adapting to coupled dynamics. The improvement in performance did not come from a more powerful algorithm, but from a clearer separation between what should be learned and what should be enforced.
+
+This example illustrates a broader principle. When RL fails in control systems, the issue is not always insufficient training or model capacity. In many cases, the failure arises from allowing the agent to optimize variables that are already governed by strict physical relationships. Removing those variables from the learning problem often leads to more stable and efficient solutions.
+
+The question, then, is not whether reinforcement learning can solve rocket landing, but which parts of the problem should be assigned to it. The answer lies in distinguishing between variables that require adaptation and those that are already constrained by physics. Reinforcement learning is most effective when it is applied selectively, as a tool for handling uncertainty and complexity rather than rediscovering known structure.

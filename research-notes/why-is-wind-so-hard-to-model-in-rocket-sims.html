@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>why is wind so hard to model in rocket sims - Jaival Patel</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <link rel="stylesheet" href="research-notes.css" />
+</head>
+<body>
+  <main class="notes-shell">
+    <nav class="notes-nav">
+      <div class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../research-notes.html">Research Notes</a>
+        <a href="../research-work.html">Research Work</a>
+        <a href="../projects.html">Systems Work</a>
+      </div>
+      <button class="theme-toggle" type="button"></button>
+    </nav>
+    <article class="note">
+      <header class="note-header">
+        <div class="page-kicker">Apr 20, 2026</div>
+        <h1>why is wind so hard to model in rocket sims</h1>
+      </header>
+      <p>After looking back on the [RL-Enhanced 6DOF Landing Project](), I recognized that one of the biggest challenges in that project was working with wind. Yes, not the physics of the vehicle or the TVC aspect, but simply the wind.</p>
+<h3>The Deceptively Simple Question</h3>
+<p>When I was building the physics simulator for my <a href="link">RL-Enhanced 6DOF Landing Project</a>, I thought modelling wind should be the easy part. Gravity is a constant. Thrust is a lookup table. Drag is a function of velocity squared. Wind is just a vector that pushes the vehicle sideways.</p>
+<p>But that's when I was wrong. Wind is arguably the hardest single disturbance to model faithfully, and this post explains why - mathematically, physically, and from the perspective of a controller designer trying to land a 120-tonne vehicle in a 5 m/s crosswind.</p>
+<h3>Wind Is Not a Vector. It's a Random Field</h3>
+<p>The first misconception is treating wind as a single number or direction. In reality, wind is a spatiotemporal stochastic process: a random field $\mathbf{w}(\mathbf{x}, t) \in \mathbb{R}^3$ that varies continuously in three spatial dimensions and in time.</p>
+<p>For a landing trajectory that spans 150 m of altitude and 30 seconds of flight, the vehicle passes through multiple wind regimes simultaneously. What the base experiences is not what the nosecone experiences.</p>
+<h4>The Power-Law Vertical Profile</h4>
+<p>The most common approximation - and the one we use is the power-law wind shear model:</p>
+<p>$$ w(z) = w_{ref} \cdot \left(\frac{z}{z_{ref}}\right)^\alpha $$</p>
+<p>where:</p>
+<ul>
+<li>$w_{ref}$ is the reference wind speed at reference altitude $z_{ref}$ (typically 10 m)</li>
+<li>$z$ is current altitude AGL</li>
+<li>$\alpha$ is the <strong>wind shear exponent</strong>, typically $\alpha \approx 0.14$ over open terrain (Hellmann exponent) but ranging from $0.10$ (sea surface) to $0.40$ (dense urban canopy)</li>
+</ul>
+<p>This gives us a profile that increases with altitude - matching the physical intuition that surface friction decelerates the near-ground boundary layer. Now the problem with this model is that it's deterministic and mean-field. But, real wind is neither. The power law gives you the expected wind at altitude $z$, not the instantaneous wind. The residual is a turbulent fluctuation that can easily be $\pm 30\%$ of the mean.</p>
+<h3>The Turbulence Problem</h3>
+<p>Turbulence is the true enemy. It is characterized by the <strong>turbulence intensity</strong>:</p>
+<p>$$ I_u = \frac{\sigma_u}{\bar{u}} $$</p>
+<p>where $\sigma_u$ is the standard deviation of the stream-wise velocity fluctuations and $\bar{u}$ is the mean wind speed. For low-level flight ($z &lt; 200$ m), $I_u$ can reach $20\text{–}30\%$. The frequency content of turbulence follows the von Kármán spectrum (or the Dryden approximation used in flight mechanics):</p>
+<p>$$ S_{uu}(f) = \sigma_u^2 \cdot \frac{4L_u/\bar{u}}{[1 + (2\pi f L_u/\bar{u})^2]^{5/6}} $$</p>
+<p>where $L_u$ is the integral length scale, the characteristic size of the dominant eddies. Near the ground, $L_u \approx 10\text{–}100$ m. This spectrum matters enormously for controller design. The energy distribution tells us at what frequencies the wind is driving the vehicle. If the dominant eddy timescale $\tau_{eddy} = L_u / \bar{u}$ is comparable to the vehicle's attitude time constant $\tau_{att}$, we get <strong>resonant disturbance coupling</strong>. The wind excites exactly the dynamics the attitude controller is trying to suppress.</p>
+<p>For a Starship-class vehicle at low altitude:</p>
+<ul>
+<li>$L_u \approx 50$ m, $\bar{u} \approx 5$ m/s → $\tau_{eddy} \approx 10$ s</li>
+<li>TVC bandwidth $\sim 0.5$ Hz → $\tau_{att} \approx 2$ s</li>
+</ul>
+<p>These are in the same order of magnitude. This is not a coincidence, it's the problem!</p>
+<h3>Wind on a Tall, Slender Body</h3>
+<p>Even if we knew the wind field perfectly, applying it to the vehicle is non-trivial. A Starship-class vehicle is ~50 m tall and ~9 m in diameter, which is an aspect ratio of ~5.5. The wind vector at the base, midpoint, and nosecone are all different.</p>
+<p>The <strong>aerodynamic moment</strong> induced by a laterally varying wind profile is:</p>
+<p>$$ M_{wind} = \int_0^L \frac{1}{2} \rho(z) \left[w(z_0 + s) - \dot{x}_{cm}\right]^2 C_N(s) \cdot c_{ref} \cdot (s - s_{cp}) , ds $$</p>
+<p>where:</p>
+<ul>
+<li>$z_0$ is the altitude of the vehicle base</li>
+<li>$s$ is the axial coordinate along the body</li>
+<li>$C_N(s)$ is the local normal force coefficient distribution</li>
+<li>$s_{cp}$ is the center of pressure location</li>
+<li>$\dot{x}_{cm}$ is the lateral velocity of the center of mass</li>
+</ul>
+<p>In a simplified simulator, we collapse this integral to a single effective wind force applied at the center of pressure. This is the first major modeling compromise: we lose the spatial variation of wind along the vehicle body, which induces a distributed moment we approximate as a point load.</p>
+<p>The error is bounded by the <strong>wind gradient over the vehicle length</strong>:</p>
+<p>$$ \Delta M_{approx} \sim \frac{1}{2} \rho \bar{u} \cdot \frac{\partial w}{\partial z} \cdot L^2 \cdot C_N \cdot c_{ref} $$</p>
+<p>At 50 m altitude with a 10 m/s wind and the power-law profile, $\partial w / \partial z \approx 0.04$ s$^{-1}$, giving a moment error on the order of a few hundred N·m, which is small relative to the TVC authority but non-negligible in precision landing.</p>
+<h3>The Angle-of-Attack Coupling</h3>
+<p>Wind doesn't just push the vehicle, it actually changes the local angle of attack, which feeds back into the aerodynamic forces. We define the effective angle of attack as:</p>
+<p>$$ \alpha_{eff} = \arctan\left(\frac{w_\perp - v_\perp}{v_{axial}}\right) \approx \frac{w_\perp - v_\perp}{v_{axial}} $$</p>
+<p>where $w_\perp$ is the wind component perpendicular to the body axis and $v_\perp$ is the vehicle's lateral velocity component. The lateral aerodynamic force is then:</p>
+<p>$$ F_{aero,\perp} = \frac{1}{2} \rho v_{rel}^2 \cdot S_{ref} \cdot C_N(\alpha_{eff}) $$</p>
+<p>The critical insight: <strong>$C_N$ is a nonlinear function of $\alpha_{eff}$</strong>, and at high angles of attack (which occur during the landing flip maneuver), the linearization breaks down entirely. Our simulator uses a simplified linear $C_N = C_{N\alpha} \cdot \alpha_{eff}$, which is valid for $\alpha_{eff} &lt; 15°$ but fails in the high-AoA regime. Furthermore, when wind produces a lateral velocity relative to the body, it also generates an induced drag component:</p>
+<p>$$ \Delta D_{wind} = \frac{1}{2} \rho S_{ref} \left(C_{D0} + k \cdot C_N^2\right) \cdot v_{rel}^2 - \frac{1}{2} \rho S_{ref} C_{D0} \cdot v_{axial}^2 $$</p>
+<p>This is typically ignored in simplified models, introducing a systematic underestimation of drag in crosswind conditions.</p>
+<h3>The ISA Atmosphere Adds Another Layer</h3>
+<p>We use the <strong>International Standard Atmosphere (ISA)</strong> for air density:</p>
+<p>$$ \rho(z) = \rho_0 \cdot \left(1 - \frac{L_{lapse} \cdot z}{T_0}\right)^{\frac{g M}{R L_{lapse}} - 1} $$</p>
+<p>where $L_{lapse} = 0.0065$ K/m, $T_0 = 288.15$ K, $M = 0.029$ kg/mol.</p>
+<p>The coupling with wind is subtle: aerodynamic forces scale as $\rho(z)$, so as the vehicle descends, the effective wind force increases even if wind speed is constant. At sea level vs. 150 m, $\Delta\rho / \rho \approx 2\%$, which is small, but it means the controller tuned at altitude is fighting slightly larger disturbances at touchdown. In our gain-scheduled LQR, we recompute the CARE solution at 7 altitude breakpoints precisely because of this effect.</p>
+<h3>What This Means for the Controllers</h3>
+<h4>LQR:</h4>
+<p>The LQR formulation minimizes:</p>
+<p>$$ J = \int_0^\infty \left(\mathbf{x}^T Q \mathbf{x} + \mathbf{u}^T R \mathbf{u}\right) dt $$</p>
+<p>Wind enters as an unmodeled disturbance $\mathbf{d}(t)$ in the state equation:</p>
+<p>$$ \dot{\mathbf{x}} = A\mathbf{x} + B\mathbf{u} + \mathbf{d}(t) $$</p>
+<p>LQR has no explicit disturbance rejection, it minimizes the nominal cost assuming $\mathbf{d} = 0$. The gain-scheduled design gives robustness through bandwidth, not through explicit wind feedforward. In practice, the integral action implicit in our position error state helps, but the controller is fundamentally reactive: it waits for the wind to move the vehicle before correcting.</p>
+<p>The stability margin against wind is governed by the gain margin of the closed-loop system, which we can bound using the return difference inequality for LQR:</p>
+<p>$$ \left[I + L(j\omega)\right]^H \left[I + L(j\omega)\right] \geq I \quad \forall \omega $$</p>
+<p>This guarantees at least 6 dB gain margin and 60°phase margin, but only against matched uncertainty in the input channels. Aerodynamic disturbances enter at the state level, not the input level, and the formal guarantees do not apply.</p>
+<h4>PPO</h4>
+<p>PPO learns a policy $\pi_\theta(\mathbf{a} | \mathbf{o})$ that, given enough training diversity, can implicitly learn to anticipate and preemptively compensate for wind, something LQR fundamentally cannot do. The clipped surrogate objective:</p>
+<p>$$ L^{CLIP}(\theta) = \mathbb{E}_t\left[\min\left(r_t(\theta)\hat{A}_t,\ \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_t\right)\right] $$</p>
+<p>enables policy updates that are robust to stochastic environments. If the training environment samples wind conditions from a distribution matching deployment, the policy develops implicit robustness, effectively learning a form of disturbance observer embedded in the neural network weights. The catch is that this requires the wind model during training to be representative of reality. If our power-law + Gaussian turbulence model systematically misrepresents the actual wind statistics (e.g., neglects gusts, underestimates integral length scales, ignores directional veering), the PPO policy will overfit to the wrong distribution and potentially perform worse than LQR under real conditions.</p>
+<h3>The Fundamental Epistemological Problem</h3>
+<p>Our wind model is not wrong, it's calibrated to the wrong thing. The power-law profile + additive Gaussian noise captures the first and second moments of wind statistics. But landing safety is determined by <strong>tail events</strong>, the 99th percentile gust that arrives at the worst possible moment in the flip maneuver.</p>
+<p>Tail risk in wind follows approximately a Weibull distribution:</p>
+<p>$$ P(W > w) = \exp\left[-\left(\frac{w}{\lambda}\right)^k\right] $$</p>
+<p>with shape parameter $k \approx 2$ (Rayleigh distribution) for many sites. A Gaussian model with the same mean and variance will systematically underestimate the probability of high-speed gusts. For Monte Carlo evaluation, this means our failure rate estimates are optimistic.</p>
+<p>In our [technical blog](), we acknowledge this directly. Our Monte Carlo results are valid under the assumed wind model, not under real atmospheric conditions. This is not a weakness to hide — it's an honest statement of the <strong>sim-to-real gap</strong> that any deployed controller would face.</p>
+<h3>What We Actually Do (And Why)</h3>
+<p>Given all the above, our simulator makes the following deliberate compromises:</p>
+<p>|Physical effect|Treatment|Consequence| |---|---|---| |Vertical wind shear|Power-law profile|Mean profile accurate, misses shear-layer turbulence| |Turbulence|Gaussian white noise per timestep|Correct variance, wrong temporal correlation| |Wind along body length|Point force at CoP|Neglects distributed aerodynamic moment| |AoA nonlinearity|Linear $C_N = C_{N\alpha} \alpha$|Valid below 15°, fails at high AoA| |Wind-density coupling|ISA density at current $z$|Correctly captures altitude variation| |Gust statistics|Gaussian tails|Underestimates extreme events|</p>
+<p>These are not lazy choices. Each one represents a conscious tradeoff between simulation fidelity and tractability. A full CFD-coupled turbulence simulation would take hours per trajectory. We need thousands of Monte Carlo samples!</p>
+<h3>Why Wind Makes the RL Problem Uniquely Hard</h3>
+<p>Everything above describes wind as a modelling challenge. This section is about something different: why wind creates a learning challenge that is structurally distinct from the control challenge it poses for LQR. Even if we had a perfect wind model, RL would still struggle with it in ways that are worth unpacking precisely.</p>
+<h4>Wind Is Not in the Observation Space</h4>
+<p>Our PPO agent operates on a 15-dimensional observation vector: quaternion attitude, angular rates, position (altitude only, following [Gaudet et al.]()), velocity, mass, and throttle state. <strong>Wind is not observed.</strong> The agent cannot measure what the wind is doing; it can only infer it from the effect wind has already had on the vehicle state.</p>
+<p>This creates a partial observability problem. The true Markov state of the system is:</p>
+<p>$$ \mathbf{s}_{true} = [\mathbf{q}, \boldsymbol{\omega}, \mathbf{p}, \mathbf{v}, m, \mathbf{w}(\mathbf{x}, t)] $$</p>
+<p>But the agent only sees:</p>
+<p>$$ \mathbf{o} = [\mathbf{q}, \boldsymbol{\omega}, p_z, \mathbf{v}, m, \delta_{throttle}] $$</p>
+<p>The wind state $\mathbf{w}(\mathbf{x}, t)$ is hidden. The environment is therefore a Partially Observable MDP (POMDP) being approximated as a fully observable MDP. PPO's policy gradient theorem assumes the Markov property:</p>
+<p>$$ P(\mathbf{s}_{t+1} | \mathbf{s}_t, \mathbf{a}_t) = P(\mathbf{s}_{t+1} | \mathbf{s}_1, \dots, \mathbf{s}_t, \mathbf{a}_1, \dots, \mathbf{a}_t) $$</p>
+<p>This is violated whenever the wind at $t+1$ is correlated with its history, which, as  established earlier, it always is. The agent is trying to solve a POMDP with a policy class designed for MDPs. The result is that the &quot;optimal&quot; policy the agent converges to is actually the best memoryless policy, which is provably suboptimal in a partially observed environment. In practice this means the agent must learn to be <strong>defensively robust</strong> rather than <strong>situationally adaptive</strong>. It cannot react to wind it cannot see, so it must develop a policy that degrades gracefully across all wind realizations it might encounter.</p>
+<h4>The Credit Assignment Problem Is Severe</h4>
+<p>Policy gradient methods learn by correlating actions with outcomes. The fundamental update is proportional to $\nabla_\theta \log \pi_\theta(\mathbf{a}_t | \mathbf{o}_t) \cdot \hat{A}_t$, where the advantage $\hat{A}_t$ measures how much better the action was than expected.</p>
+<p>Wind poisons this signal in two ways.</p>
+<p>First, wind introduces high variance into the return. Two identical trajectories with identical actions can produce wildly different returns purely because the wind realization differed. The variance of the policy gradient estimator is:</p>
+<p>$$ \text{Var}\left[\hat{g}\right] = \mathbb{E}\left[\left(\nabla_\theta \log \pi_\theta \cdot \hat{A}_t\right)^2\right] - \left(\mathbb{E}\left[\nabla_\theta \log \pi_\theta \cdot \hat{A}_t\right]\right)^2 $$</p>
+<p>High environmental stochasticity inflates the first term directly. This is why wind-heavy training requires significantly more rollouts to achieve the same gradient signal-to-noise ratio as a calm-air environment, an empirical fact we observed during training, where early episodes showed enormous reward variance before the policy stabilized.</p>
+<p>Second, wind makes temporal credit assignment ambiguous. A lateral deviation at $t = 20$ s might be caused by a TVC command at $t = 15$ s, or by a wind gust at $t = 19$ s. The agent cannot distinguish these causes. PPO's generalized advantage estimator (GAE):</p>
+<p>$$ \hat{A}_t = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}, \quad \delta_t = r_t + \gamma V(o_{t+1}) - V(o_t) $$</p>
+<p>attributes the value of future states back to current actions, but when an unobserved disturbance (which in our case is wind) is responsible for the state transition, this attribution is systematically wrong. The agent may learn to suppress actions that were actually correct but happened to coincide with an adverse wind event.</p>
+<h4>The Guidance-Control Hierarchy Amplifies Wind Sensitivity</h4>
+<p>Our hierarchical architecture separates a slow guidance policy (throttle, 1 Hz) from a fast control policy (TVC, 20 Hz). Wind affects both layers simultaneously but on different timescales. The guidance layer (responsible for the descent profile) must choose throttle commands that produce the right velocity at the right altitude. Wind changes the effective drag on the vehicle, which means the same throttle command produces a different velocity profile depending on the wind. The guidance policy must implicitly learn this coupling without observing wind directly.</p>
+<p>The coupling can be written as:</p>
+<p>$$ \dot{v}_z = \frac{T \cos\alpha}{m} - g - \frac{1}{2m}\rho(z) v_{rel}^2 S_{ref} C_D $$</p>
+<p>where $v_{rel} = |\mathbf{v} - \mathbf{w}|$. Wind enters through $v_{rel}$, which means the effective drag, and therefore the throttle required to achieve a target deceleration, is actually a function of the hidden wind state! The guidance policy must learn this function from state observations alone, essentially performing implicit wind estimation as a latent skill.</p>
+<p>However, the control layer faces a different problem: wind-induced lateral forces appear as persistent torques that must be counteracted by TVC deflection. But TVC deflection also affects the thrust vector direction, coupling lateral stabilization with vertical deceleration. Persistent crosswind therefore creates a sustained coupling between attitude control and throttle authority that the monolithic PPO architecture (which we discarded) could not resolve cleanly.</p>
+<h4>Wind Creates Non-Stationarity in the Reward Landscape</h4>
+<p>The Gaudet velocity field reward tracks a position-dependent target velocity profile $\mathbf{v}^*(p_z)$. In calm air, this creates a smooth reward landscape: deviating from the target velocity profile costs reward proportionally. Wind deforms this landscape in a non-stationary way.</p>
+<p>Consider the lateral velocity component. The target is $v_x^* = 0$ at all altitudes. Wind imposes a lateral acceleration $a_{wind} = F_{wind}/m$, which pushes $v_x$ away from zero. To maintain zero lateral velocity, the agent must learn to apply a TVC correction that exactly cancels $F_{wind}$. But $F_{wind}$ is itself a function of the unobserved wind field. The effective reward gradient with respect to TVC deflection $\delta_{TVC}$ then becomes:</p>
+<p>$$ \frac{\partial r}{\partial \delta_{TVC}} = \frac{\partial r}{\partial v_x} \cdot \frac{\partial v_x}{\partial \delta_{TVC}} + \frac{\partial r}{\partial v_x} \cdot \underbrace{\frac{\partial v_x}{\partial w_x} \cdot \frac{\partial w_x}{\partial \delta_{TVC}}}_{= 0} $$</p>
+<p>The second term is zero, TVC cannot affect wind. But the agent doesn't know this. In early training, with random policy, the agent may spuriously learn correlations between its actions and wind fluctuations simply because they co-occur in time. This produces reward hacking through wind correlation: the agent learns to execute actions that happened to coincide with favourable wind realizations, not because those actions caused favourable outcomes. This is distinct from the classical reward hacking we guard against with the terminal penalty. It is subtler, a form of confounding in the policy gradient signal, and it resolves only with sufficient sample diversity across wind conditions.</p>
+<h4>Sample Efficiency: The Core Consequence</h4>
+<p>Putting it all together now, we understand that the wind forces the RL agent needs to solve is a harder problem than it appears. It must:</p>
+<p>1. Implicitly estimate an unobserved disturbance from noisy state observations 2. Deconvolve its own contribution to state transitions from the wind's contribution 3. Learn a policy robust to the full distribution of wind realizations, not just the mean 4. Do all of this without any explicit wind supervision signal</p>
+<p>Each of these requirements demands more samples. This is the mechanistic explanation for the <strong>sample efficiency gap</strong> we observe between LQR and PPO in our results. LQR requires no training samples, the wind appears as a disturbance to a pre-computed gain schedule, and the stability guarantees hold regardless of what the wind does. PPO must discover a robust strategy through trial and error in a stochastic environment where the source of much of the stochasticity is hidden.</p>
+<p>The gap is not a failure of PPO as an algorithm. It is a structural consequence of asking a model-free RL agent to learn in a partially observed, stochastic environment, which is, inherently, what makes real rocket landing hard.</p>
+    </article>
+  </main>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+<script>
+const rootEl = document.documentElement;
+const themeToggle = document.querySelector('.theme-toggle');
+function setTheme(theme) {
+  rootEl.dataset.theme = theme;
+  localStorage.setItem('theme', theme);
+  themeToggle.innerHTML = theme === 'dark'
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.2A7.4 7.4 0 0 1 9.8 3a8.7 8.7 0 1 0 11.2 11.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+  themeToggle.setAttribute('aria-label', 'Switch to ' + (theme === 'dark' ? 'light' : 'dark') + ' mode');
+  themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+}
+const savedTheme = localStorage.getItem('theme');
+const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+setTheme(savedTheme || preferredTheme);
+themeToggle.addEventListener('click', () => setTheme(rootEl.dataset.theme === 'dark' ? 'light' : 'dark'));
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ],
+      throwOnError: false
+    });
+  }
+});
+</script>
+</body>
+</html>

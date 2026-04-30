@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RL-Enhanced 6DOF Rocket Landing - Jaival Patel</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg: #ffffff;
+      --fg: #111111;
+      --text: #333333;
+      --muted: #777777;
+      --soft: #cccccc;
+      --surface: #f7f7f7;
+      --surface-2: #fbfbfb;
+      --border: #e4e4e4;
+      --toggle-bg: #f5f5f5;
+      --toggle-border: #dddddd;
+      --font-sans: 'Lora', Georgia, serif;
+      --font-mono: 'Geist Mono', 'Courier New', monospace;
+    }
+    [data-theme="dark"] {
+      --bg: #111111;
+      --fg: #f3f3f3;
+      --text: #d5d5d5;
+      --muted: #999999;
+      --soft: #555555;
+      --surface: #181818;
+      --surface-2: #141414;
+      --border: #333333;
+      --toggle-bg: #1b1b1b;
+      --toggle-border: #333333;
+    }
+    html {
+      color-scheme: light;
+      scroll-behavior: smooth;
+    }
+    html[data-theme="dark"] { color-scheme: dark; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.72;
+      margin: 0;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    a {
+      color: var(--fg);
+      text-decoration: underline;
+      text-decoration-color: var(--soft);
+      text-underline-offset: 3px;
+      transition: text-decoration-color 0.15s;
+    }
+    a:hover { text-decoration-color: var(--fg); }
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 44px 32px 84px;
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      margin-bottom: 58px;
+    }
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+    }
+    .nav-inner a {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+    .nav-inner a:hover { color: var(--fg); }
+    .theme-toggle {
+      appearance: none;
+      border: 1px solid var(--toggle-border);
+      background: var(--toggle-bg);
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      line-height: 1;
+      margin-left: auto;
+      padding: 0;
+      width: 30px;
+    }
+    .theme-toggle:hover {
+      border-color: var(--muted);
+      color: var(--fg);
+    }
+    .theme-toggle svg {
+      height: 15px;
+      width: 15px;
+    }
+    .article {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero {
+      margin-bottom: 48px;
+    }
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 18px 0 0;
+    }
+    .repo-link,
+    .back-to-top {
+      border: 1px solid var(--border);
+      color: var(--fg);
+      display: inline-flex;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      line-height: 1;
+      padding: 9px 11px;
+      text-decoration: none;
+    }
+    .repo-link:hover,
+    .back-to-top:hover {
+      background: var(--surface);
+      border-color: var(--soft);
+    }
+    .kicker {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 {
+      color: var(--fg);
+      font-weight: 500;
+      letter-spacing: 0;
+      line-height: 1.25;
+    }
+    h1 {
+      font-size: clamp(2.1rem, 7vw, 4.2rem);
+      margin: 0 0 16px;
+      max-width: 900px;
+    }
+    h2 {
+      border-top: 1px solid var(--border);
+      font-size: 1.38rem;
+      margin: 54px 0 16px;
+      padding-top: 30px;
+    }
+    h3 {
+      font-size: 1.02rem;
+      margin: 30px 0 10px;
+    }
+    p {
+      color: var(--text);
+      font-size: 0.99rem;
+      margin: 0 0 16px;
+    }
+    .lede {
+      color: var(--fg);
+      font-size: 1.14rem;
+      line-height: 1.62;
+      max-width: 760px;
+    }
+    .claim {
+      border-left: 1px solid var(--soft);
+      color: var(--text);
+      margin: 24px 0 0;
+      padding-left: 18px;
+    }
+    .toc {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 8px;
+      margin: 32px 0 44px;
+      padding: 16px 18px;
+    }
+    .toc a {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-decoration: none;
+    }
+    .toc a:hover { color: var(--fg); }
+    .side-toc {
+      display: none;
+    }
+    .article-footer {
+      border-top: 1px solid var(--border);
+      margin-top: 54px;
+      padding-top: 24px;
+    }
+    figure {
+      margin: 30px 0;
+    }
+    figure.wide {
+      margin-left: calc((720px - min(100%, 900px)) / 2);
+      max-width: 900px;
+      width: min(900px, calc(100vw - 64px));
+    }
+    figure img {
+      border: 1px solid var(--border);
+      display: block;
+      height: auto;
+      width: 100%;
+    }
+    figcaption {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      line-height: 1.55;
+      margin-top: 10px;
+    }
+    .gif-grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 30px 0;
+    }
+    .gif-grid figure {
+      margin: 0;
+    }
+    .metrics {
+      border-collapse: collapse;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      line-height: 1.45;
+      margin: 24px 0;
+      width: 100%;
+    }
+    .metrics th,
+    .metrics td {
+      border-bottom: 1px solid var(--border);
+      padding: 9px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .metrics th {
+      color: var(--fg);
+      font-weight: 500;
+    }
+    .math-block {
+      overflow-x: auto;
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.55;
+      margin: 24px 0;
+      overflow-x: auto;
+      padding: 16px;
+    }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+    }
+    p code,
+    li code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.08rem 0.24rem;
+    }
+    ul {
+      color: var(--text);
+      margin: 0 0 18px 1.2rem;
+      padding: 0;
+    }
+    li { margin-bottom: 8px; }
+    .note {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      margin: 24px 0;
+      padding: 16px 18px;
+    }
+    .note p:last-child { margin-bottom: 0; }
+    .katex-display {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 4px 0;
+    }
+    @media (max-width: 780px) {
+      .page { padding: 30px 20px 64px; }
+      .nav-inner { gap: 16px; margin-bottom: 42px; }
+      .nav-links { gap: 18px; }
+      figure.wide {
+        margin-left: 0;
+        width: 100%;
+      }
+      .gif-grid { grid-template-columns: 1fr; }
+      .metrics {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+    @media (min-width: 1240px) {
+      .side-toc {
+        border-left: 1px solid var(--border);
+        display: grid;
+        gap: 7px;
+        left: max(24px, calc((100vw - 1180px) / 2));
+        max-height: calc(100vh - 160px);
+        overflow-y: auto;
+        padding: 2px 0 2px 14px;
+        position: fixed;
+        top: 128px;
+        width: 190px;
+      }
+      .side-toc span {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 0.66rem;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+      }
+      .side-toc a {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        line-height: 1.35;
+        text-decoration: none;
+      }
+      .side-toc a:hover { color: var(--fg); }
+    }
+  </style>
+</head>
+<body id="top">
+  <aside class="side-toc" aria-label="Floating article sections">
+    <span>Sections</span>
+    <a href="#abstract">00 / Abstract</a>
+    <a href="#contributions">01 / What this work adds</a>
+    <a href="#positioning">02 / Where this fits</a>
+    <a href="#model">03 / Simulator model</a>
+    <a href="#environment">04 / The world we drop the vehicle into</a>
+    <a href="#lqr">05 / Classical baseline</a>
+    <a href="#rl-formulation">06 / RL formulation</a>
+    <a href="#judging">07 / How we judge a landing</a>
+    <a href="#flat-ppo">08 / Flat PPO baseline</a>
+    <a href="#hierarchy">09 / Hierarchical PPO</a>
+    <a href="#hybrid">10 / Hybrid residual PPO</a>
+    <a href="#energy-braking">11 / Energy constraint and throttle braking</a>
+    <a href="#ablation">12 / What actually made it work</a>
+    <a href="#monte-carlo">13 / Where it breaks</a>
+    <a href="#failed-decisions">14 / The failures were the signal</a>
+    <a href="#conclusion">15 / What would make this stronger</a>
+  </aside>
+  <main class="page">
+    <nav class="nav-inner">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="research-notes.html">Research Notes</a>
+        <a href="research-work.html">Research Work</a>
+        <a href="projects.html">Systems Work</a>
+      </div>
+      <button class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false"></button>
+    </nav>
+
+    <article class="article">
+      <header class="hero">
+        <div class="kicker">Research article / RL 6DOF landing benchmark</div>
+        <h1>RL-Enhanced 6DOF Rocket Landing</h1>
+        <div class="hero-links" aria-label="Project links" style="margin-bottom: 10px">
+          <a class="repo-link" href="https://github.com/GEEGABYTE1/6doflandingrl" target="_blank" rel="noreferrer">GitHub repository</a>
+        </div>
+        <p class="lede">
+          A eusable-booster landing benchmark with variable mass, quaternion attitude dynamics, thrust-vector control, classical baselines, flat PPO, hierarchical PPO, and hybrid residual reinforcement learning. Goal was to determine if a learned RL policy can reduce rocket landing dynamics successfully.
+        </p>
+        <p class="claim">
+          Scope boundary: this is a research simulator and controller benchmark, not an exact vehicle, mission, aerodynamic, or flight-software reconstruction.
+        </p>
+      </header>
+
+      <figure class="wide">
+        <img src="rocket-landing-assets/landing_hybrid_ppo.gif" alt="Animated Phase 2C hybrid controller landing trajectory">
+        <figcaption>
+          Phase 2C hybrid PPO nominal rollout. Source: outputs/phase2c_hybrid_rl/eval_nominal_seed7_50k_stopping_floor_v1/trajectory.csv and metrics.json. This is a saved benchmark artifact, not a recreated operational flight profile.
+        </figcaption>
+      </figure>
+
+      <nav class="toc" aria-label="Article sections">
+        <a href="#abstract">00 / Abstract</a>
+        <a href="#contributions">01 / What this work adds</a>
+        <a href="#positioning">02 / Where this fits</a>
+        <a href="#model">03 / Simulator model</a>
+        <a href="#environment">04 / The world we drop the vehicle into</a>
+        <a href="#lqr">05 / Classical baseline</a>
+        <a href="#rl-formulation">06 / RL formulation</a>
+        <a href="#judging">07 / How we judge a landing</a>
+        <a href="#flat-ppo">08 / Flat PPO baseline</a>
+        <a href="#hierarchy">09 / Hierarchical PPO</a>
+        <a href="#hybrid">10 / Hybrid residual PPO</a>
+        <a href="#energy-braking">11 / Energy constraint and throttle braking</a>
+        <a href="#ablation">12 / What actually made it work</a>
+        <a href="#monte-carlo">13 / Where it breaks</a>
+        <a href="#failed-decisions">14 / The failures were the signal</a>
+        <a href="#conclusion">15 / What would make this stronger</a>
+      </nav>
+
+      <section id="abstract">
+        <h2>Abstract</h2>
+        <p>
+          Reusable booster landing is a useful control problem because it is simple to state and difficult to make honest. The vehicle must remove vertical energy, arrest lateral motion, maintain attitude, obey actuator limits, and do all of that while its mass changes during powered descent. A reinforcement-learning benchmark that removes variable mass, attitude dynamics, disturbances, or lateral-attitude coupling can look impressive while avoiding the hard part of the problem.
+        </p>
+        <p>
+          This article presents the current state of a Falcon 9-inspired 6DOF landing simulator and controller stack. The simulator uses a locally flat inertial frame, scalar-first quaternions, variable mass, thrust-vector control, simplified aerodynamics, an ISA-style atmosphere, and modular disturbances. The controller sequence is deliberately conservative: first a gain-scheduled LQR baseline, then a flat PPO baseline, then a pure hierarchical PPO controller with separated throttle and TVC policies, and finally a hybrid residual PPO controller that learns bounded corrections around a classical stabilizing prior.
+        </p>
+        <p>
+          The central empirical result is not that learned control simply dominates classical control. It does not. The Phase 1 gain-scheduled LQR is strong and reliable on the nominal and Monte Carlo evaluations. Flat PPO learns partial descent behavior but fails the coupled touchdown criteria. Pure hierarchy improves interpretability but exposes a frozen-policy coordination problem. Hybrid residual PPO becomes useful only after the learned policy is given the right job: correct a structured classical prior and operate inside a physically meaningful throttle-prior design.
+        </p>
+        <p>
+          All figures in this article are generated from saved CSV/JSON artifacts. The GIFs visualize saved trajectories, not newly simulated or hand-edited outcomes. The purpose is to make the benchmark falsifiable: every claim should point back to a trajectory, a metric file, or a documented design decision.
+        </p>
+      </section>
+
+      <section id="contributions">
+        <h2>Why this matters</h2>
+        <p>
+          The useful contribution is not a claim that reinforcement learning has "solved rocket landing." The contribution is a compact benchmark story where classical control, flat RL, hierarchical RL, and residual RL are all forced through the same 6DOF touchdown metrics. That makes the failures comparable instead of anecdotal.
+        </p>
+        <p>
+          First, the simulator keeps the control-relevant structure that easy benchmarks often remove: variable mass, quaternion attitude, lateral-attitude coupling, TVC limits, atmosphere, aerodynamic drag, and modular disturbances. Second, the controller ladder is intentionally conservative. A gain-scheduled LQR baseline is built first, then a flat PPO baseline, then a separated throttle/TVC hierarchy, and finally a hybrid residual controller around a classical prior.
+        </p>
+        <p>
+          The main finding is also narrower than a headline result. The learned controller becomes useful when PPO is no longer asked to own the whole landing problem. Phase 2C succeeds nominally because the residual policy inherits the lateral-attitude structure of LQR while the throttle channel is redesigned around terminal vertical energy. Once lateral error, horizontal speed, tilt, and angular rate are controlled, the hard variable is no longer "landing" in the abstract; it is whether the vehicle has enough altitude left to remove downward kinetic energy.
+        </p>
+        <p>
+          This project sits between powered-descent guidance, classical feedback control, and modern continuous-control reinforcement learning. Classical guidance and LQR-style controllers are strong because they encode structure: local linearization, controllability, actuator limits, and physically interpretable references. End-to-end RL is attractive because it can absorb nonlinear coupling and discovered corrections, but it is also very good at hiding failure modes behind a single return curve.
+        </p>
+        <p>
+          Hierarchical RL is the natural middle ground: split vertical energy from lateral-attitude control and train specialized policies. The Phase 2B results show why that idea is appealing and why it is not enough. The throttle policy can improve the vertical subproblem while still producing a frozen schedule that makes the full 6DOF terminal regime brittle. Residual RL is the next step: keep the stabilizing structure, then learn bounded corrections where the model or baseline is imperfect.
+        </p>
+        <p>
+          In that sense, the closest research question is not "can PPO beat LQR?" It is "where should learning enter a safety-critical control stack so that it improves behavior without erasing auditability?" The answer in this benchmark is specific: learned residual TVC helps after LQR has stabilized the attitude channel, while terminal throttle behavior needs explicit energy and stopping-distance structure.
+        </p>
+      </section>
+
+      <section id="model">
+        <h2>Simulator model</h2>
+        <p>
+          The simulator is built around a rigid-body state rather than a convenience state for learning. This matters because the controller should not be able to choose a throttle command without paying for propellant, or correct lateral motion without rotating the vehicle and inducing angular dynamics. The state tracks inertial position, inertial velocity, scalar-first quaternion attitude, body angular rates, and mass:
+        </p>
+        <div class="math-block">
+          $$x =
+          \begin{bmatrix}
+          r_I & v_I & q_{BI} & \omega_B & m
+          \end{bmatrix}
+          =
+          \begin{bmatrix}
+          x_I,y_I,z_I,v_x,v_y,v_z,q_w,q_x,q_y,q_z,p,q,r,m
+          \end{bmatrix}.$$
+        </div>
+        <p>
+          The inertial frame \(I\) is locally flat with \(+z_I\) upward. Gravity is therefore \(g_I=[0,0,-g]\). The body frame \(B\) uses \(+z_B\) as the longitudinal axis from engine toward nose. The identity quaternion means the vehicle is upright, so body \(+z_B\) aligns with inertial \(+z_I\). Quaternions map body-frame vectors into the inertial frame and are renormalized after each RK4 integration step:
+        </p>
+        <div class="math-block">
+          $$\dot q = \frac{1}{2} q \otimes
+          \begin{bmatrix}
+          0 & p & q & r
+          \end{bmatrix}.$$
+        </div>
+        <p>
+          The translational model includes gravity, thrust, aerodynamic drag, and wind-relative velocity. The rotational model includes TVC moments from an engine below the center of mass and simple aerodynamic damping. In compact form:
+        </p>
+        <div class="math-block">
+          $$m \dot v_I = F_{thrust,I} + F_{aero,I} + m g_I,$$
+          $$I_B \dot\omega_B + \omega_B \times I_B\omega_B = M_{TVC,B} + M_{aero,B}.$$
+        </div>
+        <p>
+          Thrust is generated in the body frame and rotated into the inertial frame. With zero gimbal, thrust points along body \(+z_B\). A pitch gimbal tilts thrust toward body \(+x_B\), and a yaw gimbal tilts thrust toward body \(+y_B\). The engine position is below the center of mass, so the TVC moment is the cross product
+          \(M_{TVC,B}=r_{engine,B}\times F_{thrust,B}\). That single centered engine produces pitch and roll authority through off-axis thrust, but it does not create direct body-\(z\) yaw torque. This is why yaw is measured and reported while being excluded from pass/fail success criteria.
+        </p>
+        <p>
+          Variable mass is not a realism flourish; it changes the control problem. The same throttle fraction produces different acceleration as the vehicle burns propellant, and fuel use is itself an outcome. A controller that can land only by pretending mass is constant is solving a cleaner toy problem than the one this benchmark is meant to expose:
+        </p>
+        <div class="math-block">
+          $$\dot m = -\frac{T}{I_{sp}g_0}.$$
+        </div>
+        <p>
+          Aerodynamics are intentionally simplified but still present. Translational drag is computed from air-relative velocity, and the atmosphere uses a simple ISA-style density profile. Wind, thrust misalignment, and sensor noise are modular disturbances. The current Phase 1 classical controller uses true state feedback, but the disturbance interfaces are kept separate so later learned controllers and sensor models can use the same simulator path.
+        </p>
+        <pre><code>state = np.array([
+    x_m, y_m, z_m,
+    vx_mps, vy_mps, vz_mps,
+    qw, qx, qy, qz,
+    p_radps, q_radps, r_radps,
+    mass_kg,
+])</code></pre>
+        <p>
+          Integration uses fixed-step RK4. That choice is less glamorous than an adaptive integrator but better for a reproducible benchmark: controller update timing, logged trajectories, and timestep-sensitivity checks stay deterministic. The simulator terminates at touchdown when \(z_I \le 0\) after the first propagated step, and the shared metric extractor evaluates vertical touchdown speed, horizontal speed, lateral error, tilt, angular-rate norm, fuel exhaustion, divergence, and saturation fraction.
+        </p>
+        <figure class="wide">
+          <img src="rocket-landing-assets/phase1_trajectory_evidence_panel.png" alt="Phase 1 trajectory evidence panel with altitude, velocity, lateral error, and touchdown view">
+          <figcaption>
+            Phase 1 trajectory evidence panel. Source: outputs/phase1_figures/trajectory_evidence_panel.png, generated from the saved nominal Phase 1 evaluation trajectory.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="environment">
+        <h2>Environment Setup</h2>
+        <p>
+          The environment is deliberately not a high-fidelity launch-vehicle atmosphere. It is a compact, control-relevant world that makes the policy pay for the couplings we care about: changing air density, aerodynamic drag, wind-relative motion, time-varying gusts, and fixed thrust-direction bias. The point is not to recreate a specific flight day. The point is to stop the controller from succeeding only in a frictionless vacuum with a perfectly aligned engine.
+        </p>
+        <p>
+          The atmosphere is a simplified ISA-style model. Below the tropopause, density comes from the usual pressure-temperature relation; above it, the implementation switches to an exponential continuation. The aerodynamic model then computes drag from the vehicle velocity relative to the wind field:
+        </p>
+        <div class="math-block">
+          $$w_I(t)=w_{steady}+A_{gust}\sin(2\pi f t),$$
+          $$v_{rel}=v_I-w_I(t),\qquad
+          q_{dyn}=\frac{1}{2}\rho\lVert v_{rel}\rVert^2,$$
+          $$F_D=
+          -\frac{1}{2}\rho C_D A
+          \lVert v_{rel}\rVert v_{rel}.$$
+        </div>
+        <p>
+          Wind matters twice. It changes the aerodynamic force directly through \(v_{rel}\), and it creates lateral recovery demands that the TVC controller must remove before touchdown. Gusts are included because a steady crosswind is partly a bias-rejection problem, while a sinusoidal gust forces the controller to keep recovering as the disturbance changes over the descent.
+        </p>
+        <p>
+          Thrust misalignment is modeled as a persistent pitch/yaw gimbal bias added inside the propulsion model:
+        </p>
+        <div class="math-block">
+          $$\begin{bmatrix}
+          \delta_p\\
+          \delta_y
+          \end{bmatrix}_{actual}
+          =
+          \begin{bmatrix}
+          \delta_p\\
+          \delta_y
+          \end{bmatrix}_{cmd}
+          +
+          \begin{bmatrix}
+          \delta_p\\
+          \delta_y
+          \end{bmatrix}_{bias}.$$
+        </div>
+        <p>
+          This is intentionally simple, but it tests an important thing: whether the controller can survive a persistent actuator-direction error without being told that the engine is perfectly aligned. Sensor noise is also implemented as a modular state-noise hook, but the current results are still mainly true-state-feedback results. That is why sensor noise is treated as future estimated-state work rather than a headline claim here.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th>Steady wind</th>
+              <th>Gust amplitude</th>
+              <th>Gust frequency</th>
+              <th>Thrust misalignment</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>\((0,0,0)\,\text{m/s}\)</td>
+              <td>\((0,0,0)\,\text{m/s}\)</td>
+              <td>nominal scenario frequency</td>
+              <td>\((0,0)^\circ\)</td>
+              <td>clean controller check</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>\((2,0,0)\,\text{m/s}\)</td>
+              <td>\((0.5,0.25,0)\,\text{m/s}\)</td>
+              <td>nominal scenario frequency</td>
+              <td>\((0.20,-0.20)^\circ\)</td>
+              <td>mild robustness</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>\((5,0,0)\,\text{m/s}\)</td>
+              <td>\((1.0,0.5,0)\,\text{m/s}\)</td>
+              <td>nominal scenario frequency</td>
+              <td>\((0.50,-0.50)^\circ\)</td>
+              <td>moderate composite disturbance</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>\((8,0,0)\,\text{m/s}\)</td>
+              <td>\((1.5,0.75,0)\,\text{m/s}\)</td>
+              <td>nominal scenario frequency</td>
+              <td>\((1.00,-1.00)^\circ\)</td>
+              <td>stress test</td>
+            </tr>
+          </tbody>
+        </table>
+        
+      </section>
+
+      <section id="lqr">
+        <h2>Classical baseline</h2>
+        <p>
+          The first controller is not learned. That is an important methodological decision. A weak classical baseline would make any RL result look stronger than it is. The Phase 1 controller is a gain-scheduled hover-trim LQR that linearizes the upright landing problem around local hover-like dynamics and interpolates gains over a nominal mass grid. The public controller error state is a 12-vector:
+        </p>
+        <div class="math-block">
+          $$e =
+          \begin{bmatrix}
+          r_I-r_{target} & v_I-v_{ref} & \eta_{BI} & \omega_B
+          \end{bmatrix}.$$
+        </div>
+        <p>
+          The LQR does not track a full precomputed landing trajectory. Instead, the vertical channel tracks an altitude-dependent descent-rate reference. The reference is shaped by the same braking-energy idea used repeatedly later in the project:
+        </p>
+        <div class="math-block">
+          $$v_{z,ref}(h)=-\sqrt{v_{touch}^2+2a_{brake}h}.$$
+        </div>
+        <p>
+          This prevents the baseline from becoming a hover controller that simply tries to regulate \(z=0\) from high altitude. It descends aggressively when altitude is high and slows as touchdown approaches. Near upright hover, small pitch and yaw gimbal commands couple attitude into lateral acceleration. The implementation records the approximation directly in the controller notes:
+        </p>
+        <div class="math-block">
+          $$a_x \approx g(\theta + \delta_{pitch}), \quad
+          a_y \approx g(\delta_{yaw} - \phi), \quad
+          a_z \approx \frac{T_{max}}{m}\delta_u.$$
+        </div>
+        <p>
+          The controller solves a Riccati problem on the controllable subset and schedules gains with mass. Yaw states remain in the public error vector because yaw is part of the full attitude state, but yaw feedback gains are zero under the current single-engine actuation model. This sounds like a narrow modeling detail, but it prevents a subtle overclaim: if the actuator cannot produce body-\(z\) torque, the controller should not be credited with yaw regulation.
+        </p>
+        <p>
+          The important decision was not that LQR is "realistic enough." It is that a credible classical baseline prevents the RL comparison from becoming a victory lap over an obviously weak controller. In nominal evaluation, the LQR lands softly with small lateral error and low tilt. In the 500-episode-per-level Monte Carlo evaluation, it remains the most reliable controller. As a result, the controllers serves as a baseline to compare other learned controllers with.
+        </p>
+        <figure class="wide">
+          <img src="rocket-landing-assets/landing_lqr.gif" alt="Animated Phase 1 LQR landing trajectory">
+          <figcaption>
+            Phase 1 gain-scheduled LQR nominal rollout. Source: outputs/phase1_evaluation/runs/scenario_table__nominal/trajectory.csv and metrics.json.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="rl-formulation">
+        <h2>RL formulation</h2>
+        <p>
+          The learned controllers are trained as episodic policies over the same simulator used by the classical baseline. The Markov decision process is
+        </p>
+        <div class="math-block">
+          $$\mathcal{M}=(\mathcal{S},\mathcal{A},P,r,\gamma), \qquad
+          J(\theta)=\mathbb{E}_{\tau\sim\pi_\theta}\left[\sum_{t=0}^{T}\gamma^t r_t\right].$$
+        </div>
+        <p>
+          The transition kernel \(P\) is the RK4-integrated 6DOF dynamics with variable mass, atmosphere, aerodynamics, TVC, and the active disturbance configuration. The policy does not receive an invented low-dimensional "landing score." It receives normalized physical state features. The flat observation is a 14-vector:
+        </p>
+        <div class="math-block">
+          $$o_{14} =
+          \left[
+          \frac{r-r^\star}{[50,50,150]},
+          \frac{v-v^\star}{[20,20,40]},
+          q_w,q_x,q_y,q_z,
+          \frac{\omega_B}{[1,1,1]},
+          \mu
+          \right],$$
+          $$\mu=\operatorname{clip}\left(\frac{m-m_{dry}}{m_0-m_{dry}},0,1\right).$$
+        </div>
+        <p>
+          PPO optimizes the clipped surrogate objective rather than directly differentiating through the simulator:
+        </p>
+        <div class="math-block">
+          $$L^{CLIP}(\theta)=
+          \mathbb{E}_t\left[
+          \min\left(
+          \rho_t(\theta)\hat A_t,
+          \operatorname{clip}(\rho_t(\theta),1-\epsilon,1+\epsilon)\hat A_t
+          \right)
+          \right],$$
+          $$\rho_t(\theta)=
+          \frac{\pi_\theta(a_t\mid o_t)}{\pi_{\theta_{old}}(a_t\mid o_t)}.$$
+        </div>
+        <p>
+          The flat Phase 2A reward is intentionally decomposed so failures can be diagnosed by term. With the default weights from the implementation, the dense reward is
+        </p>
+        <div class="math-block">
+          $$r_t =
+          0.05\Delta h
+          -1.10\frac{\lVert r_{xy}\rVert}{20}
+          -0.80\frac{|v_z|}{10}
+          -1.00\frac{\lVert v_{xy}\rVert}{10}
+          -0.20\frac{\theta_{tilt}}{15}
+          -0.12\lVert \omega_B\rVert
+          -0.02\lVert a\rVert
+          + r_{terminal}.$$
+        </div>
+        <p>
+          On a failed touchdown, the metric penalty is not vague. It is the weighted sum
+        </p>
+        <div class="math-block">
+          $$r_{metric} =
+          -8|v_{z,touch}|
+          -12\lVert v_{xy,touch}\rVert
+          -10\lVert r_{xy,touch}\rVert
+          -2\theta_{tilt,touch}.$$
+        </div>
+        <p>
+          This calculation makes the flat-policy failure concrete. For the saved Phase 2A nominal rollout, the terminal metrics give approximately
+        </p>
+        <div class="math-block">
+          $$r_{metric}^{2A}
+          =-8(26.116)-12(1.613)-10(12.188)-2(4.551)
+          \approx -359.3.$$
+        </div>
+        <p>
+          Including the touchdown failure penalty adds another \(-180\), so the terminal event contributes roughly \(-539\) before considering the dense trajectory terms. The policy is not being rewarded for crashing; it is failing because the action interface and reward landscape still make the coupled terminal solution hard to discover.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Phase</th>
+              <th>Policy input</th>
+              <th>Action output</th>
+              <th>Prior structure</th>
+              <th>Main failure</th>
+              <th>Next change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2A Flat PPO</td>
+              <td>\(o_{14}\)</td>
+              <td>\([a_T,a_p,a_y]\)</td>
+              <td>None beyond hover-relative throttle centering</td>
+              <td>Joint touchdown constraints not solved</td>
+              <td>Separate vertical throttle from TVC</td>
+            </tr>
+            <tr>
+              <td>2B Hierarchical PPO</td>
+              <td>\([h,v_z,\mu]\) for throttle; \(o_{14}\) plus coordination features for TVC</td>
+              <td>\(u_T\), then \([\delta_p,\delta_y]\)</td>
+              <td>Frozen learned throttle prior</td>
+              <td>Terminal coordination stayed brittle</td>
+              <td>Add LQR prior and bounded residual learning</td>
+            </tr>
+            <tr>
+              <td>2C Hybrid residual PPO</td>
+              <td>\(o_{21}=o_{14}\) plus 5 coordination features plus 2 LQR prior gimbal features</td>
+              <td>Bounded TVC residual</td>
+              <td>LQR TVC prior plus learned/physics throttle priors</td>
+              <td>Vertical energy remained the binding constraint</td>
+              <td>Add energy assist and stopping-distance throttle floor</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="judging">
+        <h2>How we judge a landing</h2>
+        <p>
+          A landing is counted as successful only if the final state satisfies all touchdown constraints. The criteria are intentionally stricter than "the vehicle reached the ground" because many policies learn to terminate while still being unusable as controllers:
+        </p>
+        <div class="math-block">
+          $$|v_{z,touch}|\le2.0\,\text{m/s},\qquad
+          \lVert v_{xy,touch}\rVert\le1.0\,\text{m/s},$$
+          $$\lVert r_{xy,touch}\rVert\le2.0\,\text{m},\qquad
+          \theta_{tilt,touch}\le10^\circ,\qquad
+          \lVert\omega_{B,touch}\rVert\le0.5\,\text{rad/s}.$$
+        </div>
+        <p>
+          The metric extractor also rejects fuel exhaustion, numerical divergence, excessive final altitude, and persistent actuator saturation. Yaw remains reported through attitude and angular-rate quantities, but direct yaw regulation is not part of the success criterion because the current single centered TVC engine is yaw-underactuated.
+        </p>
+        <p>
+          The evaluation has two layers. The nominal rollout asks whether a controller can satisfy the locked reference scenario. The Monte Carlo suite asks whether that behavior survives randomized composite disturbance levels. For each controller and disturbance level, the saved Phase 3 evaluation uses \(n=500\) episodes and reports the empirical success rate
+        </p>
+        <div class="math-block">
+          $$\hat p=\frac{k}{n},\qquad
+          \text{CI}_{95}\approx
+          \hat p\pm1.96\sqrt{\frac{\hat p(1-\hat p)}{n}}.$$
+        </div>
+        <p>
+          This confidence interval is not a substitute for broader seed sweeps, but it prevents the table from pretending that \(458/500\) and \(500/500\) carry the same empirical meaning. It also keeps the LQR result honest: the classical baseline is not a ceremonial comparator. It is the controller the learned methods must earn the right to be compared against.
+        </p>
+        <h3>The result</h3>
+        <p>
+          The table below compresses the saved nominal metrics and the 500-episode-per-level Monte Carlo summary. The disturbance columns report success rate by composite level. The landing-error, vertical-speed, and fuel columns use level 2 means because that is the first level where the hybrid controller stops being perfect but still retains most successes.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Controller</th>
+              <th>Nominal</th>
+              <th>MC L0</th>
+              <th>MC L1</th>
+              <th>MC L2</th>
+              <th>MC L3</th>
+              <th>L2 error mean</th>
+              <th>L2 \(v_z\) mean</th>
+              <th>L2 fuel mean</th>
+              <th>Dominant failure</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Phase 1 LQR</td>
+              <td>success</td>
+              <td>100%</td>
+              <td>100%</td>
+              <td>100%</td>
+              <td>100%</td>
+              <td>0.026 m</td>
+              <td>-0.639 m/s</td>
+              <td>49.2 kg</td>
+              <td>none in saved MC</td>
+            </tr>
+            <tr>
+              <td>Phase 2A Flat PPO</td>
+              <td>failure</td>
+              <td>0%</td>
+              <td>0%</td>
+              <td>0%</td>
+              <td>0%</td>
+              <td>8.600 m</td>
+              <td>-28.048 m/s</td>
+              <td>19.3 kg</td>
+              <td>hard touchdown, lateral miss, horizontal speed</td>
+            </tr>
+            <tr>
+              <td>Phase 2B Hierarchical PPO</td>
+              <td>failure</td>
+              <td>0%</td>
+              <td>0%</td>
+              <td>0%</td>
+              <td>0%</td>
+              <td>64.805 m</td>
+              <td>-16.476 m/s</td>
+              <td>34.9 kg</td>
+              <td>hard touchdown, lateral miss, attitude/rate failures</td>
+            </tr>
+            <tr>
+              <td>Phase 2C Hybrid PPO</td>
+              <td>success</td>
+              <td>100%</td>
+              <td>100%</td>
+              <td>91.6% ± 2.4 pp</td>
+              <td>0%</td>
+              <td>0.026 m</td>
+              <td>-1.963 m/s</td>
+              <td>46.9 kg</td>
+              <td>hard touchdown under stronger disturbance</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          The hybrid controller is the first learned controller here that becomes competitive on nominal and moderate-disturbance cases, but LQR remains the strongest controller overall. The interesting result is the mechanism: the learned method improves only after the interface is shaped around the physics of the failure.
+        </p>
+      </section>
+
+      <section id="flat-ppo">
+        <h2>Flat PPO baseline</h2>
+        <p>
+          The first learned baseline is deliberately flat. One PPO policy sees the normalized landing observation and outputs throttle plus pitch/yaw gimbal commands. It is the cleanest RL baseline because there is no hand-designed hierarchy, no classical prior, and no privileged decomposition. That also makes it a hard learning problem: the policy must discover vertical energy management, attitude stabilization, lateral correction, and actuator timing simultaneously.
+        </p>
+        <p>
+          The observation is a normalized vector built from target-relative position, target-relative velocity, scalar-first quaternion, body rates, and fuel fraction. The action map was changed from a raw \([-1,1]\rightarrow[0,1]\) throttle mapping to a hover-relative throttle mapping. Without that change, early training spent too much of its capacity rediscovering a local operating point instead of learning when to brake:
+        </p>
+        <div class="math-block">
+          $$\pi_{\theta}^{flat}(a_T,\delta_p,\delta_y\mid o_{14}), \qquad
+          a_T,\delta_p,\delta_y\in[-1,1],$$
+          $$u_T =
+          \operatorname{clip}\left(
+          \frac{mg}{T_{\max}} + 0.35a_T,
+          u_{\min}, u_{\max}
+          \right),$$
+          $$\delta_{pitch}=a_p\delta_{\max}, \qquad
+          \delta_{yaw}=a_y\delta_{\max}.$$
+        </div>
+        <pre><code>observation = [
+    target_relative_position,
+    target_relative_velocity,
+    scalar_first_quaternion,
+    body_rates,
+    fuel_fraction,
+]
+
+action = [
+    hover_relative_throttle_delta,
+    pitch_gimbal_command,
+    yaw_gimbal_command,
+]</code></pre>
+        <p>
+          The reward was not left as one opaque scalar. It is decomposed into dense progress and safety terms plus terminal touchdown terms: altitude progress, lateral miss, vertical and horizontal speed, tilt, angular rate, control effort, and final success/failure criteria. This decomposition matters because the failure mode was not "PPO did nothing." The policy learned parts of the descent. The problem was joint satisfaction of all touchdown constraints.
+        </p>
+        <p>
+          A useful way to read the flat baseline is as a credit-assignment stress test. The same scalar action \(a_T\) must decide whether to descend, hover, or brake; at the same time, the two gimbal actions must rotate the thrust vector enough to correct lateral error without ruining vertical acceleration. The vertical acceleration channel is approximately
+        </p>
+        <div class="math-block">
+          $$\dot v_z \approx
+          \frac{T_{\max}u_T}{m}\cos\alpha - g + a_{aero,z},
+          \qquad
+          \alpha\approx\sqrt{\delta_p^2+\delta_y^2+\theta_{tilt}^2}.$$
+        </div>
+        <p>
+          That approximation explains why the flat policy is brittle near touchdown. A lateral correction that increases \(\alpha\) steals a small amount of vertical thrust exactly when the policy also needs to brake. The PPO objective sees this only through delayed terminal penalties, so the policy can improve one touchdown variable while quietly worsening another.
+        </p>
+        <p>
+          Curriculum also mattered. Training starts with easier altitude, lateral-offset, attitude, and disturbance ranges and ramps toward the nominal evaluation regime. Wind staging is used during training but not during evaluation. The evaluation remains tied to the locked Phase 1 scenarios so comparisons do not drift while the learned policy improves.
+        </p>
+        <p>
+          The best stabilized 50k flat PPO checkpoint still fails nominal touchdown. It reaches the ground but has large lateral error and a hard vertical touchdown. Continuing to 100k did not monotonically improve the policy; it regressed in the touchdown regime. That is one of the first useful lessons from the benchmark: more training under the same flat interface is not guaranteed to produce a safer controller when the objective couples several physical constraints.
+        </p>
+        <figure class="wide">
+          <img src="rocket-landing-assets/phase2a_ppo_vs_lqr_panel.png" alt="Flat PPO versus LQR comparison panel">
+          <figcaption>
+            Flat PPO against the locked LQR baseline. Source: outputs/phase2_rl/figures_50k/ppo_vs_phase1_panel.png. This comparison is why the flat PPO result is treated as a baseline rather than a solved controller.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="rocket-landing-assets/landing_flat_ppo.gif" alt="Animated flat PPO landing failure trajectory">
+          <figcaption>
+            Phase 2A flat PPO nominal rollout. Source: outputs/phase2_rl/eval_go_no_go_baseline_v2_default_seed7_50k/trajectory.csv and metrics.json. The policy learns pieces of the task but fails the locked touchdown criteria.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="hierarchy">
+        <h2>Hierarchical PPO</h2>
+        <p>
+          The hierarchical PPO phase tests a clean hypothesis: maybe the flat policy fails because the vertical and lateral-attitude problems interfere. The split is intentionally simple. A throttle policy receives only the reduced vertical-energy state \([h,v_z,m]\), while a TVC policy receives the full landing observation plus throttle context. The final controller is still evaluated in the full 6DOF simulator; the reduced-order throttle environment is a training subproblem, not a claim that the landing problem itself is one-dimensional.
+        </p>
+        <div class="math-block">
+          $$\pi_{throttle}: [h, v_z, m] \mapsto u_T,$$
+          $$\pi_{TVC}: [o_{landing}, u_T] \mapsto [\delta_{pitch}, \delta_{yaw}].$$
+        </div>
+        <div class="math-block">
+          $$\pi_H(a\mid x)=
+          \pi_T(u_T\mid h,v_z,\mu)\,
+          \pi_G(\delta_p,\delta_y\mid o_{14},c_T),$$
+          $$c_T=\left[
+          2u_T-1,\,
+          \frac{\dot u_T}{0.35/\Delta t},\,
+          \frac{v_z-v_{z,ref}(h)}{40},\,
+          \frac{v_{z,ref}(h)}{40},\,
+          \operatorname{clip}\left(1-\frac{h}{30},0,1\right)
+          \right].$$
+        </div>
+        <p>
+          This decomposition is attractive because it matches the way one might describe the task verbally: throttle manages vertical energy, TVC manages attitude and lateral motion. But the physics does not respect that separation perfectly. A throttle decision changes available time, dynamic pressure, velocity, and therefore the lateral/attitude recovery problem. A TVC decision changes attitude and thrust direction, which feeds back into vertical acceleration. The subsystems are separable for training convenience, not independent in the true dynamics.
+        </p>
+        <p>
+          The first pure hierarchy reached touchdown but failed on lateral and attitude metrics. Later throttle shaping improved reduced-order vertical touchdown speed; flare tracking reduced one obvious bottleneck. Adding coordination features to the TVC observation made throttle rate, vertical tracking error, flare progress, and the reference descent rate visible to the second policy. Even with those extra features, the pure frozen hierarchy did not solve touchdown.
+        </p>
+        <p>
+          The terminal metric penalty shows why the hierarchy was not simply "better flat PPO." The saved Phase 2B rollout reduced the vertical touchdown speed relative to Phase 2A, but paid for it with worse horizontal speed and tilt:
+        </p>
+        <div class="math-block">
+          $$r_{metric}^{2B}
+          =-8(10.122)-12(8.258)-10(12.530)-2(21.279)
+          \approx -347.9.$$
+        </div>
+        <p>
+          That number is close to the flat PPO terminal metric penalty, but the composition changed. Phase 2B made vertical speed less catastrophic and made lateral-attitude coordination more catastrophic. This is exactly the kind of diagnostic value we wanted from the hierarchy: it exposed which part of the decomposition was helping and which part was breaking the coupled landing problem.
+        </p>
+        <p>
+          This was a useful failure. The split improved parts of descent timing but exposed a coordination problem: a frozen throttle schedule can dominate the terminal regime before the TVC policy has enough coupled authority to recover lateral motion and attitude. The negative result justified a different next step: keep the learned decomposition where it helps, but give the TVC channel a stabilizing prior instead of asking PPO to relearn all low-level attitude behavior.
+        </p>
+        <figure class="wide">
+          <img src="rocket-landing-assets/phase2b_hierarchical_vs_baselines_panel.png" alt="Hierarchical PPO comparison panel against flat PPO and LQR">
+          <figcaption>
+            Phase 2B hierarchical PPO comparison. Source: outputs/phase2b_hierarchical_rl/figures_seed7_40k_50k_flare_tracking_v1/hierarchical_vs_baselines_panel.png. The split improves interpretability but does not solve the coupled touchdown criteria.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="rocket-landing-assets/landing_hierarchical_ppo.gif" alt="Animated hierarchical PPO landing failure trajectory">
+          <figcaption>
+            Phase 2B hierarchical PPO nominal rollout. Source: outputs/phase2b_hierarchical_rl/eval_nominal_seed7_40k_50k_flare_tracking_v1/trajectory.csv and metrics.json.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="hybrid">
+        <h2>Hybrid residual PPO</h2>
+        <p>
+          The hybrid residual controller changes the scientific question. The pure hierarchy asked whether structure alone was enough. It was not. The hybrid controller asks whether learning can be useful when it is assigned a narrower and more interpretable role. PPO no longer owns the entire TVC command. It learns a bounded residual around the LQR pitch/yaw command:
+        </p>
+        <div class="math-block">
+          $$u_{TVC} =
+          \operatorname{clip}\left(
+          u_{LQR} + \Delta u_{\pi},
+          -u_{max}, u_{max}
+          \right).$$
+        </div>
+        <p>
+          More explicitly, the promoted Phase 2C controller uses a TVC-only residual policy. The residual observation concatenates the flat 14-vector, the five vertical coordination features used in Phase 2B, and the two normalized LQR gimbal commands:
+        </p>
+        <div class="math-block">
+          $$o_{21}=\left[o_{14},c_T,
+          \frac{\delta_{LQR,p}}{\delta_{\max}},
+          \frac{\delta_{LQR,y}}{\delta_{\max}}
+          \right],$$
+          $$\Delta\delta_{\pi}=
+          \Delta\delta_{res}\pi_{\theta}^{res}(o_{21}),
+          \qquad
+          \Delta\delta_{res}=3^\circ.$$
+        </div>
+        <div class="math-block">
+          $$\delta =
+          \operatorname{clip}\left(
+          \delta_{LQR}(x)+\Delta\delta_{\pi},
+          -\delta_{\max},\delta_{\max}
+          \right).$$
+        </div>
+        <p>
+          That is the architectural difference from Phase 2A and Phase 2B. Phase 2A asks PPO to learn the full map from state to throttle and TVC. Phase 2B asks two PPO policies to learn throttle and TVC separately. Phase 2C asks PPO only for a bounded correction around a stabilizing gimbal prior, while throttle is handled by a learned prior plus explicit braking terms.
+        </p>
+        <p>
+          This changed the failure landscape immediately. The residual policy preserved the strong stabilizing behavior of the LQR prior while allowing the learned controller to correct small systematic errors. Horizontal speed, landing error, tilt, and angular-rate norm became very small. The remaining failure became almost entirely vertical touchdown speed.
+        </p>
+        <h3>Why vertical descent was the hard variable</h3>
+        <p>
+          By this point the benchmark had effectively separated five touchdown variables: lateral landing error, horizontal touchdown speed, tilt angle, angular-rate norm, and vertical touchdown speed. Phase 2C made the first four almost boring: landing error dropped to centimeter scale, horizontal velocity stayed far below the \(1.0\,\text{m/s}\) limit, tilt stayed far below \(10^\circ\), and angular rate stayed near zero. The one variable that refused to cooperate was vertical descent. That is why the rest of Phase 2C became less about "make PPO smarter" and more about "make the vertical braking constraint explicit enough that the controller cannot ignore it."
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Phase 2C variant</th>
+              <th>Landing error</th>
+              <th>Horizontal touchdown</th>
+              <th>Tilt</th>
+              <th>Angular rate</th>
+              <th>Vertical touchdown</th>
+              <th>Success</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Residual baseline</td>
+              <td>0.156 m</td>
+              <td>0.070 m/s</td>
+              <td>0.245 deg</td>
+              <td>0.0038 rad/s</td>
+              <td>-10.940 m/s</td>
+              <td>false</td>
+            </tr>
+            <tr>
+              <td>Overspeed v3 baseline</td>
+              <td>0.124 m</td>
+              <td>0.049 m/s</td>
+              <td>0.089 deg</td>
+              <td>0.0020 rad/s</td>
+              <td>-4.438 m/s</td>
+              <td>false</td>
+            </tr>
+            <tr>
+              <td>Energy assist</td>
+              <td>0.043 m</td>
+              <td>0.042 m/s</td>
+              <td>0.081 deg</td>
+              <td>0.0018 rad/s</td>
+              <td>-2.475 m/s</td>
+              <td>false</td>
+            </tr>
+            <tr>
+              <td>Stopping-distance floor</td>
+              <td>0.048 m</td>
+              <td>0.037 m/s</td>
+              <td>0.073 deg</td>
+              <td>0.0018 rad/s</td>
+              <td>-1.677 m/s</td>
+              <td>true</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          The residual architecture and LQR prior were already good enough for lateral-attitude control. The vertical channel needed a different intervention because it was governed by a one-dimensional energy inequality, not by small residual gimbal corrections.
+        </p>
+        <p>
+          The vertical channel then became a sequence of increasingly explicit prior-design experiments. A bounded learned throttle residual did not close the gap. A more touchdown-focused reduced-order throttle reward improved the reduced-order task slightly but did not move the full 6DOF controller enough. Naive altitude-gated penalties created hover or timeout behavior. Overspeed assists helped more than reward-only changes because they directly raised the throttle prior when the descent was unsafe. Brake floors improved the same idea by enforcing a smooth minimum throttle inside a near-ground overspeed condition.
+        </p>
+        <p>
+          The current nominal successful controller uses a stopping-distance floor. The logic is physically direct: if the current downward speed cannot be reduced to the target touchdown speed inside the remaining altitude, raise the prior throttle. The required deceleration estimate is
+        </p>
+        <div class="math-block">
+          $$a_{req}=\max\left(\frac{v_{down}^2-v_{touch}^2}{2\max(h,h_{floor})},0\right),$$
+          $$u_{floor}=\frac{m(g+a_{req})}{T_{max}}.$$
+        </div>
+        <p>
+          The floor is gated smoothly by altitude and acts as a lower bound, not a full takeover. The final prior composition is a maximum over the learned throttle prior, overspeed/energy assists, overspeed-armed brake floor, and stopping-distance floor. This is less elegant than a single end-to-end learned policy, but it is much easier to audit. Each added term answers a specific failure observed in saved rollouts.
+        </p>
+        <div class="math-block">
+          $$u_T =
+          \max\left(
+          u_{learned},
+          u_{learned}+\Delta u_{overspeed}+\Delta u_E,
+          u_{brake},
+          u_{stop}
+          \right),$$
+          $$u_T\leftarrow\operatorname{clip}(u_T,u_{\min},u_{\max}).$$
+        </div>
+        <h3>The hybrid controller, step by step</h3>
+        <p>
+          Written as an inference-time algorithm, Phase 2C is less mysterious than the name suggests. The residual policy never receives permission to overwrite the whole controller. It can only bend a prior that already has the right stabilizing shape:
+        </p>
+        <pre><code>input: full 6DOF state x, previous throttle u_prev
+
+u_lqr, delta_lqr = gain_scheduled_lqr(x)
+u_learned = frozen_throttle_policy(h, vz, fuel_fraction)
+
+c_T = coordination_features(x, u_learned, u_prev)
+o_21 = concat(o_14(x), c_T, normalize(delta_lqr))
+
+delta_res = residual_policy(o_21) * deg2rad(3.0)
+delta = clip(delta_lqr + delta_res, -gimbal_limit, gimbal_limit)
+
+du_overspeed = overspeed_assist(h, vz)
+du_energy = energy_assist(h, vz)
+u_brake = overspeed_brake_floor(h, vz)
+u_stop = stopping_distance_floor(h, vz, m)
+
+u = max(u_learned,
+        u_learned + du_overspeed + du_energy,
+        u_brake,
+        u_stop)
+
+return clip(u, min_throttle, max_throttle), delta</code></pre>
+        <p>
+          This algorithm box is also the audit trail. If the controller fails vertically, inspect the throttle prior stack. If it fails laterally or in attitude, inspect the LQR prior and residual TVC channel. The decomposition is imperfect, but it gives every failure a place to live.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Controller</th>
+              <th>Nominal success</th>
+              <th>Landing error</th>
+              <th>Vertical touchdown</th>
+              <th>Horizontal touchdown</th>
+              <th>Tilt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Phase 1 LQR</td>
+              <td>true</td>
+              <td>0.047 m</td>
+              <td>-0.654 m/s</td>
+              <td>0.040 m/s</td>
+              <td>0.111 deg</td>
+            </tr>
+            <tr>
+              <td>Phase 2A Flat PPO</td>
+              <td>false</td>
+              <td>12.188 m</td>
+              <td>-26.116 m/s</td>
+              <td>1.613 m/s</td>
+              <td>4.551 deg</td>
+            </tr>
+            <tr>
+              <td>Phase 2B Hierarchical PPO</td>
+              <td>false</td>
+              <td>12.530 m</td>
+              <td>-10.122 m/s</td>
+              <td>8.258 m/s</td>
+              <td>21.279 deg</td>
+            </tr>
+            <tr>
+              <td>Phase 2C Hybrid PPO</td>
+              <td>true</td>
+              <td>0.048 m</td>
+              <td>-1.677 m/s</td>
+              <td>0.037 m/s</td>
+              <td>0.073 deg</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          The table is generated from saved nominal metrics recorded in outputs/phase4_blog/controller_summary.json.
+        </p>
+        <figure class="wide">
+          <img src="rocket-landing-assets/phase2c_stopping_floor_panel.png" alt="Phase 2C stopping-floor hybrid comparison panel against baselines">
+          <figcaption>
+            Phase 2C stopping-floor comparison against LQR, flat PPO, and pure hierarchy. Source: outputs/phase2c_hybrid_rl/figures_seed7_50k_stopping_floor_v1/hybrid_vs_baselines_panel.png.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="energy-braking">
+        <h2>Energy constraint and throttle braking</h2>
+        <p>
+          The vertical failure mode eventually became the clearest part of the project. The hybrid controller had already made lateral error, horizontal touchdown speed, tilt, and angular rate small. What remained was a vertical-energy problem: the vehicle was arriving near the pad with too much downward kinetic energy for the remaining altitude.
+        </p>
+        <p>
+          The simplest way to see the constraint is to ignore drag and write the one-dimensional braking relation
+        </p>
+        <div class="math-block">
+          $$v_{touch}^2 = v_{down}^2 - 2a_{req}h,$$
+          $$a_{req} = \frac{v_{down}^2-v_{touch}^2}{2h}.$$
+        </div>
+        <p>
+          Here \(v_{down}=\max(-v_z,0)\), \(h\) is altitude remaining, and \(v_{touch}\) is the target downward touchdown speed. This is not a full guidance law; it is a feasibility check. If \(a_{req}\) exceeds what the engine can provide after gravity, the controller is already late.
+        </p>
+        <p>
+          The same relation can be read as a specific-energy statement. The amount of vertical kinetic energy per unit mass that must be removed before touchdown is
+        </p>
+        <div class="math-block">
+          $$\Delta e_k = \frac{1}{2}\left(v_{down}^2-v_{touch}^2\right),$$
+          $$a_{req}h = \Delta e_k.$$
+        </div>
+        <p>
+          For example, in the saved successful Phase 2C stopping-floor rollout, near \(h=5.02\,\text{m}\) the vehicle is still descending at \(v_{down}=6.52\,\text{m/s}\). With \(v_{touch}=0.8\,\text{m/s}\),
+        </p>
+        <div class="math-block">
+          $$\Delta e_k =
+          \frac{1}{2}(6.52^2-0.8^2)
+          \approx 20.9\,\text{J/kg},$$
+          $$a_{req} =
+          \frac{6.52^2-0.8^2}{2(5.02)}
+          \approx 4.16\,\text{m/s}^2.$$
+        </div>
+        <p>
+          That \(4.16\,\text{m/s}^2\) is upward acceleration in excess of what is needed merely to cancel gravity. With mass \(m\approx1209\,\text{kg}\), gravity \(g=9.80665\,\text{m/s}^2\), and \(T_{max}=18000\,\text{N}\), the raw throttle required to meet that braking demand is
+        </p>
+        <div class="math-block">
+          $$u_{raw} =
+          \frac{m(g+a_{req})}{T_{max}}
+          =
+          \frac{1209(9.80665+4.16)}{18000}
+          \approx 0.94.$$
+        </div>
+        <p>
+          This explains why light reward changes were not enough: by the last few meters, the vehicle is not choosing between two equally easy policies. It is close to a physical throttle boundary. At \(h\approx1.95\,\text{m}\), the same saved rollout has \(v_{down}=4.61\,\text{m/s}\):
+        </p>
+        <div class="math-block">
+          $$a_{req} =
+          \frac{4.61^2-0.8^2}{2(1.95)}
+          \approx 5.28\,\text{m/s}^2,$$
+          $$u_{raw}\approx
+          \frac{1206(9.80665+5.28)}{18000}
+          \approx 1.01.$$
+        </div>
+        <p>
+          The required raw throttle is already above the actuator limit, so the implemented floor can only ask for saturation. In the logged trajectory, throttle reaches \(1.0\) near \(h\approx0.93\,\text{m}\). The stopping floor did not make the problem easy; it made the controller brake early enough that saturation near the ground became survivable instead of hopeless.
+        </p>
+        <p>
+          The final throttle-prior stack has three conceptually different braking terms. The overspeed assist responds to velocity relative to the flare reference. The energy assist responds to excess vertical kinetic energy above a braking envelope. The stopping-distance floor asks whether the remaining altitude is sufficient to shed the current downward speed:
+        </p>
+        <div class="math-block">
+          $$u_{prior} =
+          \max\left(
+          u_{learned}+u_{overspeed}+u_{energy},
+          u_{brake\_floor},
+          u_{stopping\_floor}
+          \right).$$
+        </div>
+        <p>
+          The energy assist uses the reference envelope
+        </p>
+        <div class="math-block">
+          $$e_z = gh+\frac{1}{2}v_{down}^2,$$
+          $$v_{env}(h)=\sqrt{v_{touch}^2+2a_{brake}h},$$
+          $$e_{target}=gh+\frac{1}{2}v_{env}(h)^2,$$
+          $$e_{excess}=
+          \max\left[
+          e_z-e_{target},
+          0
+          \right].$$
+        </div>
+        <p>
+          The \(gh\) terms cancel algebraically, but keeping them in the definition is useful because the controller design is really about vertical specific energy, not just speed. The RL-facing assist then turns that scalar into a gated throttle increment:
+        </p>
+        <div class="math-block">
+          $$g_E(h)=
+          \operatorname{clip}\left(\frac{h_E-h}{h_E},0,1\right)^{p_E},$$
+          $$\Delta u_E =
+          \Delta u_{E,\max}g_E(h)
+          \left[
+          \operatorname{clip}\left(\frac{e_{excess}}{e_{scale}},0,1\right)
+          \right]^{p_{shape}}.$$
+        </div>
+        <p>
+          With \(a_{brake}=1.5\,\text{m/s}^2\), the same \(h=5.02\,\text{m}\) point has \(v_{env}\approx3.96\,\text{m/s}\). The actual \(6.52\,\text{m/s}\) descent therefore carries roughly
+          \(\frac{1}{2}(6.52^2-3.96^2)\approx13.4\,\text{J/kg}\)
+          of excess kinetic energy above the intended braking envelope. That is exactly the kind of scalar signal the energy assist was designed to expose.
+        </p>
+        <p>
+          With the Phase 2C energy settings \(h_E=35\,\text{m}\), \(p_E=1.5\), \(e_{scale}=40\,\text{J/kg}\), \(p_{shape}=0.8\), and \(\Delta u_{E,\max}=0.10\), that same point gives
+        </p>
+        <div class="math-block">
+          $$g_E(5.02)=\left(\frac{35-5.02}{35}\right)^{1.5}\approx0.79,$$
+          $$\Delta u_E\approx
+          0.10(0.79)\left(\frac{13.4}{40}\right)^{0.8}
+          \approx 0.033.$$
+        </div>
+        <p>
+          That number is small enough not to replace the learned throttle prior, but large enough to matter when the vehicle is near the actuator boundary. This is the core difference between "reward asks the policy to care about energy" and "the controller interface injects an energy-aware throttle prior." The former must be discovered through PPO updates; the latter is present at inference time whenever the saved rollout violates the braking envelope.
+        </p>
+        <p>
+          The sweep history tells the same story numerically. The first overspeed-assist sweep started from `overspeed_assist_v3_baseline`, which touched down at \(-4.438\,\text{m/s}\). Increasing the late-stage extra assist improved this to \(-4.315\,\text{m/s}\). Widening the late-stage subzone to \(3.5\,\text{m}\) and using \(0.08\) extra throttle improved it again to \(-4.263\,\text{m/s}\). Making the outer assist more aggressive regressed to \(-4.463\,\text{m/s}\), which suggested that "more throttle sooner" was not the right one-line answer.
+        </p>
+        <p>
+          A second focused sweep kept the outer gate fixed and varied only the local late-flare shape. The best candidate was the blended setting: \(4.0\,\text{m}\) late-stage altitude and \(0.10\) extra throttle, reaching \(-4.114\,\text{m/s}\). That was directionally correct but still a hard touchdown. The later brake-floor and energy-assist passes moved the vertical channel much more:
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Prior family</th>
+              <th>Vertical touchdown</th>
+              <th>Horizontal touchdown</th>
+              <th>Landing error</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Overspeed v3 baseline</td>
+              <td>-4.438 m/s</td>
+              <td>0.049 m/s</td>
+              <td>0.124 m</td>
+              <td>hard touchdown</td>
+            </tr>
+            <tr>
+              <td>Focused blended late flare</td>
+              <td>-4.114 m/s</td>
+              <td>0.049 m/s</td>
+              <td>0.121 m</td>
+              <td>hard touchdown</td>
+            </tr>
+            <tr>
+              <td>Overspeed brake floor</td>
+              <td>-4.069 m/s</td>
+              <td>0.045 m/s</td>
+              <td>0.107 m</td>
+              <td>hard touchdown</td>
+            </tr>
+            <tr>
+              <td>Energy assist</td>
+              <td>-2.475 m/s</td>
+              <td>0.042 m/s</td>
+              <td>0.043 m</td>
+              <td>hard touchdown</td>
+            </tr>
+            <tr>
+              <td>Stopping-distance floor</td>
+              <td>-1.677 m/s</td>
+              <td>0.037 m/s</td>
+              <td>0.048 m</td>
+              <td>success</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          The important point is not that the final controller found a magic throttle value. The important point is that each prior encoded a sharper form of the same physical constraint. Overspeed assist says "you are faster than the flare schedule." Energy assist says "you carry too much vertical kinetic energy." Stopping-distance floor says "given the altitude left, here is the minimum thrust needed to make the target touchdown speed even possible." The last statement is the most directly connected to the failure condition, and that is why it finally moved the nominal rollout across the locked success threshold.
+        </p>
+      </section>
+
+      <section id="ablation">
+        <h2>What actually made it work</h2>
+        <p>
+          The saved Phase 2C variants are not a perfect factorial ablation study, but they are enough to identify the mechanism. The big jump did not come from training longer or adding a larger neural network. It came from changing the interface: the lateral-attitude problem was handed to an LQR prior plus a bounded residual, while the vertical channel received increasingly direct braking structure.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Variant</th>
+              <th>What changed</th>
+              <th>Landing error</th>
+              <th>Horizontal touchdown</th>
+              <th>Vertical touchdown</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Residual baseline</td>
+              <td>LQR TVC prior plus bounded residual PPO; learned throttle prior unchanged</td>
+              <td>0.156 m</td>
+              <td>0.070 m/s</td>
+              <td>-10.944 m/s</td>
+              <td>hard touchdown</td>
+            </tr>
+            <tr>
+              <td>Overspeed assist</td>
+              <td>Add terminal throttle assist when descent is faster than the flare schedule</td>
+              <td>0.124 m</td>
+              <td>0.049 m/s</td>
+              <td>-4.438 m/s</td>
+              <td>hard touchdown</td>
+            </tr>
+            <tr>
+              <td>Brake floor</td>
+              <td>Add an overspeed-armed minimum throttle floor near the ground</td>
+              <td>0.107 m</td>
+              <td>0.045 m/s</td>
+              <td>-4.069 m/s</td>
+              <td>hard touchdown</td>
+            </tr>
+            <tr>
+              <td>Energy assist</td>
+              <td>Add throttle based on excess vertical specific energy</td>
+              <td>0.043 m</td>
+              <td>0.042 m/s</td>
+              <td>-2.475 m/s</td>
+              <td>hard touchdown</td>
+            </tr>
+            <tr>
+              <td>Stopping-distance floor</td>
+              <td>Add a lower bound from the deceleration needed to reach the touchdown-speed target</td>
+              <td>0.048 m</td>
+              <td>0.037 m/s</td>
+              <td>-1.677 m/s</td>
+              <td>success</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          The LQR prior and residual policy made the lateral variables small, but they did not solve vertical energy. Overspeed and brake-floor logic helped, but the controller was still late. Energy assist moved the touchdown speed close to the threshold. The stopping-distance floor finally bound the prior to the exact question that decides the terminal failure: can the current downward speed be reduced inside the altitude that remains?
+        </p>
+        
+      </section>
+
+      <section id="monte-carlo">
+        <h2>Where it breaks</h2>
+        <p>
+          The Phase 3 evaluation runs four controllers across four composite disturbance levels with 500 episodes per level. Each level bundles wind, gust, and thrust-misalignment settings. The point is not to hide failures behind one nominal trace. The point is to make robustness visible.
+        </p>
+        <p>
+          This distinction matters because the nominal result and the robustness result answer different questions. The nominal Phase 2C stopping-floor controller is the first saved learned-controller path that satisfies the locked touchdown criteria in the fixed nominal scenario. The Monte Carlo evaluation asks whether that success survives randomized episodes under disturbance. It does not make the learned controller more realistic than the model permits; it makes the limitations measurable.
+        </p>
+        <p>
+          The saved Monte Carlo summary reports success rates, landing error, vertical touchdown velocity, tilt, and fuel use by controller and disturbance level. LQR remains extremely strong. Flat PPO and pure hierarchy do not become safe under disturbance. Hybrid residual PPO is much better than the other learned baselines, but the robustness plot still shows why the classical baseline remains a serious comparator rather than a ceremonial control group.
+        </p>
+        <p>
+          The hybrid result has a clear cliff. It succeeds in all 500 episodes at levels 0 and 1, succeeds in 458 of 500 episodes at level 2, and fails all 500 level-3 episodes by hard touchdown. Using the binomial approximation above, the level-2 success rate is \(91.6\%\pm2.4\) percentage points. That is strong enough to show the residual-plus-prior interface is not just a nominal trick, but not strong enough to claim broad robustness.
+        </p>
+        <p>
+          There are also sensitivity questions that we cannot yet answer for the learned controllers. Phase 1 has saved mass and disturbance sweeps, but the full learned-controller stack has not yet been rerun across a broad vehicle-mass grid, multi-seed training grid, stopping-floor parameter grid, or domain-randomized training regime. Those are not cosmetic additions. They are the next tests that would decide whether Phase 2C is a robust control design or a strong artifact-specific controller.
+        </p>
+        <figure class="wide">
+          <img src="rocket-landing-assets/mc_success_rates.gif" alt="Animated Monte Carlo success rates by disturbance level">
+          <figcaption>
+            Animated Monte Carlo success-rate strip. Source: outputs/phase3_evaluation/mc_seed7_500ep_composite_levels_v1/summary_by_controller_level.csv.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="rocket-landing-assets/mc_success_rates.png" alt="Monte Carlo success rate comparison">
+          <figcaption>
+            Static success-rate panel generated from the same Phase 3 summary CSV.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="rocket-landing-assets/dispersion_panel.png" alt="Monte Carlo landing dispersion panel">
+          <figcaption>
+            Landing dispersion panel copied from outputs/phase3_evaluation/mc_seed7_500ep_composite_levels_v1/figures/dispersion_panel.png.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="rocket-landing-assets/failure_modes.png" alt="Monte Carlo failure mode counts">
+          <figcaption>
+            Failure taxonomy panel copied from outputs/phase3_evaluation/mc_seed7_500ep_composite_levels_v1/figures/failure_modes.png.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="failed-decisions">
+        <h2>The failures were the signal</h2>
+        
+        <p>
+          Flat PPO failed broadly: hard touchdown, lateral miss, and horizontal-speed failures appeared together. That pointed away from "just tune touchdown reward" and toward a decomposition problem. Pure hierarchy changed the failure composition but did not solve it: vertical speed improved relative to flat PPO, while lateral-attitude metrics became worse. That pointed toward coordination failure between a frozen throttle policy and the TVC policy. Phase 2C then made lateral-attitude behavior small enough that the remaining error was almost purely vertical, which pointed toward energy-aware throttle priors.
+        </p>
+        <p>
+          The failure list below is therefore a design history:
+        </p>
+        <ul>
+          <li>Stronger lateral reward shaping did not make pure hierarchy land safely; it often degraded the full rollout.</li>
+          <li>Making TVC starts easier through a near-pad curriculum did not solve the terminal coordination problem.</li>
+          <li>Adding coordination features to the TVC observation improved observability but did not create enough coupling by itself.</li>
+          <li>A bounded learned throttle residual around the current throttle prior preserved lateral quality but worsened vertical touchdown speed.</li>
+          <li>A weak physics-guided throttle floor was mostly neutral because it did not bind over the existing learned-plus-assisted prior.</li>
+          <li>Reward-only near-ground refinements produced much smaller improvements than structured prior-side braking.</li>
+        </ul>
+        <p>
+          The common pattern is that reward shaping helped only when the policy interface already made the right behavior discoverable. When the interface was wrong, heavier penalties made policies exploit the wrong part of the task: hover instead of descend, reduce one metric while sacrificing another, or preserve attitude while still touching down too hard. The strongest improvements came from making the control structure match the failure mode: LQR prior for lateral-attitude stabilization, and physically interpretable throttle floors for terminal vertical braking.
+        </p>
+        <div class="note">
+          <p>
+            The useful pattern was not "PPO beats control." The useful pattern was "PPO works best here when the interface gives it a stabilizing prior and leaves it a bounded, interpretable correction problem."
+          </p>
+        </div>
+      </section>
+
+      <section id="conclusion">
+        <h2>What would make this stronger</h2>
+        <p>
+          The simulator is intentionally modest about realism, but strict about control-relevant structure: variable mass, quaternion attitude, lateral-attitude coupling, TVC limits, atmosphere, aerodynamics, and disturbances stay in the loop.
+        </p>
+        <p>
+          The core lesson is that problem decomposition matters more than just adding a learned policy. Flat PPO struggled because the task couples vertical energy, lateral motion, and attitude. Pure hierarchy helped isolate responsibilities but made terminal coordination brittle. Hybrid residual PPO worked because the classical prior handled stabilizing structure while learning focused on residual corrections and vertical-prior shaping.
+        </p>
+        <p>
+          The limitations are substantial. The simulator does not model exact Falcon 9 geometry, mission operations, entry dynamics, boostback, landing-burn mode logic, high-fidelity aerodynamics, engine startup transients, landing-leg contact dynamics, or SpaceX flight software. Yaw is underactuated in the current single-centered-engine model and is excluded from success criteria. The current learned-controller results are also still seed- and artifact-specific; broader training sweeps would be needed before making stronger claims about algorithmic superiority.
+        </p>
+        <h3>The next evidence gap</h3>
+        <p>
+          The next evidence gap is breadth. Reusable-launch-vehicle guidance and control, residual reinforcement learning, hierarchical RL, and safety-filtered learning all touch this project from different directions, but the strongest version of the claim would need broader seed sweeps, cleaner ablations, and learned-controller sensitivity runs. The claim should stay narrow even after those additions. This is a Falcon 9-inspired control benchmark with simplified atmosphere and aerodynamics, not an operational landing-burn reconstruction. The most useful extensions are therefore the ones that change the control question rather than the ones that merely add detail: TVLQR, actuator dynamics, richer wind fields, domain randomization, policy distillation, and an explicit phase-based terminal-guidance layer.
+        </p>
+        <p>
+          Future work should therefore move in two directions at once. The physics model should add only realism that changes the control question in a meaningful way: better aero, explicit yaw actuation, sensor delay/noise in the controller loop, actuator dynamics, and phase-based terminal guidance. The learning side should focus less on unconstrained end-to-end policies and more on interfaces that preserve auditability: residual policies, safety filters, structured priors, and evaluation protocols that make failures harder to hide.
+        </p>
+        
+      </section>
+      <footer class="article-footer">
+        <a class="back-to-top" href="#top">Back to top</a>
+      </footer>
+    </article>
+  </main>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+  <script>
+    const rootEl = document.documentElement;
+    const themeToggle = document.querySelector('.theme-toggle');
+
+    function setTheme(theme) {
+      rootEl.dataset.theme = theme;
+      localStorage.setItem('theme', theme);
+      themeToggle.innerHTML = theme === 'dark'
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.2A7.4 7.4 0 0 1 9.8 3a8.7 8.7 0 1 0 11.2 11.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+      themeToggle.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+      themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    }
+
+    const savedTheme = localStorage.getItem('theme');
+    const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    setTheme(savedTheme || preferredTheme);
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(rootEl.dataset.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\[', right: '\\]', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+</body>
+</html>

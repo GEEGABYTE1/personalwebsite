@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>do we have to compromise what RL is allowed to optimize in the context of descent physics? - Jaival Patel</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <link rel="stylesheet" href="research-notes.css" />
+</head>
+<body>
+  <main class="notes-shell">
+    <nav class="notes-nav">
+      <div class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../research-notes.html">Research Notes</a>
+        <a href="../research-work.html">Research Work</a>
+        <a href="../projects.html">Systems Work</a>
+      </div>
+      <button class="theme-toggle" type="button"></button>
+    </nav>
+    <article class="note">
+      <header class="note-header">
+        <div class="page-kicker">Apr 210, 2026</div>
+        <h1>Do We Have to Compromise What RL Is Allowed to Optimize in the Context of Rocket Descent?</h1>
+      </header>
+      <p>Reinforcement learning is often framed as a method capable of solving control problems end-to-end. In the context of rocket landing, this leads to a natural assumption: given state variables such as position, velocity, and orientation, an RL policy should be able to output optimal control actions like throttle and thrust vectoring, and learn everything from interaction alone. While this is theoretically possible, it assumes that all variables in the system are equally suitable for learning. In practice, they are not.</p>
+<p>A rocket landing system is not a uniform optimization problem. Different components of the dynamics are governed by fundamentally different types of constraints. Some relationships are tightly dictated by physics, while others involve uncertainty, coupling, or environmental variability. Treating all variables as equally learnable forces the RL agent to rediscover structure that is already known, increasing the complexity of the learning problem and often leading to unstable or inefficient behaviour.</p>
+<p>The vertical descent profile illustrates this clearly. A safe landing requires reducing vertical velocity to zero exactly at ground contact, which is not an arbitrary objective but a constrained braking problem. The relationship between altitude and vertical velocity follows a known form derived from kinematics:</p>
+<p>$$v_z = -\sqrt{v_{\text{touch}}^2 + 2a_{\text{brake}}h}$$</p>
+<p>This equation defines the class of trajectories that guarantee a feasible stop under a given deceleration limit. It already encodes gravity, thrust constraints, and stopping distance. When RL is given full control over throttle without any structure, it is effectively tasked with discovering this relationship through trial and error. This introduces unnecessary variance into the policy and often results in late braking, oscillatory control, or failure to converge.</p>
+<p>This leads to a more fundamental insight:</p>
+<blockquote>
+<p>When designing an RL system, the key decision is not only how to define the reward or architecture, but which variables are even allowed to be optimized by learning. Including a variable in the action space assigns responsibility to the agent to discover its correct behaviour. If that behaviour is already well-defined by physics, this decision increases the difficulty of the problem without adding value.</p>
+</blockquote>
+<p>A more effective approach is to selectively constrain parts of the system while leaving others open to learning. This can be achieved through decomposition or by embedding physical constraints directly into the control logic. Separating vertical control from lateral and rotational control reduces coupling and simplifies the learning task. Introducing constraints such as minimum throttle levels or safe operating regions removes physically invalid behaviours from the action space. These changes do not reduce the capability of the system, they reduce the burden on the learning algorithm by incorporating prior knowledge.</p>
+<h3>Case Study: Phase 2B to Phase 2C</h3>
+<p>In our [rocket landing experiments](), this tradeoff became clear during the transition from Phase 2B to Phase 2C. Phase 2B used a decomposed RL architecture where the throttle policy handled vertical descent and the TVC policy handled lateral position and attitude stabilization. This reduced the burden on the agent by separating the problem into smaller control tasks. However, even with decomposition, the vertical descent problem remained difficult. The agent could stabilize attitude and reduce horizontal error, but it still struggled to consistently achieve safe vertical touchdown speeds.</p>
+<p>This failure was revealing. The issue was not that RL could not control the system at all. The lateral and attitude components improved significantly. The problem was that vertical braking required precise timing. If the throttle policy delayed braking even slightly, the vehicle would reach the ground with excessive downward velocity. This indicated that vertical descent is not a domain where unrestricted learning is effective.</p>
+<p>Phase 2C introduced a more structured hybrid approach. Instead of allowing the policy to freely choose any throttle command, a braking constraint was added to enforce a minimum throttle level when the rocket was descending too quickly near the ground. This effectively encoded a non-negotiable physical requirement: if altitude is low and vertical velocity is high, braking must increase. RL remained part of the system, but it was no longer permitted to violate basic feasibility constraints.</p>
+<p>This shifted the role of RL. In Phase 2B, RL was responsible for discovering both the descent strategy and the control corrections. In Phase 2C, the physically constrained component handled the core braking behavior, while RL focused on refining the trajectory, stabilizing attitude, and adapting to coupled dynamics. The improvement in performance did not come from a more powerful algorithm, but from a clearer separation between what should be learned and what should be enforced.</p>
+<p>This example illustrates a broader principle. When RL fails in control systems, the issue is not always insufficient training or model capacity. In many cases, the failure arises from allowing the agent to optimize variables that are already governed by strict physical relationships. Removing those variables from the learning problem often leads to more stable and efficient solutions.</p>
+<p>The question, then, is not whether reinforcement learning can solve rocket landing, but which parts of the problem should be assigned to it. The answer lies in distinguishing between variables that require adaptation and those that are already constrained by physics. Reinforcement learning is most effective when it is applied selectively, as a tool for handling uncertainty and complexity rather than rediscovering known structure.</p>
+    </article>
+  </main>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+<script>
+const rootEl = document.documentElement;
+const themeToggle = document.querySelector('.theme-toggle');
+function setTheme(theme) {
+  rootEl.dataset.theme = theme;
+  localStorage.setItem('theme', theme);
+  themeToggle.innerHTML = theme === 'dark'
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.2A7.4 7.4 0 0 1 9.8 3a8.7 8.7 0 1 0 11.2 11.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+  themeToggle.setAttribute('aria-label', 'Switch to ' + (theme === 'dark' ? 'light' : 'dark') + ' mode');
+  themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+}
+const savedTheme = localStorage.getItem('theme');
+const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+setTheme(savedTheme || preferredTheme);
+themeToggle.addEventListener('click', () => setTheme(rootEl.dataset.theme === 'dark' ? 'light' : 'dark'));
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ],
+      throwOnError: false
+    });
+  }
+});
+</script>
+</body>
+</html>
