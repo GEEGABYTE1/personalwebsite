@@ -1,0 +1,77 @@
+{
+  "generated_by": "phase4_blog/generate_blog_assets.py",
+  "claim_boundary": "Assets visualize a Falcon 9-inspired research benchmark and saved controller artifacts; they are not exact Falcon 9 flight reconstructions.",
+  "landing_gifs": {
+    "phase1_lqr": {
+      "path": "outputs/phase4_blog/landing_lqr.gif",
+      "source_trajectory": "outputs/phase1_evaluation/runs/scenario_table__nominal/trajectory.csv",
+      "source_metrics": "outputs/phase1_evaluation/runs/scenario_table__nominal/metrics.json",
+      "frame_count": 58,
+      "duration_ms": 70
+    },
+    "phase2a_flat_ppo": {
+      "path": "outputs/phase4_blog/landing_flat_ppo.gif",
+      "source_trajectory": "outputs/phase2_rl/eval_go_no_go_baseline_v2_default_seed7_50k/trajectory.csv",
+      "source_metrics": "outputs/phase2_rl/eval_go_no_go_baseline_v2_default_seed7_50k/metrics.json",
+      "frame_count": 58,
+      "duration_ms": 70
+    },
+    "phase2b_hierarchical_ppo": {
+      "path": "outputs/phase4_blog/landing_hierarchical_ppo.gif",
+      "source_trajectory": "outputs/phase2b_hierarchical_rl/eval_nominal_seed7_40k_50k_flare_tracking_v1/trajectory.csv",
+      "source_metrics": "outputs/phase2b_hierarchical_rl/eval_nominal_seed7_40k_50k_flare_tracking_v1/metrics.json",
+      "frame_count": 58,
+      "duration_ms": 70
+    },
+    "phase2c_hybrid_ppo": {
+      "path": "outputs/phase4_blog/landing_hybrid_ppo.gif",
+      "source_trajectory": "outputs/phase2c_hybrid_rl/eval_nominal_seed7_50k_stopping_floor_v1/trajectory.csv",
+      "source_metrics": "outputs/phase2c_hybrid_rl/eval_nominal_seed7_50k_stopping_floor_v1/metrics.json",
+      "frame_count": 58,
+      "duration_ms": 70
+    }
+  },
+  "monte_carlo": {
+    "success_rates_png": {
+      "path": "outputs/phase4_blog/mc_success_rates.png",
+      "source": "outputs/phase3_evaluation/mc_seed7_500ep_composite_levels_v1/summary_by_controller_level.csv"
+    },
+    "success_rates_gif": {
+      "path": "outputs/phase4_blog/mc_success_rates.gif",
+      "source": "outputs/phase3_evaluation/mc_seed7_500ep_composite_levels_v1/summary_by_controller_level.csv",
+      "frame_count": 4
+    },
+    "copied_figures": {
+      "dispersion_panel.png": {
+        "path": "outputs/phase4_blog/dispersion_panel.png",
+        "source": "outputs/phase3_evaluation/mc_seed7_500ep_composite_levels_v1/figures/dispersion_panel.png"
+      },
+      "failure_modes.png": {
+        "path": "outputs/phase4_blog/failure_modes.png",
+        "source": "outputs/phase3_evaluation/mc_seed7_500ep_composite_levels_v1/figures/failure_modes.png"
+      }
+    }
+  },
+  "article_figures": {
+    "phase1_trajectory_evidence_panel.png": {
+      "path": "outputs/phase4_blog/phase1_trajectory_evidence_panel.png",
+      "source": "outputs/phase1_figures/trajectory_evidence_panel.png"
+    },
+    "phase2a_ppo_vs_lqr_panel.png": {
+      "path": "outputs/phase4_blog/phase2a_ppo_vs_lqr_panel.png",
+      "source": "outputs/phase2_rl/figures_50k/ppo_vs_phase1_panel.png"
+    },
+    "phase2b_hierarchical_vs_baselines_panel.png": {
+      "path": "outputs/phase4_blog/phase2b_hierarchical_vs_baselines_panel.png",
+      "source": "outputs/phase2b_hierarchical_rl/figures_seed7_40k_50k_flare_tracking_v1/hierarchical_vs_baselines_panel.png"
+    },
+    "phase2c_stopping_floor_panel.png": {
+      "path": "outputs/phase4_blog/phase2c_stopping_floor_panel.png",
+      "source": "outputs/phase2c_hybrid_rl/figures_seed7_50k_stopping_floor_v1/hybrid_vs_baselines_panel.png"
+    }
+  },
+  "controller_summary": {
+    "path": "outputs/phase4_blog/controller_summary.json"
+  },
+  "website_asset_dir": "phase4_blog/rocket-landing-assets"
+}

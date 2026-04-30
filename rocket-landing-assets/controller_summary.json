@@ -1,0 +1,42 @@
+[
+  {
+    "controller_id": "phase1_lqr",
+    "label": "Phase 1 LQR",
+    "success": true,
+    "landing_position_error_m": 0.047026087539138284,
+    "vertical_touchdown_velocity_mps": -0.6542858510416673,
+    "horizontal_touchdown_velocity_mps": 0.04010331709429201,
+    "tilt_angle_deg": 0.11121061354571216,
+    "source_metrics": "outputs/phase1_evaluation/runs/scenario_table__nominal/metrics.json"
+  },
+  {
+    "controller_id": "phase2a_flat_ppo",
+    "label": "Phase 2A Flat PPO",
+    "success": false,
+    "landing_position_error_m": 12.18792647773572,
+    "vertical_touchdown_velocity_mps": -26.115896684772785,
+    "horizontal_touchdown_velocity_mps": 1.6133698520864697,
+    "tilt_angle_deg": 4.551059253765473,
+    "source_metrics": "outputs/phase2_rl/eval_go_no_go_baseline_v2_default_seed7_50k/metrics.json"
+  },
+  {
+    "controller_id": "phase2b_hierarchical_ppo",
+    "label": "Phase 2B Hierarchical PPO",
+    "success": false,
+    "landing_position_error_m": 12.530370693424567,
+    "vertical_touchdown_velocity_mps": -10.12233467303703,
+    "horizontal_touchdown_velocity_mps": 8.257781404689696,
+    "tilt_angle_deg": 21.279107118084177,
+    "source_metrics": "outputs/phase2b_hierarchical_rl/eval_nominal_seed7_40k_50k_flare_tracking_v1/metrics.json"
+  },
+  {
+    "controller_id": "phase2c_hybrid_ppo",
+    "label": "Phase 2C Hybrid PPO",
+    "success": true,
+    "landing_position_error_m": 0.04818607017530462,
+    "vertical_touchdown_velocity_mps": -1.6766781683450724,
+    "horizontal_touchdown_velocity_mps": 0.03719054534537687,
+    "tilt_angle_deg": 0.07332856981805448,
+    "source_metrics": "outputs/phase2c_hybrid_rl/eval_nominal_seed7_50k_stopping_floor_v1/metrics.json"
+  }
+]
