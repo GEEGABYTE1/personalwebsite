@@ -48,13 +48,14 @@ function protectMath(markdown) {
   const text = markdown
     .replace(/\$\$[\s\S]*?\$\$/g, save)
     .replace(/\\\[[\s\S]*?\\\]/g, save)
-    .replace(/\\\([\s\S]*?\\\)/g, save);
+    .replace(/\\\([\s\S]*?\\\)/g, save)
+    .replace(/(^|[^\\$])\$(?!\$)([^\n$]+?)(?<!\\)\$/g, (_, prefix, math) => `${prefix}${save(`$${math}$`)}`);
 
   return { text, stash };
 }
 
 function restoreMath(html, stash) {
-  return html.replace(/@@MATH_(\d+)@@/g, (_, index) => stash[Number(index)]);
+  return html.replace(/@@MATH_(\d+)@@/g, (_, index) => escapeHtml(stash[Number(index)]));
 }
 
 function inlineMarkdown(text) {
@@ -237,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMathInElement(document.body, {
       delimiters: [
         {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
         {left: '\\\\[', right: '\\\\]', display: true},
         {left: '\\\\(', right: '\\\\)', display: false}
       ],
