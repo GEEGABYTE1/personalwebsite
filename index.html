@@ -126,15 +126,11 @@
       mask-image: linear-gradient(to bottom, transparent 0%, black 18%);
     }
     #scene {
-      font-family: var(--font-mono);
-      font-size: 7.4px;
-      line-height: 1.05;
-      white-space: pre;
-      color: var(--fg);
       letter-spacing: 0;
       display: block;
       user-select: none;
       width: 100%;
+      height: 420px;
     }
 
     h1 {
@@ -210,13 +206,14 @@
     </div>
   </div>
 
-  <div class="scene-wrap"><pre id="scene"></pre></div>
+  <div class="scene-wrap"><canvas id="scene" aria-label="Animated ASCII solar system"></canvas></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
 //  FULL-WIDTH ASCII SOLAR SYSTEM — dynamic W based on window
 // ═══════════════════════════════════════════════════════════════════════════
 const sceneEl = document.getElementById('scene');
+const sceneCtx = sceneEl.getContext('2d');
 const rootEl = document.documentElement;
 const themeToggle = document.querySelector('.theme-toggle');
 
@@ -248,6 +245,16 @@ let W = 120, H = 31; // will be recalculated
 function recalcDimensions() {
   W = Math.max(60, Math.floor(window.innerWidth / CHAR_W));
   H = Math.max(22, Math.floor(SCENE_HEIGHT_PX / CHAR_H));
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = W * CHAR_W;
+  const cssH = H * CHAR_H;
+  sceneEl.style.width = `${cssW}px`;
+  sceneEl.style.height = `${cssH}px`;
+  sceneEl.width = Math.round(cssW * dpr);
+  sceneEl.height = Math.round(cssH * dpr);
+  sceneCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  sceneCtx.font = `300 7.4px ${getComputedStyle(rootEl).getPropertyValue('--font-mono')}`;
+  sceneCtx.textBaseline = 'top';
 }
 recalcDimensions();
 
@@ -263,6 +270,11 @@ const len3 = v => Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
 const nrm3 = v => { const l=len3(v); return [v[0]/l,v[1]/l,v[2]/l]; };
 const LIGHT = nrm3([0.55,-0.75,0.5]);
 const ASPECT = 2.08;
+const putChar = (buf, x, y, ch) => {
+  if(x>=0&&x<W&&y>=0&&y<H&&ch!==' ') buf[y][x]=ch;
+};
+const shadeIndex = (brightness, pal) =>
+  Math.min(Math.max(Math.floor(brightness*(pal.length-1)),2),pal.length-1);
 
 // ── Stars (regenerate when W/H change) ─────────────────────────────────────
 let STARS = [];
@@ -325,12 +337,13 @@ function drawSphere(buf, zbuf, cx, cy, rx, ry, rot, pal) {
       const tHit=Math.sqrt(disc)/(2*At);
       if(tHit<=zbuf[j][i]) continue;
       zbuf[j][i]=tHit;
-      const xH=cosR*px+sinR*tHit, yH=py, zH=-sinR*px+cosR*tHit;
+      const xH=px, yH=py, zH=tHit;
+      const banding=0.08*Math.sin((cosR*xH+sinR*zH)*0.9);
       const n=nrm3([2*xH*ia,2*yH*ib,2*zH*ia]);
       const d=Math.max(0,dot3(n,LIGHT));
       const sp=Math.pow(Math.max(0,dot3(n,LIGHT)),12)*0.3;
-      const b=0.12+0.68*d+sp;
-      const idx=Math.min(Math.max(Math.floor(b*(pal.length-1)),0),pal.length-1);
+      const b=0.2+0.62*d+sp+banding;
+      const idx=shadeIndex(b,pal);
       buf[j][i]=pal[idx];
     }
   }
@@ -402,38 +415,50 @@ function drawOrbit(buf, cx, cy, orbitR, tilt) {
 
 // ── Rocket ───────────────────────────────────────────────────────────────────
 const RKBODY=[
-  '   /\\   ',
-  '  /##\\  ',
-  '-[====]->',
-  '  \\##/  ',
-  '   \\/   ',
+  '     /\\   ',
+  '`   /##\\  ',
+  '≈≈-[====]->',
+  '`   \\##/  ',
+  '     \\/   ',
 ];
 const RK_CY=2;
+const RK_W=Math.max(...RKBODY.map(line=>line.length));
 
 function drawRocket(buf, rx, ry) {
-  const sx=Math.round(rx);
+  const sx=Math.round(rx)-3;
+  const sy=Math.round(ry)-RK_CY;
   for(let row=0;row<RKBODY.length;row++){
-    const y=Math.round(ry)-RK_CY+row;
+    const y=sy+row;
     if(y<0||y>=H) continue;
-    const line=RKBODY[row];
-    for(let c=0;c<line.length;c++){
+    for(let c=0;c<RK_W;c++){
       const x=sx+c;
-      if(x<0||x>=W||line[c]===' ') continue;
-      buf[y][x]=line[c];
+      if(x>=0&&x<W) buf[y][x]=' ';
     }
   }
-  // Exhaust
-  for(let fi=0;fi<3;fi++){
-    const fx=sx-1-fi; const cy2=Math.round(ry);
-    if(fx>=0&&fx<W){
-      if(fi===0){ buf[cy2-1][fx]='`'; buf[cy2][fx]='~'; buf[cy2+1][fx]='`'; }
-      else if(fi===1){ buf[cy2][fx]='≈'; }
+  for(let row=0;row<RKBODY.length;row++){
+    const line=RKBODY[row];
+    for(let c=0;c<line.length;c++){
+      putChar(buf,sx+c,sy+row,line[c]);
     }
   }
 }
 
 // ── Main loop ────────────────────────────────────────────────────────────────
-function render(t) {
+function paintBuffer(buf) {
+  const styles = getComputedStyle(rootEl);
+  sceneCtx.clearRect(0,0,sceneEl.width,sceneEl.height);
+  sceneCtx.fillStyle = styles.getPropertyValue('--fg').trim();
+  sceneCtx.font = `300 7.4px ${styles.getPropertyValue('--font-mono')}`;
+  sceneCtx.textBaseline = 'top';
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      const ch=buf[y][x];
+      if(ch!==' ') sceneCtx.fillText(ch,x*CHAR_W,y*CHAR_H);
+    }
+  }
+}
+
+function drawFrame(t) {
   const sun     = getSun();
   const planets = getPlanets(sun);
 
@@ -464,7 +489,7 @@ function render(t) {
   pPos.sort((a,b)=>a.z-b.z);
 
   for(const p of pPos){
-    const rot=t*0.001*p.speed*15;
+    const rot=t*0.001*p.speed*5;
     if(p.rings) drawRings(buf,zbuf,p.scx,p.scy,p.rings.rx,p.rings.ry,p.rings.irx,p.rings.iry,true);
     drawSphere(buf,zbuf,p.scx,p.scy,p.r,p.ry,rot,p.pal);
     if(p.rings) drawRings(buf,zbuf,p.scx,p.scy,p.rings.rx,p.rings.ry,p.rings.irx,p.rings.iry,false);
@@ -477,29 +502,38 @@ function render(t) {
     const rx=-10+ph*(W+20);
     const baseY=H*0.28;
     const ry=baseY+Math.sin(ph*Math.PI*3)*Math.min(5, H*0.15);
-    if(rx>-10&&rx<W+2) drawRocket(buf,rx,ry);
-    for(let tr=1;tr<=8;tr++){
-      const tx=Math.round(rx)-RKBODY[0].length-tr;
+    for(let tr=8;tr>=1;tr--){
+      const tx=Math.round(rx)-RK_W-tr;
       const ty=Math.round(baseY+Math.sin(((ph*(W+20)-tr)/(W+20))*Math.PI*3)*Math.min(5,H*0.15));
       if(tx>=0&&tx<W&&ty>=0&&ty<H&&buf[ty][tx]===' ')
         buf[ty][tx]=tr<=3?'·':' ';
     }
+    if(rx>-10&&rx<W+2) drawRocket(buf,rx,ry);
   }
 
-  // No border — scene transitions naturally from page content
+  paintBuffer(buf);
+}
 
-  sceneEl.textContent = buf.map(r=>r.join('')).join('\n');
-  requestAnimationFrame(render);
+let lastFrame = 0;
+function tick(t) {
+  if(t-lastFrame>66) {
+    drawFrame(t);
+    lastFrame=t;
+  }
+  requestAnimationFrame(tick);
 }
 
 // ── Resize handler ────────────────────────────────────────────────────────
 let resizeTimer;
 window.addEventListener('resize', ()=>{
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(()=>{ recalcDimensions(); buildStars(); }, 120);
+  resizeTimer = setTimeout(()=>{
+    recalcDimensions();
+    buildStars();
+  }, 120);
 });
 
-requestAnimationFrame(render);
+requestAnimationFrame(tick);
 </script>
 </body>
 </html>
