@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning-Augmented MPC for Reentry Attitude Control - Jaival Patel</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg: #ffffff;
+      --fg: #111111;
+      --text: #333333;
+      --muted: #777777;
+      --soft: #cccccc;
+      --surface: #f7f7f7;
+      --surface-2: #fbfbfb;
+      --border: #e4e4e4;
+      --toggle-bg: #f5f5f5;
+      --toggle-border: #dddddd;
+      --font-sans: 'Lora', Georgia, serif;
+      --font-mono: 'Geist Mono', 'Courier New', monospace;
+    }
+    [data-theme="dark"] {
+      --bg: #111111;
+      --fg: #f3f3f3;
+      --text: #d5d5d5;
+      --muted: #999999;
+      --soft: #555555;
+      --surface: #181818;
+      --surface-2: #141414;
+      --border: #333333;
+      --toggle-bg: #1b1b1b;
+      --toggle-border: #333333;
+    }
+    html {
+      color-scheme: light;
+      scroll-behavior: smooth;
+    }
+    html[data-theme="dark"] { color-scheme: dark; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.72;
+      margin: 0;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    a {
+      color: var(--fg);
+      text-decoration: underline;
+      text-decoration-color: var(--soft);
+      text-underline-offset: 3px;
+      transition: text-decoration-color 0.15s;
+    }
+    a:hover { text-decoration-color: var(--fg); }
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 44px 32px 84px;
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      margin-bottom: 58px;
+    }
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+    }
+    .nav-inner a {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+    .nav-inner a:hover { color: var(--fg); }
+    .theme-toggle {
+      appearance: none;
+      border: 1px solid var(--toggle-border);
+      background: var(--toggle-bg);
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      line-height: 1;
+      margin-left: auto;
+      padding: 0;
+      width: 30px;
+    }
+    .theme-toggle:hover {
+      border-color: var(--muted);
+      color: var(--fg);
+    }
+    .theme-toggle svg {
+      height: 15px;
+      width: 15px;
+    }
+    .article {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero {
+      margin-bottom: 48px;
+    }
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 18px 0 0;
+    }
+    .repo-link,
+    .back-to-top {
+      border: 1px solid var(--border);
+      color: var(--fg);
+      display: inline-flex;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      line-height: 1;
+      padding: 9px 11px;
+      text-decoration: none;
+    }
+    .repo-link:hover,
+    .back-to-top:hover {
+      background: var(--surface);
+      border-color: var(--soft);
+    }
+    .kicker {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 {
+      color: var(--fg);
+      font-weight: 500;
+      letter-spacing: 0;
+      line-height: 1.25;
+    }
+    h1 {
+      font-size: clamp(2.1rem, 7vw, 4.2rem);
+      margin: 0 0 16px;
+      max-width: 900px;
+    }
+    h2 {
+      border-top: 1px solid var(--border);
+      font-size: 1.38rem;
+      margin: 54px 0 16px;
+      padding-top: 30px;
+    }
+    h3 {
+      font-size: 1.02rem;
+      margin: 30px 0 10px;
+    }
+    p {
+      color: var(--text);
+      font-size: 0.99rem;
+      margin: 0 0 16px;
+    }
+    .lede {
+      color: var(--fg);
+      font-size: 1.14rem;
+      line-height: 1.62;
+      max-width: 760px;
+    }
+    .claim {
+      border-left: 1px solid var(--soft);
+      color: var(--text);
+      margin: 24px 0 0;
+      padding-left: 18px;
+    }
+    .toc {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 8px;
+      margin: 32px 0 44px;
+      padding: 16px 18px;
+    }
+    .toc a {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-decoration: none;
+    }
+    .toc a:hover { color: var(--fg); }
+    .side-toc {
+      display: none;
+    }
+    .article-footer {
+      border-top: 1px solid var(--border);
+      margin-top: 54px;
+      padding-top: 24px;
+    }
+    figure {
+      margin: 30px 0;
+    }
+    figure.wide {
+      margin-left: calc((720px - min(100%, 900px)) / 2);
+      max-width: 900px;
+      width: min(900px, calc(100vw - 64px));
+    }
+    figure img {
+      border: 1px solid var(--border);
+      display: block;
+      height: auto;
+      width: 100%;
+    }
+    figcaption {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      line-height: 1.55;
+      margin-top: 10px;
+    }
+    .gif-grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 30px 0;
+    }
+    .gif-grid figure {
+      margin: 0;
+    }
+    .metrics {
+      border-collapse: collapse;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      line-height: 1.45;
+      margin: 24px 0;
+      width: 100%;
+    }
+    .metrics th,
+    .metrics td {
+      border-bottom: 1px solid var(--border);
+      padding: 9px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .metrics th {
+      color: var(--fg);
+      font-weight: 500;
+    }
+    .math-block {
+      overflow-x: auto;
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.55;
+      margin: 24px 0;
+      overflow-x: auto;
+      padding: 16px;
+    }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+    }
+    p code,
+    li code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.08rem 0.24rem;
+    }
+    ul {
+      color: var(--text);
+      margin: 0 0 18px 1.2rem;
+      padding: 0;
+    }
+    li { margin-bottom: 8px; }
+    .note {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      margin: 24px 0;
+      padding: 16px 18px;
+    }
+    .note p:last-child { margin-bottom: 0; }
+    .katex-display {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 4px 0;
+    }
+    @media (max-width: 780px) {
+      .page { padding: 30px 20px 64px; }
+      .nav-inner { gap: 16px; margin-bottom: 42px; }
+      .nav-links { gap: 18px; }
+      figure.wide {
+        margin-left: 0;
+        width: 100%;
+      }
+      .gif-grid { grid-template-columns: 1fr; }
+      .metrics {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+    @media (min-width: 1240px) {
+      .side-toc {
+        border-left: 1px solid var(--border);
+        display: grid;
+        gap: 7px;
+        left: max(24px, calc((100vw - 1180px) / 2));
+        max-height: calc(100vh - 160px);
+        overflow-y: auto;
+        padding: 2px 0 2px 14px;
+        position: fixed;
+        top: 128px;
+        width: 190px;
+      }
+      .side-toc span {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 0.66rem;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+      }
+      .side-toc a {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        line-height: 1.35;
+        text-decoration: none;
+      }
+      .side-toc a:hover { color: var(--fg); }
+    }
+  </style>
+</head>
+<body id="top">
+  <aside class="side-toc" aria-label="Floating article sections">
+    <span>Sections</span>
+    <a href="#abstract">00 / Abstract</a>
+    <a href="#contributions">01 / Contributions</a>
+    <a href="#workflow">02 / How it was built</a>
+    <a href="#problem">03 / The control problem</a>
+    <a href="#model">04 / Model and corridor</a>
+    <a href="#baselines">05 / Baselines</a>
+    <a href="#nmpc">06 / Nominal NMPC</a>
+    <a href="#monte-carlo">07 / Monte Carlo</a>
+    <a href="#robust">08 / Robust probes</a>
+    <a href="#mpc-diagnosis">09 / Why MPC missed</a>
+    <a href="#learning">10 / Residual learning</a>
+    <a href="#ablation">11 / Ablations</a>
+    <a href="#diagnostics">12 / Diagnostics</a>
+    <a href="#case-study">13 / Case study</a>
+    <a href="#oracle">14 / Oracle ceiling</a>
+    <a href="#hybrid">15 / Hybrid MPC</a>
+    <a href="#realtime">16 / Onboard timing</a>
+    <a href="#related-work">17 / Research context</a>
+    <a href="#limitations">18 / Scope and caveats</a>
+    <a href="#conclusion">19 / Research takeaways</a>
+  </aside>
+  <main class="page">
+    <nav class="nav-inner">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="research-notes.html">Research Notes</a>
+        <a href="research-work.html">Research Work</a>
+        <a href="projects.html">Systems Work</a>
+      </div>
+      <button class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false"></button>
+    </nav>
+
+    <article class="article">
+      <header class="hero">
+        <div class="kicker">Research article / When MPC keeps missing the alpha corridor</div>
+        <h1>Learning-Augmented MPC for Reentry Attitude Control</h1>
+        <div class="hero-links" aria-label="Project links" style="margin-bottom: 10px">
+          <a class="repo-link" href="https://github.com/GEEGABYTE1/hybrid_reentry_mpc" target="_blank" rel="noreferrer">GitHub Repository</a>
+        </div>
+        <p class="lede">
+          A reduced-order reentry attitude-control project about a useful kind of failure: nominal nonlinear MPC looks elegant, residual learning learns something measurable, and yet strict zero-violation angle-of-attack success stays stubbornly low until the problem is reframed around feasibility, slack, and hybrid learning as a proposal mechanism.
+        </p>
+        <p class="claim">
+          Scope boundary: this is a reproducible research-engineering benchmark, not a flight-valid reentry controller, a certified robust-MPC design, or a validated aerothermal vehicle model.
+        </p>
+      </header>
+
+      <figure class="wide">
+        <img src="reentry-mpc-assets/controller_reentry_comparison.gif" alt="Animated comparison of saved reentry attitude controller rollouts">
+        <figcaption>
+          Blog-facing comparison animation generated from saved rollout artifacts. The animation is explanatory media; success claims below come from the CSV and JSON metrics referenced in each section.
+        </figcaption>
+      </figure>
+
+      <section id="abstract">
+        <h2>Abstract</h2>
+        <p>
+          This project asks a narrow question that turns out to be more interesting than a broad one: if a predictive controller is given a scheduled reentry attitude corridor, actuator position and rate limits, uncertainty, and a reduced-order longitudinal plant, what breaks first?
+        </p>
+        <p>
+          The first answer is uncomfortable. Nominal nonlinear MPC is better than the initial PID and gain-scheduled LQR baselines, but on the fixed paired Monte Carlo benchmark it succeeds in only <code>3/30</code> moderate scenarios and <code>3/30</code> stress scenarios. Constraint tightening, scenario MPC, and residual dynamics correction improve some smooth metrics, but they do not improve the strict binary success label. The controller keeps missing the alpha corridor.
+        </p>
+        <p>
+          The second answer is more useful. Diagnostics show that failures are dominated by angle-of-attack corridor misses, not simple flap-angle saturation. Later feasibility oracles estimate that the benchmark itself has a strict feasibility ceiling of <code>15/30</code> moderate scenarios and <code>11/30</code> stress scenarios under the audited actuator-truth-consistent setup. The final hybrid imitation plus slack-MPC architecture matches that ceiling while keeping MPC as the decision-making authority.
+        </p>
+        <p>
+          The result is not "AI solves reentry." The result is a disciplined learning-augmented MPC story: let nominal MPC fail honestly, diagnose the constraint geometry, estimate the feasible ceiling, then use learning as a prior or warm start inside a slack-aware constrained controller.
+        </p>
+      </section>
+
+      <section id="contributions">
+        <h2>What this contributes</h2>
+        <p>
+          The contribution is not a new theorem or a flight-ready controller. It is a reproducible control story: define a strict corridor, build increasingly capable controllers, keep the benchmark fixed, and let the failures determine the next design decision.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Claim</th>
+              <th>Evidence</th>
+              <th>Boundary</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Nominal NMPC is the first serious baseline, but not robust enough.</td>
+              <td>It leads PID and gain-scheduled LQR but scores only <code>3/30</code> strict success in both uncertainty tiers.</td>
+              <td>This is a reduced-order paired Monte Carlo benchmark, not a flight certification result.</td>
+            </tr>
+            <tr>
+              <td>Residual dynamics learning alone does not recover strict success.</td>
+              <td>The learned residual improves held-out MSE, yet residual-corrected NMPC remains at <code>3/30</code> strict success in both tiers.</td>
+              <td>This rules out the tested residual-integration designs, not all learning-augmented MPC.</td>
+            </tr>
+            <tr>
+              <td>The dominant failure is a corridor-feasibility problem, not simply flap-angle saturation.</td>
+              <td>Failure diagnostics show median failed alpha misses of about <code>0.024 rad</code> in moderate cases and <code>0.064 rad</code> in stress cases, with median flap angle saturation at <code>0.0</code>.</td>
+              <td>The diagnostic measures miss size; it does not validate relaxing the corridor.</td>
+            </tr>
+            <tr>
+              <td>The best architecture is hybrid: learning proposes, MPC decides.</td>
+              <td>Hybrid imitation plus slack-MPC matches the audited ceiling: <code>15/30</code> moderate strict success and <code>11/30</code> stress strict success.</td>
+              <td>Matching the reduced-order ceiling is not the same as exceeding it or proving vehicle-level safety.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="workflow">
+        <h2>How the project was built to be falsifiable</h2>
+        <p>
+          The most important design decision was not a controller. It was the evidence workflow. Every experiment stage had to write stable CSV, JSON, figure, and log artifacts before it earned a place in the article. That sounds like bookkeeping, but it changes the tone of the research. It makes it harder to turn a good-looking plot into an unsupported claim, and it makes it easier to preserve negative results without burying them.
+        </p>
+        <p>
+          The repository uses a <code>src/reentry_mpc</code> package layout, experiment-specific configs, experiment-specific scripts, and tests for every major milestone. The purpose is mundane and useful: make the blog read like a research artifact rather than a memory of a notebook session. If the article says a controller scored <code>3/30</code>, the reader should be able to trace that number to a summary CSV, a config, and a rollout directory.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Decision</th>
+              <th>Why it mattered</th>
+              <th>Tradeoff</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Artifact-first experiment stages</td>
+              <td>Each claim points to saved metrics, plots, and configs.</td>
+              <td>More boilerplate, but far less ambiguity later.</td>
+            </tr>
+            <tr>
+              <td>Fixed benchmark labels</td>
+              <td>Controller changes remain comparable across experiment stages.</td>
+              <td>Some promising variants look bad because the metric is intentionally strict.</td>
+            </tr>
+            <tr>
+              <td>Additive experiment history</td>
+              <td>Earlier scripts and outputs remain valid as the project grows.</td>
+              <td>The internal milestone list becomes long, but the history stays auditable.</td>
+            </tr>
+            <tr>
+              <td>Saved negative results</td>
+              <td>Failures become evidence about feasibility, timing, and architecture.</td>
+              <td>The story is less triumphant, but much more useful.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          This is why the article spends so much time on failures. A negative result from a reproducible benchmark is not dead weight. It is a constraint on the next hypothesis. Constraint tightening failed to move strict success, so the problem was not just missing margin. Residual correction failed to move strict success, so open-loop residual prediction was not enough. Oracle replay failed to recover missed feasible cases, so imitation error alone was not the whole explanation.
+        </p>
+        <div class="note">
+          <p>
+            The project deliberately avoids changing the alpha corridor, tolerance, scenario seeds, and failure labels whenever a controller is being compared against an earlier controller stage. Otherwise the article would become a sequence of moving targets.
+          </p>
+        </div>
+      </section>
+
+      <section id="problem">
+        <h2>The control problem</h2>
+        <p>
+          The vehicle model is intentionally reduced. It is not a six-degree-of-freedom entry simulator. It is a longitudinal attitude benchmark designed to keep the hard control ingredients visible: angle of attack, pitch rate, pitch angle, scheduled atmospheric conditions, flap authority, actuator lag and delay, and uncertainty.
+        </p>
+        <p>
+          The state and input are:
+        </p>
+        <div class="math-block">
+          $$x =
+          \begin{bmatrix}
+          \alpha & q & \theta
+          \end{bmatrix}^\top,
+          \qquad
+          u = \delta_\mathrm{flap}.$$
+        </div>
+        <p>
+          The success definition is deliberately strict. Good tracking is not enough. A rollout can have lower RMS alpha error and still fail if it leaves the allowed alpha corridor. That matters because the corridor stands in for aerodynamic, thermal, and stability limits. In this benchmark, the contract is not "look smooth"; the contract is "stay inside."
+        </p>
+        <p>
+          That strictness created the project’s main tension. Most controllers could eventually produce plausible-looking flap commands. Many could reduce average tracking error. But strict success was brittle because a single alpha excursion could flip the label. That made the benchmark frustrating in exactly the right way: it prevented the project from declaring success based on a pretty trajectory.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th>What it tests</th>
+              <th>Why it was included</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PID and LQR</td>
+              <td>Classical closed-loop tracking</td>
+              <td>Establish a non-learning baseline before optimizing over a horizon.</td>
+            </tr>
+            <tr>
+              <td>Nominal NMPC</td>
+              <td>Finite-horizon constrained planning</td>
+              <td>Enforce flap limits, penalize slack, and expose solver/corridor pressure.</td>
+            </tr>
+            <tr>
+              <td>Robust probes</td>
+              <td>Tightened and multi-future planning</td>
+              <td>Test whether simple robustness structure recovers strict success.</td>
+            </tr>
+            <tr>
+              <td>Residual learning</td>
+              <td>Model mismatch prediction</td>
+              <td>Ask whether learned dynamics corrections help closed-loop constraints.</td>
+            </tr>
+            <tr>
+              <td>Slack and oracle analysis</td>
+              <td>Feasibility and recoverability</td>
+              <td>Separate bad control from cases that are not strictly feasible as posed.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="model">
+        <h2>Model, schedule, and corridor</h2>
+        <p>
+          The first model decision was to schedule altitude, velocity, Mach, density, and dynamic pressure rather than propagate a full translational reentry trajectory. That was a deliberate reduction, not an oversight. It isolates the attitude-control question while keeping the reentry-specific pressure terms that make the flap effectiveness and aerodynamic moments change over time.
+        </p>
+        <p>
+          A full entry simulation would be more impressive, but it would also multiply the number of unvalidated assumptions. This project needed a controllable ladder: first make the longitudinal attitude dynamics, corridor, actuator limits, and uncertainty reproducible; only then ask whether a more complete vehicle model is worth adding.
+        </p>
+        <p>
+          The nominal plant is a scheduled reduced-order attitude model:
+        </p>
+        <div class="math-block">
+          $$\dot{x} = f_\mathrm{nominal}(x,u,\mathrm{Mach}(t),h(t),V(t)).$$
+        </div>
+        <p>
+          The Monte Carlo truth plant perturbs that model:
+        </p>
+        <div class="math-block">
+          $$\dot{x} = f_\mathrm{truth}(x,u,\mathrm{Mach},h,V;w),$$
+        </div>
+        <p>
+          where <code>w</code> includes density scale, aerodynamic coefficient bias, actuator lag, actuator delay, sensor noise, initial state error, and disturbance moment. The point is not to certify a vehicle model. The point is to make the controller confront enough mismatch that nominal planning can fail in informative ways.
+        </p>
+        <h3>The alpha-dynamics bug that changed the baseline</h3>
+        <p>
+          One early correction mattered enough to preserve in the story. The reduced alpha dynamics were changed to use pitch rate:
+        </p>
+        <div class="math-block">
+          $$\dot{\alpha} = q - 0.22\alpha.$$
+        </div>
+        <p>
+          The reason is dimensional and physical. Angle-of-attack rate has units of radians per second, so the kinematic attitude contribution should be pitch rate, not pitch acceleration. In reentry shorthand, this is the reduced-order echo of <code>alpha_dot ~= q - gamma_dot</code>. Fixing this made the deterministic nominal NMPC result meaningful: the controller was no longer compensating for a model equation with the wrong state derivative structure.
+        </p>
+        <p>
+          This kind of correction is easy to hide in a polished article. It is more useful to expose it. The point of the simulator stage was not to pretend the first reduced model was perfect. The point was to build enough tests and artifacts that a sign, unit, or derivative mistake could be found before the project started judging learning algorithms.
+        </p>
+        <div class="gif-grid">
+          <figure>
+            <img src="reentry-mpc-assets/reentry_profile_dynamic_pressure.gif" alt="Animated scheduled altitude, Mach, and dynamic pressure profile">
+            <figcaption>
+              Scheduled reentry profile and dynamic-pressure context generated from the reference-profile artifact.
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="reentry-mpc-assets/alpha_corridor_replay.gif" alt="Animated alpha corridor replay from saved rollout data">
+            <figcaption>
+              Alpha corridor replay generated from saved rollout data. It is a visualization of the benchmark contract, not a new experiment.
+            </figcaption>
+          </figure>
+        </div>
+        <p>
+          The corridor is:
+        </p>
+        <div class="math-block">
+          $$\alpha_{\min}(t) \leq \alpha(t) \leq \alpha_{\max}(t),
+          \qquad
+          q_{\min}(t) \leq q(t) \leq q_{\max}(t).$$
+        </div>
+        <p>
+          The actuator is limited in both position and rate:
+        </p>
+        <div class="math-block">
+          $$\delta_{\min} \leq \delta(t) \leq \delta_{\max},
+          \qquad
+          \dot{\delta}_{\min} \leq \dot{\delta}(t) \leq \dot{\delta}_{\max}.$$
+        </div>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/alpha_reference_corridor.png" alt="Angle-of-attack reference and corridor">
+          <figcaption>
+            Angle-of-attack reference and allowed corridor. Later controllers are evaluated against this corridor, not against visual smoothness alone.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="baselines">
+        <h2>Why the classical baselines mattered</h2>
+        <p>
+          The PID and gain-scheduled LQR controllers were not included as straw men. They were included because a learning-augmented MPC project that cannot beat or learn from simple classical baselines is usually not ready for learning. The baselines also forced the project to define shared rollout code, shared actuator limiting, and shared success metrics before the optimizer entered the picture.
+        </p>
+        <p>
+          The PID controller gave a direct alpha and pitch-rate tracking reference point. The gain-scheduled LQR went one step deeper: the nonlinear reduced-order model was finite-difference linearized at schedule points, then small discrete Riccati problems produced local feedback gains. This kept the baseline dependency footprint small while still giving the project a real scheduled linear controller.
+        </p>
+        <p>
+          The outcome was not "PID and LQR are bad." The outcome was more specific: under this reduced-order plant, this reference profile, this actuator envelope, and this strict alpha corridor, both baselines failed the configured corridor success criteria. That made them useful. They showed that ordinary tracking feedback was not enough to manage a future constraint band.
+        </p>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/pid_vs_lqr_tracking.png" alt="PID versus gain-scheduled LQR alpha and pitch-rate tracking">
+          <figcaption>
+            PID and gain-scheduled LQR tracking. These baselines are not universal claims about classical control; they are controlled comparisons under this benchmark.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/pid_vs_lqr_flap_commands.png" alt="PID versus gain-scheduled LQR flap commands">
+          <figcaption>
+            Applied flap commands for the classical baselines. The shared rollout path matters because controller differences are not confounded with different actuator limiting or metric code.
+          </figcaption>
+        </figure>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Design choice</th>
+              <th>Reason</th>
+              <th>What it taught</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Shared rollout runner</td>
+              <td>Keep controller comparisons fair.</td>
+              <td>Later NMPC and Monte Carlo experiments could reuse the same semantics.</td>
+            </tr>
+            <tr>
+              <td>Finite-difference LQR linearization</td>
+              <td>Avoid adding a larger symbolic or SciPy dependency for the baseline.</td>
+              <td>The project could still test scheduled linear feedback against nonlinear rollout behavior.</td>
+            </tr>
+            <tr>
+              <td>Strict corridor labels</td>
+              <td>Prevent smooth tracking plots from being called success.</td>
+              <td>Baseline failures motivated constrained planning rather than more gain tuning.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="nmpc">
+        <h2>Why nominal NMPC was the right serious baseline</h2>
+        <p>
+          PID and gain-scheduled LQR are valuable because they are simple, inspectable, and hard to dismiss. But they do not naturally optimize future corridor pressure. NMPC does. At each control step, the controller solves a finite-horizon problem with tracking cost, control effort, flap-rate penalty, hard actuator bounds, and soft logged state-corridor slack:
+        </p>
+        <div class="math-block">
+          $$\begin{aligned}
+          \min_{x_{0:N},u_{0:N-1},s_{0:N}} \quad
+          & \sum_{k=0}^{N-1}
+          \left[
+          \|x_k-x^\mathrm{ref}_k\|_Q^2
+          + \|u_k\|_R^2
+          + \|\Delta u_k\|_{R_\Delta}^2
+          + \rho_\alpha s_{\alpha,k}^2
+          + \rho_q s_{q,k}^2
+          \right] \\
+          & + \|x_N-x^\mathrm{ref}_N\|_{Q_f}^2 \\
+          \mathrm{s.t.} \quad
+          & x_{k+1}=F_\mathrm{nominal}(x_k,u_k) \\
+          & \delta_{\min} \leq u_k \leq \delta_{\max} \\
+          & \Delta\delta_{\min} \leq u_k-u_{k-1} \leq \Delta\delta_{\max} \\
+          & \alpha_{\min}(k)-s_{\alpha,k} \leq \alpha_k \leq \alpha_{\max}(k)+s_{\alpha,k} \\
+          & q_{\min}(k)-s_{q,k} \leq q_k \leq q_{\max}(k)+s_{q,k} \\
+          & s_{\alpha,k},s_{q,k}\geq 0 .
+          \end{aligned}$$
+        </div>
+        <p>
+          Soft state constraints are not an excuse to ignore the corridor. They are instrumentation. When the optimizer needs slack, it leaves evidence. That becomes crucial later, because it lets the project distinguish solver failure, tracking error, actuator saturation, and true constraint pressure.
+        </p>
+        <h3>Why soften alpha and pitch-rate constraints?</h3>
+        <p>
+          The first temptation was to make every corridor bound hard. That is cleaner mathematically, but it is brittle for this stage of the project. If the current state is already near the boundary, if the reduced model is mismatched, or if the actuator cannot move fast enough, a hard state corridor can turn the whole rollout into "the optimizer failed." That is less informative than a solved trajectory with explicit slack.
+        </p>
+        <p>
+          The compromise was asymmetric: flap position and flap-rate limits are hard, because actuator commands should not exceed the configured hardware envelope. Alpha and pitch-rate corridors are soft, heavily penalized, and logged. This keeps the optimizer alive while making violations visible. It also creates the diagnostic language used later: predicted slack, realized corridor miss, first violation time, and required corridor expansion.
+        </p>
+        <h3>The tolerance was a numerical decision, not a robustness claim</h3>
+        <p>
+          The nominal NMPC experiment also introduced a small <code>0.001 rad</code> realized corridor-counting tolerance. This was added after the alpha dynamics correction and a feasible nonzero initial pitch-rate condition left only sub-milliradian boundary effects in the deterministic nominal rollout. The raw trajectory and margins are still saved, so the tolerance does not hide the data. It prevents numerical boundary grazing from being presented as a meaningful control failure.
+        </p>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/nmpc_tracking_nominal.png" alt="Nominal NMPC alpha and pitch-rate tracking">
+          <figcaption>
+            Nominal NMPC tracking. The deterministic nominal run succeeds under the configured deterministic criteria, but this should not be mistaken for robust success under uncertainty.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/nmpc_constraint_activity.png" alt="Nominal NMPC constraint activity">
+          <figcaption>
+            Nominal NMPC constraint activity. The controller records when alpha, pitch-rate, flap, and flap-rate constraints become active or violated, turning optimization internals into diagnostic evidence.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="monte-carlo">
+        <h2>The paired Monte Carlo benchmark</h2>
+        <p>
+          The paired Monte Carlo benchmark made the comparison honest. PID, gain-scheduled LQR, and nominal NMPC were evaluated on the same sampled scenarios in a moderate tier and a stress tier. This pairing matters: each controller sees the same scenario seed, which makes the comparison about controller behavior rather than sampling luck.
+        </p>
+        <p>
+          The controllers remained nominal. They did not get to inspect the sampled perturbed plant and adapt their internal model to it. That distinction is important. This benchmark was not measuring how well a controller performs with oracle knowledge of the uncertainty. It was measuring degradation when a controller designed for the nominal model is rolled through a perturbed plant.
+        </p>
+        <p>
+          The uncertainty set was deliberately broad enough to expose different failure signatures: atmosphere density scaling changes dynamic pressure, aerodynamic coefficient scaling changes moment response, actuator lag and delay weaken timing, sensor noise corrupts feedback, initial error changes how much recovery room remains, and disturbance moment tests whether the controller has enough authority to reject external torque.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>PID</th>
+              <th>Gain-scheduled LQR</th>
+              <th>Nominal NMPC</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Moderate</td>
+              <td>1/30 strict</td>
+              <td>0/30 strict</td>
+              <td>3/30 strict</td>
+            </tr>
+            <tr>
+              <td>Stress</td>
+              <td>2/30 strict</td>
+              <td>0/30 strict</td>
+              <td>3/30 strict</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Nominal NMPC is the best of this first group, but <code>3/30</code> is not a robustness result. It is a warning light. The strongest controller in the initial ladder is still mostly failing the strict corridor contract.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Uncertainty source</th>
+              <th>Control consequence</th>
+              <th>Why it matters</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Density scale</td>
+              <td>Moves dynamic pressure and aerodynamic authority.</td>
+              <td>Shows the controller is not only tracking a fixed toy response.</td>
+            </tr>
+            <tr>
+              <td>Aero coefficient scale</td>
+              <td>Changes how flap commands map to pitch moments.</td>
+              <td>Creates model mismatch that residual learning can plausibly target.</td>
+            </tr>
+            <tr>
+              <td>Actuator lag and delay</td>
+              <td>Makes the applied flap trail the optimized command.</td>
+              <td>Explains why a nominal plan can be too late even when the command looks reasonable.</td>
+            </tr>
+            <tr>
+              <td>Initial attitude error</td>
+              <td>Consumes corridor margin near the start of the rollout.</td>
+              <td>Connects early violations to feasibility, not only feedback quality.</td>
+            </tr>
+            <tr>
+              <td>Disturbance moment</td>
+              <td>Adds unmodeled torque that must be rejected by flap authority.</td>
+              <td>Separates smooth nominal success from robustness pressure.</td>
+            </tr>
+          </tbody>
+        </table>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/monte_carlo_success_rates.png" alt="Monte Carlo success rates">
+          <figcaption>
+            Success rates across the paired moderate and stress uncertainty tiers. Nominal NMPC leads the initial baselines but remains low in absolute strict success.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/failure_mode_stacked_bar.png" alt="Failure mode stacked bar chart">
+          <figcaption>
+            Failure-label distribution in the paired benchmark. The stress tier introduces unstable-response cases, while alpha-corridor violations remain central.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="robust">
+        <h2>Robust-control probes that did not rescue success</h2>
+        <p>
+          Constraint tightening was the first robust-MPC-style attempt. Instead of planning against the evaluation corridor, the controller plans against a smaller internal corridor:
+        </p>
+        <div class="math-block">
+          $$\alpha_{\min}(t)+\epsilon_\alpha
+          \leq
+          \alpha(t)
+          \leq
+          \alpha_{\max}(t)-\epsilon_\alpha.$$
+        </div>
+        <p>
+          The intuition is good. If uncertainty can push a trajectory away from prediction, plan with margin. The result was informative but negative: tightened NMPC also scored <code>3/30</code> moderate and <code>3/30</code> stress, matching nominal NMPC on the full paired benchmark. It slightly reduced mean RMS alpha error, but it did not move the success label.
+        </p>
+        <p>
+          This mattered because constraint tightening was the simplest robust-control hypothesis. It was cheap to explain, cheap to implement, and fair to evaluate because the external benchmark stayed unchanged. Its failure ruled out a comfortable story: the nominal controller was not merely grazing the boundary and in need of a small inward buffer. Some cases required a different objective, different prediction state, or a different feasibility interpretation.
+        </p>
+        <p>
+          Scenario NMPC then optimized one shared flap sequence across multiple design futures:
+        </p>
+        <div class="math-block">
+          $$x^{(j)}_{k+1}=F^{(j)}(x^{(j)}_k,u_k),
+          \qquad j=1,\ldots,M.$$
+        </div>
+        <p>
+          That formulation is more honest about uncertainty, but it also makes the nonlinear program harder. On the overlapping subset used for the first scenario-MPC run, the controller slightly reduced mean RMS alpha error but did not improve binary success, and solver reliability became a limitation in stress scenarios.
+        </p>
+        <p>
+          The subset design was a practical compromise. Scenario NMPC expands the optimization because each candidate command sequence must satisfy several predicted futures. Running the full <code>30 + 30</code> benchmark immediately would have slowed iteration without adding much insight. The solution was to evaluate the first <code>12</code> scenarios per tier and filter the older nominal and tightened-MPC results to exactly that same overlap. The comparison stayed paired even though the first scenario-MPC pass was smaller.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Probe</th>
+              <th>Design intent</th>
+              <th>Observed problem</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Constraint tightening</td>
+              <td>Add static planning margin while preserving the original evaluation corridor.</td>
+              <td>RMS alpha error improves slightly, but strict success does not.</td>
+            </tr>
+            <tr>
+              <td>Scenario NMPC</td>
+              <td>Choose one command sequence acceptable across several possible plants.</td>
+              <td>Optimizer reliability becomes a stress-tier limitation, and strict success still does not improve.</td>
+            </tr>
+            <tr>
+              <td>Faster/corridor-aware NMPC variants</td>
+              <td>Update more often and weight corridor centering more strongly.</td>
+              <td>Average error can fall while zero-violation success remains unchanged or worse.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note">
+          <p>
+            The repeating pattern is the key technical point: a controller can improve a smooth tracking metric and still fail the constraint metric that matters.
+          </p>
+        </div>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/phase7_vs_prior_success_rates.png" alt="Scenario NMPC versus prior controller success rates">
+          <figcaption>
+            Scenario NMPC compared against prior controllers on the same subset. Multi-future planning did not recover strict success in this first formulation.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="mpc-diagnosis">
+        <h2>Why the MPC variants missed</h2>
+        <p>
+          The strict benchmark was not asking for small average tracking error. It was asking for zero realized corridor violations. Those are different mathematical objects. Most of the MPC variants optimized an integral tracking-and-effort objective with soft corridor penalties:
+        </p>
+        <div class="math-block">
+          $$J_\mathrm{track}
+          =
+          \sum_{k=0}^{N-1}
+          \left(
+          \|x_k-x_k^\mathrm{ref}\|_Q^2
+          + \|u_k\|_R^2
+          + \|\Delta u_k\|_{R_\Delta}^2
+          + \rho_\alpha s_{\alpha,k}^2
+          + \rho_q s_{q,k}^2
+          \right).$$
+        </div>
+        <p>
+          But the success label is closer to an indicator over the entire closed-loop trajectory:
+        </p>
+        <div class="math-block">
+          $$\mathcal{S}
+          =
+          \mathbf{1}
+          \left[
+          \max_t
+          \left(
+          \alpha(t)-\alpha_{\max}(t),
+          \alpha_{\min}(t)-\alpha(t),
+          q(t)-q_{\max}(t),
+          q_{\min}(t)-q(t)
+          \right)
+          \leq 0
+          \right].$$
+        </div>
+        <p>
+          A controller can reduce <code>J_track</code> while leaving <code>S = 0</code>. That is exactly what happened repeatedly. The objective rewarded being close most of the time. The benchmark punished being outside the corridor at any time.
+        </p>
+        <h3>Nominal NMPC optimized the wrong plant</h3>
+        <p>
+          Nominal NMPC predicts:
+        </p>
+        <div class="math-block">
+          $$x_{k+1}^{p}=F_\mathrm{nom}(x_k^{p},u_k),$$
+        </div>
+        <p>
+          while the rollout follows:
+        </p>
+        <div class="math-block">
+          $$x_{k+1}=F_\mathrm{true}(x_k,u_k;w).$$
+        </div>
+        <p>
+          Define the one-step model error:
+        </p>
+        <div class="math-block">
+          $$e_{k+1}
+          =
+          F_\mathrm{true}(x_k,u_k;w)
+          -
+          F_\mathrm{nom}(x_k,u_k).$$
+        </div>
+        <p>
+          Even if the predicted trajectory satisfies the corridor with a small margin,
+        </p>
+        <div class="math-block">
+          $$m_{\alpha,k}^{p}
+          =
+          \min
+          \left(
+          \alpha_k^{p}-\alpha_{\min,k},
+          \alpha_{\max,k}-\alpha_k^{p}
+          \right),$$
+        </div>
+        <p>
+          the realized trajectory can fail whenever the alpha component of the accumulated prediction error exceeds that margin:
+        </p>
+        <div class="math-block">
+          $$|\Delta \alpha_k|
+          \gtrsim
+          m_{\alpha,k}^{p}
+          \quad
+          \Longrightarrow
+          \quad
+          \alpha_k \notin [\alpha_{\min,k},\alpha_{\max,k}].$$
+        </div>
+        <p>
+          In other words, nominal NMPC was often solving a clean finite-horizon problem whose feasible-looking prediction did not have enough margin against actuator lag, delay, aerodynamic scaling, disturbance moment, and initial-condition error.
+        </p>
+        <h3>Constraint tightening helped only if the miss was smaller than the buffer</h3>
+        <p>
+          Tightened NMPC replaced the planning corridor with:
+        </p>
+        <div class="math-block">
+          $$\alpha_{\min,k}+\epsilon_\alpha
+          \leq
+          \alpha_k^{p}
+          \leq
+          \alpha_{\max,k}-\epsilon_\alpha.$$
+        </div>
+        <p>
+          That works only under a condition like:
+        </p>
+        <div class="math-block">
+          $$|\Delta \alpha_k| \leq \epsilon_\alpha
+          \quad \text{for all relevant } k.$$
+        </div>
+        <p>
+          The diagnostics showed a harder situation. Failed moderate alpha-corridor cases needed about <code>0.024 rad</code> median extra alpha margin, while failed stress cases needed about <code>0.064 rad</code>. A small static buffer could improve average tracking but still lose the binary label whenever the realized miss exceeded the planned margin or occurred early enough that the controller had little recovery time.
+        </p>
+        <h3>Scenario NMPC made uncertainty explicit but harder to solve</h3>
+        <p>
+          Scenario NMPC asked one command sequence to work across several design futures:
+        </p>
+        <div class="math-block">
+          $$x_{k+1}^{(j)}
+          =
+          F^{(j)}(x_k^{(j)},u_k),
+          \qquad
+          j=1,\ldots,M.$$
+        </div>
+        <p>
+          Its implicit objective was closer to:
+        </p>
+        <div class="math-block">
+          $$\min_{u_{0:N-1}}
+          \sum_{j=1}^{M}
+          J^{(j)}(x^{(j)}_{0:N},u_{0:N-1}),$$
+        </div>
+        <p>
+          with shared controls across futures. This is more robust in spirit, but it increases the nonlinear program size and can make the compromise command conservative or numerically fragile. The shared sequence may reduce average predicted error across the chosen futures while still failing the realized future that matters:
+        </p>
+        <div class="math-block">
+          $$F_\mathrm{true}(\cdot;w)
+          \notin
+          \{F^{(1)},\ldots,F^{(M)}\}
+          \quad
+          \text{or}
+          \quad
+          \min_j m_{\alpha,k}^{(j)} \text{ remains too small}.$$
+        </div>
+        <p>
+          That is why scenario planning was a useful test but not a rescue. It addressed model uncertainty structurally, but not enough to guarantee zero realized corridor exits under the benchmark.
+        </p>
+        <h3>Residual-corrected MPC fixed a local derivative, not a trajectory-level feasibility problem</h3>
+        <p>
+          The learned residual variants tried to replace:
+        </p>
+        <div class="math-block">
+          $$\dot{x}=f_\mathrm{nom}(x,u)$$
+        </div>
+        <p>
+          with:
+        </p>
+        <div class="math-block">
+          $$\dot{x}=f_\mathrm{nom}(x,u)+\hat{r}_\phi(x,u,z),$$
+        </div>
+        <p>
+          where <code>z</code> contains schedule and atmosphere features. This helps only if the learned correction reduces the closed-loop corridor miss in the states and times that matter:
+        </p>
+        <div class="math-block">
+          $$\max_k
+          \left[
+          \alpha_k-\alpha_{\max,k}
+          \right]_+
+          +
+          \left[
+          \alpha_{\min,k}-\alpha_k
+          \right]_+
+          \quad
+          \text{must decrease to zero.}
+          $$
+        </div>
+        <p>
+          Improving residual MSE does not guarantee that. The residual model is trained on local derivative error, but the success label depends on closed-loop state constraint satisfaction after integration, feedback, actuator lag, delay, and optimizer choices. The learning target and the benchmark target were mathematically misaligned.
+        </p>
+        <h3>Slack-MPC changed the priority</h3>
+        <p>
+          The later slack-first controller changed the optimization from "track the reference while penalizing violations" toward "minimize violation first, then worry about centering and effort." A simplified version is:
+        </p>
+        <div class="math-block">
+          $$J_\mathrm{slack}
+          =
+          W_s
+          \sum_{k=0}^{N}
+          \left(
+          s_{\alpha,k}^2+s_{q,k}^2
+          \right)
+          +
+          W_c
+          \sum_{k=0}^{N}
+          \|x_k-x_k^\mathrm{center}\|^2
+          +
+          W_u
+          \sum_{k=0}^{N-1}
+          \|\Delta u_k\|^2,$$
+        </div>
+        <p>
+          with <code>W_s</code> dominating the lower-priority terms. The mathematical pivot is simple: the controller was no longer primarily rewarded for staying close to the reference. It was primarily penalized for needing corridor slack. That better matched the strict success label.
+        </p>
+        <div class="note">
+          <p>
+            The core diagnosis: earlier MPC variants optimized smooth surrogate objectives for a discontinuous zero-violation success metric. Slack-MPC did better because its objective was closer to the benchmark’s actual failure condition.
+          </p>
+        </div>
+      </section>
+
+      <section id="learning">
+        <h2>Residual learning, and why prediction was not enough</h2>
+        <p>
+          The learning hypothesis was reasonable. If the nominal model and perturbed truth model differ, learn the residual:
+        </p>
+        <div class="math-block">
+          $$r(x,u,\mathrm{Mach},h)
+          =
+          \dot{x}_\mathrm{truth}
+          -
+          \dot{x}_\mathrm{nominal}.$$
+        </div>
+        <p>
+          The residual-learning track generated supervised residual data and trained a PyTorch MLP residual model. The predictor improved test MSE over a zero-residual baseline by about <code>11.56%</code>, while aggregate MAE was slightly worse. That supports a careful supervised-learning claim, not a closed-loop control claim.
+        </p>
+        <p>
+          The residual target was a derivative correction rather than a trajectory-level success label:
+        </p>
+        <pre><code>x_dot_nominal = f_nominal(x, u, mach, h)
+x_dot_true    = f_truth(x, u, mach, h)
+residual      = x_dot_true - x_dot_nominal</code></pre>
+        <p>
+          That was the cleanest first supervised-learning target. It separates model mismatch from controller behavior. If the learned model failed even at this local derivative task, it would be hard to justify embedding it into MPC. But succeeding at derivative prediction is only the first gate. The controller still has to use that correction in a way that improves a constrained trajectory.
+        </p>
+        <h3>The PyTorch and CasADi bridge problem</h3>
+        <p>
+          The first integration problem was not philosophical; it was software and optimization structure. The existing NMPC was a CasADi <code>Opti</code> graph. The trained residual model was PyTorch. Dropping an arbitrary neural network directly inside the symbolic nonlinear program would have made the solver path more complex and less auditable.
+        </p>
+        <p>
+          The project therefore tested a ladder of integration compromises. The first closed-loop probe predicted a local <code>q_dot</code> residual and converted it into an equivalent pitching-moment coefficient bias for the current solve. A second version fit a polynomial/ridge surrogate that could live inside CasADi symbolically. The consolidated version scheduled one PyTorch-predicted residual bias per horizon row before solving, so the optimizer saw a fixed correction sequence rather than a neural network embedded in its decision graph.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Experiment</th>
+              <th>Integration choice</th>
+              <th>Why that choice was made</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Local correction</td>
+              <td>Local equivalent-moment correction</td>
+              <td>Preserve the existing NMPC solver and test a minimal learned correction.</td>
+              <td>No success-rate or RMS-alpha improvement on the subset.</td>
+            </tr>
+            <tr>
+              <td>Symbolic surrogate</td>
+              <td>CasADi-compatible polynomial residual surrogate</td>
+              <td>Embed a symbolic correction throughout the horizon.</td>
+              <td>Residual gains do not improve success; larger gains worsen RMS alpha error.</td>
+            </tr>
+            <tr>
+              <td>Scheduled neural bias</td>
+              <td>Horizon-scheduled PyTorch residual biases</td>
+              <td>Let the neural model affect every prediction interval without entering the NLP graph.</td>
+              <td>All variants remain at <code>3/30</code> strict success in both tiers.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          The next tests embedded the residual in MPC in several ways: a local learned correction, a horizon-embedded polynomial surrogate, and a consolidated PyTorch residual-corrected NMPC benchmark. The full paired result was the cleanest:
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Nominal NMPC</th>
+              <th>Residual-corrected NMPC</th>
+              <th>Residual-corrected tightened NMPC</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Moderate</td>
+              <td>3/30 strict</td>
+              <td>3/30 strict</td>
+              <td>3/30 strict</td>
+            </tr>
+            <tr>
+              <td>Stress</td>
+              <td>3/30 strict</td>
+              <td>3/30 strict</td>
+              <td>3/30 strict</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          This is the moment where many project writeups would get vague. The honest interpretation is sharper: learning a local derivative correction is not the same as learning how to preserve feasibility under actuator limits, delay, uncertainty, and zero-violation labels.
+        </p>
+        <p>
+          The failed residual path also changed the research question. Before the consolidated residual benchmark, it was plausible that the nominal model was the main bottleneck and that a learned dynamics correction would unlock success. After that benchmark, the explanation was too small. The residual model could move the prediction and slightly improve some average errors, but the hard event was still a trajectory-level corridor violation.
+        </p>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/residual_mpc_success_rates.png" alt="Residual MPC success rates">
+          <figcaption>
+            Residual-corrected NMPC success rates. Residual correction did not improve strict binary success on the fixed paired benchmark.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/nominal_vs_residual_mpc_envelopes.png" alt="Alpha error envelopes for nominal and residual MPC">
+          <figcaption>
+            Alpha error envelopes for nominal and residual-corrected MPC variants. Some smooth-error changes are visible, but the strict success rate remains unchanged.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="ablation">
+        <h2>What each ablation ruled out</h2>
+        <p>
+          The article becomes much stronger when the failed variants are treated as hypothesis tests rather than side quests. Each controller change was allowed to kill one plausible explanation for the low success rate.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Hypothesis</th>
+              <th>Experiment</th>
+              <th>What happened</th>
+              <th>What it ruled out</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>The nominal controller only needs a small planning buffer.</td>
+              <td>Constraint-tightened NMPC</td>
+              <td>Strict success remains <code>3/30</code> in both tiers.</td>
+              <td>Static tightening alone is not enough.</td>
+            </tr>
+            <tr>
+              <td>The controller needs to see multiple futures.</td>
+              <td>Scenario NMPC</td>
+              <td>Mean error improves slightly, but strict success does not and solver reliability worsens in stress cases.</td>
+              <td>Multi-future prediction without better feasibility handling is insufficient.</td>
+            </tr>
+            <tr>
+              <td>The nominal dynamics mismatch is the main bottleneck.</td>
+              <td>Residual-corrected MPC</td>
+              <td>Open-loop residual MSE improves, but strict success does not move.</td>
+              <td>Local model correction is not the same as trajectory-level constraint recovery.</td>
+            </tr>
+            <tr>
+              <td>Fault fallback hooks will rescue bad cases.</td>
+              <td>Deterministic fault injection</td>
+              <td>Fallback-enabled residual NMPC still records <code>0/6</code> strict successes.</td>
+              <td>Solver-failure fallback does not fix plant/corridor failures.</td>
+            </tr>
+            <tr>
+              <td>Pure imitation error explains missed oracle-feasible cases.</td>
+              <td>Oracle-command replay</td>
+              <td>Replay recovers <code>0/1</code> missed moderate and <code>0/3</code> missed stress strict successes.</td>
+              <td>The remaining gap is not just ridge-policy command error.</td>
+            </tr>
+            <tr>
+              <td>Learning should replace the optimizer.</td>
+              <td>Hybrid imitation plus slack-MPC</td>
+              <td>The learned prior is useful while MPC remains the decision layer.</td>
+              <td>The cleaner architecture is not policy-only; it is learning-guided constrained optimization.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          This is the difference between a result table and a research story. A result table says what won. An ablation narrative says which explanations are no longer credible.
+        </p>
+      </section>
+
+      <section id="diagnostics">
+        <h2>The diagnostic turn</h2>
+        <p>
+          After the residual benchmark, the right question changed from "which controller wins?" to "how exactly do failures fail?" The failure-diagnostics pass computed the required alpha corridor expansion for each rollout:
+        </p>
+        <div class="math-block">
+          $$\Delta_\alpha^\mathrm{needed}
+          =
+          \max_t
+          \left(
+          \max(0,\alpha(t)-\alpha_{\max}(t)),
+          \max(0,\alpha_{\min}(t)-\alpha(t))
+          \right).$$
+        </div>
+        <p>
+          The result was one of the most useful findings in the project. Failed moderate alpha-corridor cases needed about <code>0.024 rad</code> median extra alpha margin. Failed stress alpha-corridor cases needed about <code>0.064 rad</code>. Stress unstable-response cases violated alpha early, around <code>4.0 s</code> median first alpha violation. Median flap angle saturation was <code>0.0</code> in the diagnostic groups.
+        </p>
+        <p>
+          That last detail matters. If failures were mostly flap-angle saturation, the next step would be obvious. But the data pointed instead toward timing, initial drift, lag/delay pressure, prediction mismatch, and feasibility. The corridor misses were not just the flap hitting a stop.
+        </p>
+        <h3>Fallback hooks were not the same as fault tolerance</h3>
+        <p>
+          The fault-injection experiment added deterministic probes: stuck flap, reduced flap effectiveness, biased alpha measurement, delayed actuator, sudden density jump, and a large unmodeled disturbance moment. It also logged fallback hooks for previous-feasible MPC control, residual-error-triggered tightening, and LQR safe mode after repeated solver failures.
+        </p>
+        <p>
+          The result was another useful negative result. The fallback-enabled controller still scored <code>0/6</code> strict successes across the fault cases. Constraint tightening activated frequently, but previous-feasible-control and LQR safe-mode fallbacks did not activate in the saved run because the failures were not mainly repeated solver failures. They were plant/corridor failures. That distinction prevented a false fix: adding solver-failure fallbacks does not solve a trajectory that is already leaving the corridor under a faulted plant.
+        </p>
+        <h3>Strict success and controlled recovery had to split</h3>
+        <p>
+          The safety-first controller experiment introduced a second metric: controlled recovery. Strict success keeps the original zero-violation benchmark label. Controlled recovery asks a different question: did the controller keep the response bounded without instability or solver collapse, even if it grazed or missed the corridor?
+        </p>
+        <p>
+          This vocabulary mattered because the project needed to stop treating all failures as identical. A tiny bounded alpha miss and an unstable response are both strict failures, but they imply different engineering next steps. The saved safety-first probe still scored <code>0/3</code> strict successes in both tiers, while controlled recovery reached <code>2/3</code>. That did not solve the benchmark, but it gave the article a more honest way to discuss partial safety behavior.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Metric</th>
+              <th>Why it changed the next design decision</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Did the rollout obey the original corridor exactly?</td>
+              <td>Strict success</td>
+              <td>Preserves the hard benchmark contract.</td>
+            </tr>
+            <tr>
+              <td>Did the rollout stay bounded despite a miss?</td>
+              <td>Controlled recovery</td>
+              <td>Separates bounded near misses from unstable responses.</td>
+            </tr>
+            <tr>
+              <td>How much extra alpha margin would cover the miss?</td>
+              <td>Needed alpha expansion</td>
+              <td>Distinguishes small boundary errors from large feasibility gaps.</td>
+            </tr>
+            <tr>
+              <td>When did the trajectory first fail?</td>
+              <td>First violation time</td>
+              <td>Identifies early cases where feedback has little recovery room.</td>
+            </tr>
+          </tbody>
+        </table>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/alpha_corridor_slack_histogram.png" alt="Alpha corridor slack histogram">
+          <figcaption>
+            Alpha corridor slack histogram. The diagnostic asks how much extra alpha margin would have covered each miss, without changing the benchmark labels.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/first_violation_time.png" alt="First alpha violation time distribution">
+          <figcaption>
+            First alpha-violation timing. Early violations in stress cases suggest that some failures begin before a reactive controller has much room to recover.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="case-study">
+        <h2>A single-scenario autopsy</h2>
+        <p>
+          The summary tables say the main story, but one scenario makes the mechanics easier to see. In the first moderate uncertainty scenario, the nominal controller is not unstable and it does not run out of flap angle. It simply spends too much of the rollout outside the alpha corridor.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Controller</th>
+              <th>Strict label</th>
+              <th>RMS alpha error</th>
+              <th>Max alpha error</th>
+              <th>Alpha violation samples</th>
+              <th>Flap angle saturation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Nominal NMPC</td>
+              <td>alpha corridor violation</td>
+              <td>0.0711 rad</td>
+              <td>0.1138 rad</td>
+              <td>123</td>
+              <td>0.000</td>
+            </tr>
+            <tr>
+              <td>Residual-corrected NMPC</td>
+              <td>alpha corridor violation</td>
+              <td>0.0711 rad</td>
+              <td>0.1138 rad</td>
+              <td>123</td>
+              <td>0.000</td>
+            </tr>
+            <tr>
+              <td>Residual-corrected tightened NMPC</td>
+              <td>alpha corridor violation</td>
+              <td>0.0696 rad</td>
+              <td>0.1138 rad</td>
+              <td>123</td>
+              <td>0.000</td>
+            </tr>
+            <tr>
+              <td>Centered slack-MPC</td>
+              <td>success</td>
+              <td>0.0341 rad</td>
+              <td>0.0537 rad</td>
+              <td>0</td>
+              <td>0.000</td>
+            </tr>
+            <tr>
+              <td>Hybrid blended slack-MPC</td>
+              <td>success</td>
+              <td>0.0342 rad</td>
+              <td>0.0537 rad</td>
+              <td>0</td>
+              <td>0.000</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          This case is the project in miniature. The residual correction does not fix the failure because the failure is not simply a missing local derivative term. The tightened residual controller improves RMS alpha error a little, but the same strict violation count remains. Slack-MPC changes the optimization priority: it treats corridor slack as the first thing to avoid, rather than a secondary penalty behind reference tracking. The hybrid controller keeps that same constrained decision layer and uses learning only to propose a better command prior.
+        </p>
+        <p>
+          The design decision that follows is subtle but important: if the metric is zero corridor violations, then average tracking error is not the right organizing objective. The controller must be built around feasibility pressure first, and tracking elegance second.
+        </p>
+      </section>
+
+      <section id="oracle">
+        <h2>Feasibility ceiling and oracle imitation</h2>
+        <p>
+          The slack oracle is not a deployable controller. It is non-causal and full-horizon. Its purpose is diagnostic: estimate how many scenarios are strictly feasible at all under the modeled truth dynamics and actuator limits.
+        </p>
+        <p>
+          The key design choice was to optimize slack before tracking elegance. Earlier controllers were often judged by RMS alpha error, but the failures were corridor failures. The oracle therefore asks a different question: if the whole future were known, how small could the alpha and pitch-rate corridor violations be under the same flap limits?
+        </p>
+        <div class="math-block">
+          $$\begin{aligned}
+          \min_{x_{0:N},u_{0:N-1},s_{0:N}} \quad
+          & \sum_{k=0}^{N}
+          \left(w_\alpha s_{\alpha,k}^2+w_q s_{q,k}^2\right) \\
+          \mathrm{s.t.} \quad
+          & x_{k+1}=F_\mathrm{truth}(x_k,u_k;w) \\
+          & \delta_{\min} \leq u_k \leq \delta_{\max} \\
+          & \Delta\delta_{\min} \leq u_k-u_{k-1} \leq \Delta\delta_{\max} \\
+          & \alpha_{\min}(k)-s_{\alpha,k} \leq \alpha_k \leq \alpha_{\max}(k)+s_{\alpha,k} \\
+          & q_{\min}(k)-s_{q,k} \leq q_k \leq q_{\max}(k)+s_{q,k}.
+          \end{aligned}$$
+        </div>
+        <p>
+          The later audited feasibility ceiling is the reframing point:
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Audited strict ceiling</th>
+              <th>Audited controlled recovery ceiling</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Moderate</td>
+              <td>15/30</td>
+              <td>24/30</td>
+            </tr>
+            <tr>
+              <td>Stress</td>
+              <td>11/30</td>
+              <td>17/30</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          That does not mean the real vehicle has this ceiling. It means the configured reduced-order benchmark has this ceiling under the audited oracle formulation. Strict success was no longer just a controller-tuning target. It was partly a feasibility and corridor-design question.
+        </p>
+        <h3>Why oracle imitation came before a bigger neural policy</h3>
+        <p>
+          The first oracle-imitation controller used a small ridge-regression policy rather than jumping straight to a neural policy. That was intentional. The project did not yet need a more expressive learner; it needed to know whether the oracle’s command structure was useful online at all. A linear policy over corridor-centered features is easier to inspect, easier to reproduce, and easier to diagnose when it fails.
+        </p>
+        <p>
+          Scaling to the full benchmark showed both promise and a trap. The ridge policies reached <code>15/30</code> strict successes in the moderate tier and <code>11/30</code> in the stress tier, with controlled recovery of <code>24/30</code> and <code>17/30</code>. But aggregate success counts hid scenario swaps: the policy could match an oracle count while missing specific oracle-feasible cases and succeeding elsewhere.
+        </p>
+        <h3>The autopsy that changed the next controller</h3>
+        <p>
+          The missed-case autopsy replayed oracle raw flap command sequences through the uncertain plant for missed oracle-feasible cases. This tested a specific hypothesis: maybe the ridge policy failed only because it imitated the oracle command poorly. If replaying the oracle command recovered the misses, the next step would be better imitation.
+        </p>
+        <p>
+          Replay recovered <code>0/1</code> missed moderate strict successes and <code>0/3</code> missed stress strict successes. Some alpha misses shrank, but none crossed the strict success boundary. That result redirected the project away from "train a bigger policy" and toward actuator-aware closed-loop replanning. The failure was not only command imitation error; it was also transfer through actuator lag, uncertainty, and online correction needs.
+        </p>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/phase23_ceiling_vs_online.png" alt="Audited ceiling versus online controllers">
+          <figcaption>
+            Audited feasibility ceiling compared with online slack-MPC. The audited strict ceiling matches the best online strict counts in the saved benchmark.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="hybrid">
+        <h2>Hybrid imitation plus slack-MPC</h2>
+        <p>
+          The final architecture uses learning in the place that earned trust: as a proposal or warm start, not as the sole authority. The learned oracle-imitation policy proposes a command prior:
+        </p>
+        <div class="math-block">
+          $$u^\mathrm{prior}_k = \pi_\psi(z_k),$$
+        </div>
+        <p>
+          where <code>z_k</code> includes state, reference, corridor, schedule, and actuator-context features. MPC still solves the constrained problem:
+        </p>
+        <div class="math-block">
+          $$\min \quad J_\mathrm{slack}(x,u)
+          + \lambda_\pi \sum_k \|u_k-u^\mathrm{prior}_k\|^2,$$
+        </div>
+        <p>
+          subject to the same actuator-aware dynamics and constraints. In other words: learning suggests, MPC checks and decides.
+        </p>
+        <p>
+          This is the central design philosophy of the project. The learner should not bypass the constraints that made the benchmark meaningful. It can propose a useful shape for the command sequence, pull the optimizer toward oracle-like behavior, or reduce initialization burden. But the final command still comes from a controller that knows the actuator limits, slack priorities, and prediction dynamics.
+        </p>
+        <p>
+          That architecture also makes the negative residual-learning result less disappointing. Learning did not help much when it was asked to be a local dynamics patch. It became more credible when it was trained on the object the controller actually needed: a slack-minimizing command strategy. The target changed from "predict the derivative mismatch" to "help the constrained optimizer find the kind of command sequence that preserves feasibility when possible."
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Story stage</th>
+              <th>Moderate strict</th>
+              <th>Stress strict</th>
+              <th>Interpretation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Nominal NMPC benchmark</td>
+              <td>3/30</td>
+              <td>3/30</td>
+              <td>Strong initial baseline, not robust.</td>
+            </tr>
+            <tr>
+              <td>Residual-corrected NMPC</td>
+              <td>3/30</td>
+              <td>3/30</td>
+              <td>Residual learning alone did not move strict success.</td>
+            </tr>
+            <tr>
+              <td>Online slack-MPC</td>
+              <td>15/30</td>
+              <td>11/30</td>
+              <td>Slack-first MPC matched the later audited ceiling.</td>
+            </tr>
+            <tr>
+              <td>Audited feasibility ceiling</td>
+              <td>15/30</td>
+              <td>11/30</td>
+              <td>Non-causal diagnostic ceiling, not online control.</td>
+            </tr>
+            <tr>
+              <td>Hybrid imitation + MPC</td>
+              <td>15/30</td>
+              <td>11/30</td>
+              <td>Learning proposes a prior; MPC remains safety authority.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          The best result is ceiling-matching, not magic. Hybrid imitation plus slack-MPC scores <code>15/30</code> strict success in the moderate tier and <code>11/30</code> in the stress tier, with controlled recovery counts of <code>24/30</code> and <code>17/30</code>. That matches the audited feasibility ceiling rather than claiming to exceed it.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Architecture option</th>
+              <th>Why it was tempting</th>
+              <th>Why the final design avoided it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pure learned policy</td>
+              <td>Cheap inference and direct imitation of oracle commands.</td>
+              <td>Harder to guarantee actuator/corridor handling and harder to audit failures.</td>
+            </tr>
+            <tr>
+              <td>Residual dynamics only</td>
+              <td>Clean model-learning story and easy supervised target.</td>
+              <td>Did not improve strict closed-loop success in the residual-MPC experiments.</td>
+            </tr>
+            <tr>
+              <td>Slack-MPC only</td>
+              <td>Constraint-aware and already ceiling-matching.</td>
+              <td>Leaves learning unused except as a diagnostic; no policy prior or timing insight.</td>
+            </tr>
+            <tr>
+              <td>Hybrid prior + MPC</td>
+              <td>Uses oracle-imitation structure while preserving constrained optimization.</td>
+              <td>Chosen because it keeps learning subordinate to the safety-aware controller.</td>
+            </tr>
+          </tbody>
+        </table>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/hybrid_vs_slack_mpc.png" alt="Hybrid MPC versus slack MPC">
+          <figcaption>
+            Hybrid imitation plus slack-MPC compared with online slack-MPC. The hybrid architecture matches the ceiling while preserving MPC as the constrained decision layer.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/policy_vs_mpc_command_gap.png" alt="Policy prior versus MPC command gap">
+          <figcaption>
+            Learned prior versus applied MPC command. The policy is useful context for the optimizer, not a replacement for constrained optimization.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="realtime">
+        <h2>Timing and onboard realism</h2>
+        <p>
+          The timing benchmark measured Python/CasADi loop timing across PID, gain-scheduled LQR, nominal NMPC, and residual-corrected NMPC variants. The result is unsurprising but important: PID and LQR meet all tested p95 budgets at 10, 20, and 50 Hz. NMPC variants meet the 10 Hz budget in most rows, only partially meet 20 Hz, and do not meet 50 Hz in the current implementation.
+        </p>
+        <p>
+          Residual neural-network inference is sub-millisecond and is not the bottleneck. The expensive part is nonlinear optimization. That suggests the right future work: warm starts, code generation, smaller horizon formulations, solver tuning, and embedded-target measurements before making any onboard claim.
+        </p>
+        <p>
+          This timing result also shaped the hybrid design. If policy inference is tens of microseconds and nonlinear optimization is milliseconds, the learner is not valuable because it is the only component that can run. It is valuable if it reduces solve difficulty, improves warm starts, or gives the optimizer a better command prior. The performance question is therefore not "can a neural network replace MPC because it is faster?" It is "can a learned prior make constrained MPC more reliable or easier to solve while the optimizer remains in charge?"
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Timing lesson</th>
+              <th>Design implication</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PID / LQR</td>
+              <td>Comfortably meets the tested loop budgets.</td>
+              <td>Good fallback and baseline candidates, but not enough for the strict corridor task.</td>
+            </tr>
+            <tr>
+              <td>Residual model inference</td>
+              <td>Sub-millisecond in the tested Python setup.</td>
+              <td>The learning block is not the dominant compute cost.</td>
+            </tr>
+            <tr>
+              <td>NMPC solve</td>
+              <td>Dominates loop time and misses the 50 Hz p95 target.</td>
+              <td>Warm starts, code generation, and solver tuning matter more than micro-optimizing inference.</td>
+            </tr>
+            <tr>
+              <td>Hybrid policy prior</td>
+              <td>Cheap enough to evaluate before each solve.</td>
+              <td>Best used to shape or initialize MPC, not to replace the safety layer.</td>
+            </tr>
+          </tbody>
+        </table>
+        <figure class="wide">
+          <img src="reentry-mpc-assets/performance_vs_timing_pareto.png" alt="Performance versus timing Pareto plot">
+          <figcaption>
+            Performance and timing tradeoff. This is a desktop Python/CasADi benchmark, not an embedded flight-computer measurement.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="related-work">
+        <h2>Where this fits</h2>
+        <p>
+          This project sits at the intersection of constrained MPC, robust/scenario MPC, learning-based MPC, and entry/descent optimal control. It is not trying to replace those literatures. It borrows their pressure points and tests a compact version of them in a reproducible reentry-attitude benchmark.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Thread</th>
+              <th>Representative work</th>
+              <th>How this project relates</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Constrained MPC</td>
+              <td><a href="https://doi.org/10.1016/S0005-1098(99)00214-9">Mayne, Rawlings, Rao, and Scokaert on constrained MPC stability and optimality</a></td>
+              <td>The project uses the central MPC idea: optimize over a horizon while respecting input and state constraints. It does not claim formal stability or recursive-feasibility guarantees.</td>
+            </tr>
+            <tr>
+              <td>Learning-based MPC</td>
+              <td><a href="https://arxiv.org/abs/1107.2487">Aswani, Gonzalez, Sastry, and Tomlin on learning-based MPC</a>; <a href="https://arxiv.org/abs/1803.08287">Koller, Berkenkamp, Turchetta, and Krause on safe exploration with learning-based MPC</a></td>
+              <td>The project shares the idea that learning should improve performance without surrendering constraints, but this implementation is empirical and reduced-order rather than proof-driven.</td>
+            </tr>
+            <tr>
+              <td>Scenario and robust MPC</td>
+              <td><a href="https://arxiv.org/abs/1206.0038">Calafiore and Fagiano on robust MPC via scenario optimization</a>; <a href="https://arxiv.org/abs/2204.09607">Subramanian, Abdelsalam, Lucia, and Engell on tube-enhanced multi-stage NMPC</a></td>
+              <td>The scenario-MPC probe in this project follows the same motivation: plan against uncertainty families. Its negative result is mainly computational and formulation-specific.</td>
+            </tr>
+            <tr>
+              <td>Entry and descent optimal control</td>
+              <td><a href="https://arxiv.org/abs/1811.10803">Szmuk, Reynolds, and Acikmese on real-time 6DOF powered descent guidance with state-triggered constraints</a>; <a href="https://arxiv.org/abs/2407.18762">Hayes and Caverly on density-compensating MPC for targeted reentry</a></td>
+              <td>This article studies a smaller attitude-control slice, but the same themes appear: atmosphere uncertainty, angle-of-attack constraints, actuator limits, and real-time optimization pressure.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          The closest conceptual ancestor is learning-based MPC: use data to improve the controller, but keep a constrained optimization layer responsible for safety-relevant decisions. The closest practical lesson comes from robust and scenario MPC: uncertainty handling is not free. It can reduce average error while making the solver harder or leaving strict feasibility unchanged.
+        </p>
+        <p>
+          The honest positioning is therefore modest. This is not a new robust-MPC theory contribution. It is a blog-grade research-engineering artifact showing why a naive learning augmentation did not solve a constrained reentry-attitude task, and why a feasibility-first hybrid design became more credible.
+        </p>
+      </section>
+
+      <section id="limitations">
+        <h2>What this does not prove</h2>
+        <p>
+          This project does not prove that the current controller is flight-valid, certifiably robust, or optimal for a real reentry vehicle. The model is reduced-order. Altitude and velocity are scheduled rather than fully propagated. Aerodynamics are illustrative. Uncertainty distributions are research probes, not calibrated flight statistics. The oracle is non-causal. The learned policies are trained on synthetic reduced-order artifacts, not flight data, wind-tunnel data, CFD, or a validated 6DOF simulator.
+        </p>
+        <p>
+          It also does not prove that residual learning is useless. It proves something more specific: in this benchmark, the residual models tested so far do not improve strict zero-violation success when simply inserted as dynamics corrections. The useful learned component appeared later, after the problem was reframed around oracle structure, actuator-aware slack, and MPC authority.
+        </p>
+        <p>
+          The biggest modeling limitation is that the benchmark freezes the translational entry profile. That is exactly what made the project tractable, but it also means the controller cannot trade attitude behavior against trajectory shaping, guidance updates, bank-angle strategy, heating management, or range constraints. The alpha corridor is a stand-in for deeper vehicle constraints, not the complete safety envelope.
+        </p>
+        <p>
+          The biggest control limitation is that the feasibility ceiling is still an optimization artifact, not a theorem. The audited oracle is more truth-consistent than the earlier oracle, but it is still non-causal and reduced-order. Matching that ceiling is strong evidence for the benchmark story. It is not a reachability proof for a validated reentry vehicle.
+        </p>
+        <table class="metrics">
+          <thead>
+            <tr>
+              <th>Claim the project supports</th>
+              <th>Claim it does not support</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Nominal MPC can fail strict corridor success under paired uncertainty even when tracking looks plausible.</td>
+              <td>Nominal MPC is generally unsuitable for reentry control.</td>
+            </tr>
+            <tr>
+              <td>Simple residual dynamics correction did not improve strict success in this benchmark.</td>
+              <td>Learning-augmented MPC cannot work.</td>
+            </tr>
+            <tr>
+              <td>Slack-first objectives and feasibility audits changed the interpretation of the failures.</td>
+              <td>The audited ceiling is a formal vehicle reachability boundary.</td>
+            </tr>
+            <tr>
+              <td>Hybrid imitation plus slack-MPC matched the audited reduced-order benchmark ceiling.</td>
+              <td>The hybrid controller is flight-ready or certified robust.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note">
+          <p>
+            Strongest honest claim: in a reproducible reduced-order benchmark, strict alpha-corridor success exposed the limits of nominal MPC, naive robustification, and simple residual learning; feasibility-aware slack MPC and hybrid oracle imitation matched the audited benchmark ceiling.
+          </p>
+        </div>
+      </section>
+
+      <section id="conclusion">
+        <h2>The research lesson</h2>
+        <p>
+          The real lesson is not that MPC failed. The real lesson is that MPC made the failure legible. With solver logs, slack variables, paired Monte Carlo scenarios, alpha-miss diagnostics, timing measurements, oracle ceilings, and command-prior comparisons, the project can say more than "tracking was bad."
+        </p>
+        <p>
+          It can say: the hard part is preserving a strict angle-of-attack corridor under uncertainty, actuator dynamics, and possible infeasibility. Robust MPC asks whether we can plan for families of futures instead of one nominal future. Learning-augmented MPC asks whether data can predict mismatch, imitate useful oracle structure, or warm-start the optimizer without surrendering constraints.
+        </p>
+        <p>
+          The project's answer is not "yes, solved." It is more useful: start with nominal MPC, let it fail honestly, diagnose the corridor misses, estimate the feasibility ceiling, then add learning only where it helps the constrained controller make better decisions.
+        </p>
+        <p>
+          The most important design pattern is therefore not "MPC plus neural network." It is a sequence:
+        </p>
+        <pre><code>1. Define the corridor before optimizing the controller.
+2. Keep the benchmark fixed while controller variants change.
+3. Log slack, solver status, actuator activity, and failure labels.
+4. Treat negative results as constraints on the next hypothesis.
+5. Estimate feasibility before declaring a controller inadequate.
+6. Use learning as a prior when it helps the optimizer, not as a way around the constraints.</code></pre>
+        <p>
+          That pattern is portable beyond this reduced-order reentry model. It is how learning-augmented control should feel when it is being honest: not a black-box replacement for dynamics and constraints, but a data-driven assistant to a controller that still has to answer to physics, actuators, and logged evidence.
+        </p>
+      </section>
+
+      <footer class="article-footer">
+        <p>
+          Artifact trail: source code, configs, experiment scripts, and generated benchmark artifacts live in the <a href="https://github.com/GEEGABYTE1/hybrid_reentry_mpc" target="_blank" rel="noreferrer">hybrid reentry MPC repository</a>.
+        </p>
+        <a class="back-to-top" href="#top">Back to top</a>
+      </footer>
+    </article>
+  </main>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+  <script>
+    const root = document.documentElement;
+    const toggle = document.querySelector('.theme-toggle');
+    const sunIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>';
+    const moonIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.99 13.29A8.5 8.5 0 1 1 10.71 3.01 6.5 6.5 0 0 0 20.99 13.29Z"></path></svg>';
+
+    function applyTheme(theme) {
+      root.dataset.theme = theme;
+      toggle.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
+      toggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+      toggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+
+    const storedTheme = window.localStorage.getItem('reentry-mpc-theme');
+    const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    applyTheme(storedTheme || preferredTheme);
+
+    toggle.addEventListener('click', () => {
+      const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      window.localStorage.setItem('reentry-mpc-theme', nextTheme);
+      applyTheme(nextTheme);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+</body>
+</html>
