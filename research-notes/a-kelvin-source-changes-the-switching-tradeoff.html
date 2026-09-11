@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>a Kelvin source changes the switching tradeoff - Jaival Patel</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <link rel="stylesheet" href="research-notes.css" />
+</head>
+<body>
+  <main class="notes-shell">
+    <nav class="notes-nav">
+      <div class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../research-notes.html">Research Notes</a>
+        <a href="../research-work.html">Research Work</a>
+        <a href="../projects.html">Systems Work</a>
+      </div>
+      <button class="theme-toggle" type="button"></button>
+    </nav>
+    <article class="note">
+      <header class="note-header">
+        <div class="page-kicker">Sep 11, 2026</div>
+        <h1>a Kelvin source changes the switching tradeoff</h1>
+      </header>
+      <p>I recently came across a paper on the tradeoff between switching losses and EMI in SiC MOSFETs, and one thing stood out to me:</p>
+      <blockquote>
+        <p>A Kelvin source connection doesn't make switching “better”—it changes the switching tradeoff.</p>
+      </blockquote>
+      <p>In a conventional 3-pin SiC MOSFET, part of the source inductance is shared by both:</p>
+      <ul>
+        <li>Power current → power source</li>
+        <li>Gate-driver return → power source</li>
+      </ul>
+      <p>During turn-on, the rapidly changing source current creates a voltage across this shared inductance. Since the MOSFET responds to the actual gate-to-source voltage at the die, this common-source inductance opposes the applied gate drive.</p>
+      <p>The result:</p>
+      <ul>
+        <li>lower <em>di/dt</em></li>
+        <li>lower <em>dv/dt</em></li>
+        <li>slower switching</li>
+        <li>higher switching loss</li>
+      </ul>
+      <figure>
+        <img src="image/three-pin-sic-mosfet-common-source-inductance.jpg" alt="Hand-drawn diagram of a conventional 3-pin SiC MOSFET showing common-source inductance shared by the power-current and gate-driver-return paths">
+        <figcaption>Conventional 3-pin package: the gate-driver return shares the power-source inductance.</figcaption>
+      </figure>
+      <p>The intuitive conclusion is that common-source inductance should always be minimized. A Kelvin source connection does exactly that by providing a separate, low-current source connection for the gate-driver return:</p>
+      <ul>
+        <li>Power current → power source</li>
+        <li>Gate driver → Kelvin source</li>
+      </ul>
+      <p>The two connections represent the same electrical node at DC, but behave very differently during a fast switching transient. By preventing most of the power-path inductance from appearing in the gate-driver loop, the Kelvin connection allows the MOSFET to switch faster and reduce switching loss.</p>
+      <figure>
+        <img src="image/four-pin-sic-mosfet-kelvin-source.jpg" alt="Hand-drawn diagram of a 4-pin SiC MOSFET showing separate power-source and Kelvin-source paths">
+        <figcaption>4-pin package: the Kelvin-source return bypasses the power-source inductance.</figcaption>
+      </figure>
+      <p><a href="https://www.wolfspeed.com/knowledge-center/article/design-considerations-for-silicon-carbide-power/">Wolfspeed</a> gives a good example at 30 A:</p>
+      <ul>
+        <li>TO-247-3, ~12 nH source inductance: ~430 µJ</li>
+        <li>TO-247-4 with Kelvin source: ~150 µJ</li>
+      </ul>
+      <p>But fast switching also means higher <em>di/dt</em> and <em>dv/dt</em>, which can increase overshoot, ringing, EMI, and parasitic effects if the rest of the gate-driver design isn't reconsidered.</p>
+      <p>So switching from a conventional source connection to a Kelvin source isn't simply a packaging improvement that can be done in isolation. It changes the switching dynamics and inherently changes the gate-driver design required around the device.</p>
+    </article>
+  </main>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+  <script>
+  const rootEl = document.documentElement;
+  const themeToggle = document.querySelector('.theme-toggle');
+  function setTheme(theme) {
+    rootEl.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+    themeToggle.innerHTML = theme === 'dark'
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.2A7.4 7.4 0 0 1 9.8 3a8.7 8.7 0 1 0 11.2 11.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+    themeToggle.setAttribute('aria-label', 'Switch to ' + (theme === 'dark' ? 'light' : 'dark') + ' mode');
+    themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+  }
+  const savedTheme = localStorage.getItem('theme');
+  const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  setTheme(savedTheme || preferredTheme);
+  themeToggle.addEventListener('click', () => setTheme(rootEl.dataset.theme === 'dark' ? 'light' : 'dark'));
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\[', right: '\\]', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ],
+        throwOnError: false
+      });
+    }
+  });
+  </script>
+</body>
+</html>

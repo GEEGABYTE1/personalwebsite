@@ -167,8 +167,22 @@ h1 {
 .note img {
   display: block;
   height: auto;
-  margin: 28px auto;
   max-width: 100%;
+}
+.note > img { margin: 28px auto; }
+.note figure {
+  margin: 28px 0;
+}
+.note figure img {
+  border: 1px solid var(--border);
+  width: 100%;
+}
+.note figcaption {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.55;
+  margin-top: 9px;
 }
 .katex-display {
   overflow-x: auto;

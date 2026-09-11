@@ -453,8 +453,22 @@ h1 {
 .note img {
   display: block;
   height: auto;
-  margin: 28px auto;
   max-width: 100%;
+}
+.note > img { margin: 28px auto; }
+.note figure {
+  margin: 28px 0;
+}
+.note figure img {
+  border: 1px solid var(--border);
+  width: 100%;
+}
+.note figcaption {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.55;
+  margin-top: 9px;
 }
 .katex-display {
   overflow-x: auto;
@@ -474,16 +488,27 @@ function build() {
   ensureDir(OUT_IMAGES);
   copyRecursive(path.join(SOURCE_DIR, "image"), OUT_IMAGES);
 
-  const files = fs.readdirSync(SOURCE_DIR)
-    .filter(file => file.toLowerCase().endsWith(".md"))
-    .map(file => {
-      const sourcePath = path.join(SOURCE_DIR, file);
+  // Keep repository-only notes in the build alongside the Obsidian source.
+  // Obsidian wins when the same filename exists in both locations.
+  const noteSources = new Map();
+  for (const sourceDir of [OUT_READMES, SOURCE_DIR]) {
+    if (!fs.existsSync(sourceDir)) continue;
+    for (const file of fs.readdirSync(sourceDir)) {
+      if (file.toLowerCase().endsWith(".md")) {
+        noteSources.set(file, path.join(sourceDir, file));
+      }
+    }
+  }
+
+  const files = [...noteSources.entries()]
+    .map(([file, sourcePath]) => {
       const markdown = fs.readFileSync(sourcePath, "utf8");
       const stat = fs.statSync(sourcePath);
       const slug = slugify(file);
       return {
         title: titleFromFile(file),
         file,
+        sourcePath,
         slug,
         markdown,
         html: markdownToHtml(markdown),
@@ -496,7 +521,10 @@ function build() {
   writeStyles();
 
   for (const note of files) {
-    fs.copyFileSync(path.join(SOURCE_DIR, note.file), path.join(OUT_READMES, note.file));
+    const readmePath = path.join(OUT_READMES, note.file);
+    if (path.resolve(note.sourcePath) !== path.resolve(readmePath)) {
+      fs.copyFileSync(note.sourcePath, readmePath);
+    }
     const noteBody = `<article class="note">
       <header class="note-header">
         <div class="page-kicker">${formatDate(note.updated)}</div>
