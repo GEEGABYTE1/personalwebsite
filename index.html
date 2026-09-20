@@ -44,6 +44,7 @@
       font-family: var(--font-sans);
       font-size: 15px;
       line-height: 1.65;
+      height: 100svh;
       min-height: 100vh;
       width: 100%;
       overflow-x: hidden;
@@ -99,12 +100,12 @@
       width: 15px;
     }
 
-    /* ── Middle: grows to push scene to bottom ── */
+    /* ── Text block above the flexible scene ── */
     .middle {
-      flex: 1;
+      flex: 0 0 auto;
       display: flex;
       align-items: center;
-      padding-top: 18px;
+      padding-top: clamp(24px, 3vh, 36px);
     }
 
     /* ── Content ── */
@@ -114,14 +115,14 @@
       margin: 0 auto;
       padding: 0 32px;
       text-align: left;
-      transform: translateY(-28px);
     }
 
     /* ── Scene pinned to very bottom ── */
     .scene-wrap {
       width: 100%;
       overflow: hidden;
-      flex-shrink: 0;
+      flex: 1 1 auto;
+      min-height: 0;
       -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%);
       mask-image: linear-gradient(to bottom, transparent 0%, black 18%);
     }
@@ -130,7 +131,7 @@
       display: block;
       user-select: none;
       width: 100%;
-      height: 420px;
+      height: 100%;
     }
 
     h1 {
@@ -168,7 +169,7 @@
       .nav-inner, .content { padding-left: 20px; padding-right: 20px; }
       .nav-inner { gap: 16px; }
       .nav-links { gap: 18px; }
-      .content { transform: translateY(-18px); }
+      .middle { padding-top: 20px; }
     }
   </style>
 </head>
@@ -195,7 +196,8 @@
       <p>Studying ECE and Robotics at the University of Toronto.</p>
 
       <p>
-        My current focus is power electronics, embedded systems, and hardware design for robotics and aerospace applications. I am particularly interested in power conversion, motor drives, power-dense electronics, and reliable electrical systems for demanding environments.
+        My current focus is power electronics. I am particularly interested in power conversion, motor drives, and power-dense electronics. My philosophy is simple: we are getting better at optimizing everything
+        that runs on energy. My work is about re-thinking of we produce that energy in the first place.
       </p>
 
       <p>
@@ -203,7 +205,7 @@
       </p>
 
       <p>
-        Outside of work, I am building deeper experience in power electronics through converter design, simulation, PCB development, and embedded control.
+        Outside of work, I play golf, go to the gym, watch a lot of motorsport, and read. Recently I’ve been reading a lot about mythology and spirituality. I find the whole question of how people decide what makes a good life really interesting.
       </p>
     </div>
   </div>
@@ -240,13 +242,12 @@ themeToggle.addEventListener('click', () => {
 // Character cell size (px) — must match CSS font-size & line-height
 const CHAR_W = 4.46;   // px per character at 7.4px Geist Mono
 const CHAR_H = 7.77;   // px per line   (7.4 * 1.05)
-const SCENE_HEIGHT_PX = 420; // desired pixel height of scene
-
 let W = 120, H = 31; // will be recalculated
 
 function recalcDimensions() {
+  const sceneHeight = sceneEl.parentElement.getBoundingClientRect().height;
   W = Math.max(60, Math.floor(window.innerWidth / CHAR_W));
-  H = Math.max(22, Math.floor(SCENE_HEIGHT_PX / CHAR_H));
+  H = Math.max(1, Math.floor(sceneHeight / CHAR_H));
   const dpr = window.devicePixelRatio || 1;
   const cssW = W * CHAR_W;
   const cssH = H * CHAR_H;
